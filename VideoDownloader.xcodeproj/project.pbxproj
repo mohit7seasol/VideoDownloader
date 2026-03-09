@@ -6,6 +6,16 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BD63BC972F5ECD830096265B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC962F5ECD830096265B /* Alamofire */; };
+		BD63BC9A2F5ECD960096265B /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC992F5ECD960096265B /* Kingfisher */; };
+		BD63BC9D2F5ECDAA0096265B /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC9C2F5ECDAA0096265B /* Lottie */; };
+		BD63BCA02F5ECDBF0096265B /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC9F2F5ECDBF0096265B /* SDWebImageSwiftUI */; };
+		BD63BCA32F5ECDD30096265B /* Shimmer in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BCA22F5ECDD30096265B /* Shimmer */; };
+		BD63BCA62F5ECDE40096265B /* Toasts in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BCA52F5ECDE40096265B /* Toasts */; };
+		BD63BCA92F5ECDF70096265B /* WindowSceneReader in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BCA82F5ECDF70096265B /* WindowSceneReader */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		BD63BC4E2F5EC99E0096265B /* VideoDownloader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoDownloader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +33,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BD63BCA02F5ECDBF0096265B /* SDWebImageSwiftUI in Frameworks */,
+				BD63BCA32F5ECDD30096265B /* Shimmer in Frameworks */,
+				BD63BC9A2F5ECD960096265B /* Kingfisher in Frameworks */,
+				BD63BC972F5ECD830096265B /* Alamofire in Frameworks */,
+				BD63BCA62F5ECDE40096265B /* Toasts in Frameworks */,
+				BD63BC9D2F5ECDAA0096265B /* Lottie in Frameworks */,
+				BD63BCA92F5ECDF70096265B /* WindowSceneReader in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +82,13 @@
 			);
 			name = VideoDownloader;
 			packageProductDependencies = (
+				BD63BC962F5ECD830096265B /* Alamofire */,
+				BD63BC992F5ECD960096265B /* Kingfisher */,
+				BD63BC9C2F5ECDAA0096265B /* Lottie */,
+				BD63BC9F2F5ECDBF0096265B /* SDWebImageSwiftUI */,
+				BD63BCA22F5ECDD30096265B /* Shimmer */,
+				BD63BCA52F5ECDE40096265B /* Toasts */,
+				BD63BCA82F5ECDF70096265B /* WindowSceneReader */,
 			);
 			productName = VideoDownloader;
 			productReference = BD63BC4E2F5EC99E0096265B /* VideoDownloader.app */;
@@ -94,6 +118,15 @@
 			);
 			mainGroup = BD63BC452F5EC99E0096265B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BD63BC952F5ECD830096265B /* XCRemoteSwiftPackageReference "Alamofire" */,
+				BD63BC982F5ECD960096265B /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				BD63BC9B2F5ECDAA0096265B /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				BD63BC9E2F5ECDBF0096265B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
+				BD63BCA12F5ECDD30096265B /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */,
+				BD63BCA42F5ECDE40096265B /* XCRemoteSwiftPackageReference "swiftui-toasts" */,
+				BD63BCA72F5ECDF70096265B /* XCRemoteSwiftPackageReference "WindowSceneReader" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BD63BC4F2F5EC99E0096265B /* Products */;
 			projectDirPath = "";
@@ -259,8 +292,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -269,12 +302,16 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.videoDownloader.VideoDownloader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -291,8 +328,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -301,12 +338,16 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.videoDownloader.VideoDownloader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -332,6 +373,103 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BD63BC952F5ECD830096265B /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.11.1;
+			};
+		};
+		BD63BC982F5ECD960096265B /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.8.0;
+			};
+		};
+		BD63BC9B2F5ECDAA0096265B /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.6.0;
+			};
+		};
+		BD63BC9E2F5ECDBF0096265B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.4;
+			};
+		};
+		BD63BCA12F5ECDD30096265B /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/markiv/SwiftUI-Shimmer";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.1;
+			};
+		};
+		BD63BCA42F5ECDE40096265B /* XCRemoteSwiftPackageReference "swiftui-toasts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sunghyun-k/swiftui-toasts";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.2;
+			};
+		};
+		BD63BCA72F5ECDF70096265B /* XCRemoteSwiftPackageReference "WindowSceneReader" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/divadretlaw/WindowSceneReader.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BD63BC962F5ECD830096265B /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BD63BC952F5ECD830096265B /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+		BD63BC992F5ECD960096265B /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BD63BC982F5ECD960096265B /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+		BD63BC9C2F5ECDAA0096265B /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BD63BC9B2F5ECDAA0096265B /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
+		BD63BC9F2F5ECDBF0096265B /* SDWebImageSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BD63BC9E2F5ECDBF0096265B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
+			productName = SDWebImageSwiftUI;
+		};
+		BD63BCA22F5ECDD30096265B /* Shimmer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BD63BCA12F5ECDD30096265B /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */;
+			productName = Shimmer;
+		};
+		BD63BCA52F5ECDE40096265B /* Toasts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BD63BCA42F5ECDE40096265B /* XCRemoteSwiftPackageReference "swiftui-toasts" */;
+			productName = Toasts;
+		};
+		BD63BCA82F5ECDF70096265B /* WindowSceneReader */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BD63BCA72F5ECDF70096265B /* XCRemoteSwiftPackageReference "WindowSceneReader" */;
+			productName = WindowSceneReader;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BD63BC462F5EC99E0096265B /* Project object */;
 }
