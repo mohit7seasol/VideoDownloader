@@ -20,9 +20,22 @@
 		BD63BC4E2F5EC99E0096265B /* VideoDownloader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoDownloader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BDB299372F601C3E0006AFCD /* Exceptions for "VideoDownloader" folder in "VideoDownloader" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BD63BC4D2F5EC99E0096265B /* VideoDownloader */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BD63BC502F5EC99E0096265B /* VideoDownloader */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BDB299372F601C3E0006AFCD /* Exceptions for "VideoDownloader" folder in "VideoDownloader" target */,
+			);
 			path = VideoDownloader;
 			sourceTree = "<group>";
 		};
@@ -289,6 +302,7 @@
 				DEVELOPMENT_TEAM = L463M649H8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = VideoDownloader/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -325,6 +339,7 @@
 				DEVELOPMENT_TEAM = L463M649H8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = VideoDownloader/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "save_unselected.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
