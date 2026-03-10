@@ -114,7 +114,7 @@ struct SplashContent: View {
                     loopMode: .loop
                 )
                 .frame(width: 120, height: 80)
-                .padding(.bottom, 10) 
+                .padding(.bottom, 10)
             }
         }
     }
