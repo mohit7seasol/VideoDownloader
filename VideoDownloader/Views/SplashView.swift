@@ -24,7 +24,7 @@ struct SplashView: View {
         
         VStack {
             if isShowHomeView {
-                HomeView()
+                TabBarView()
             } else {
                 SplashContent(isLottiePlaying: $isLottiePlaying)
             }
@@ -45,7 +45,7 @@ struct SplashView: View {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             
-            /* // Stop animation if needed
+            // Stop animation if needed
             isLottiePlaying = false
             
             if !isLanguageDone || !isOnboardingDone {
@@ -62,7 +62,7 @@ struct SplashView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     isShowHomeView = true
                 }
-            } */
+            } 
         }
     }
 }

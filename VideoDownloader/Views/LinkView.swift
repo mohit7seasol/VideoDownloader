@@ -25,7 +25,10 @@ struct LinkView: View {
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
-
+                .onTapGesture {
+                    // ✅ Dismiss keyboard when tapping background
+                    UIApplication.shared.endEditing(true)
+                }
             VStack(spacing: 20) {
 
                 // 1️⃣ Top View (Reuse)

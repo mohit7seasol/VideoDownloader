@@ -55,7 +55,7 @@ struct HomeView: View {
     }
 
     var body: some View {
-        NavigationView {
+//        NavigationView {
             ZStack {
                 Image("app_bg_image")
                     .resizable()
@@ -76,7 +76,7 @@ struct HomeView: View {
                 }
                 .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
             }
-        }
+//        }
         .navigationViewStyle(StackNavigationViewStyle())
         .hideNavigationbar() // ✅ Use your extension
     }
@@ -117,17 +117,15 @@ struct TopHomeView: View {
     }
 }
 struct HomeViewCard: View {
-
     let item: HomeItem
+    @State private var showingDestination = false
 
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
 
     var body: some View {
-
         ZStack(alignment: .bottom) {
-
             // CARD
             RoundedRectangle(cornerRadius: 26)
                 .fill(
@@ -142,7 +140,6 @@ struct HomeViewCard: View {
                 )
 
             VStack(spacing: 10) {
-
                 Spacer().frame(height: 14)
 
                 // Title
@@ -159,48 +156,30 @@ struct HomeViewCard: View {
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
 
-                // Button with Navigation based on item type
-                Group {
-                    switch item.title {
-                    case "Caption Box":
-                        NavigationLink {
-                            CaptionBoxView()
-                                .navigationBarTitleDisplayMode(.inline)
-                                .toolbar(.hidden, for: .tabBar)
-                        } label: {
-                            buttonLabel
-                        }
-                        
-                    case "Hashtag Collection":
-                        NavigationLink {
-                            Text("Hashtag Collection View")
-                                .navigationBarTitleDisplayMode(.inline)
-                                .toolbar(.hidden, for: .tabBar)
-                        } label: {
-                            buttonLabel
-                        }
-                        
-                    case "Save Insta":
-                        NavigationLink {
-                            Text("Save Insta View")
-                                .navigationBarTitleDisplayMode(.inline)
-                                .toolbar(.hidden, for: .tabBar)
-                        } label: {
-                            buttonLabel
-                        }
-                        
-                    case "Soundtrack":
-                        NavigationLink {
-                            Text("Soundtrack View")
-                                .navigationBarTitleDisplayMode(.inline)
-                                .toolbar(.hidden, for: .tabBar)
-                        } label: {
-                            buttonLabel
-                        }
-                        
-                    default:
-                        buttonLabel
+                // Button that triggers fullScreenCover with its own NavigationView
+                Button(action: {
+                    showingDestination = true
+                }) {
+                    buttonLabel
+                }
+                .fullScreenCover(isPresented: $showingDestination) {
+                    // Each destination gets its own NavigationView
+                    NavigationView {
+                        destinationView
+                            .navigationBarTitleDisplayMode(.inline)
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button(action: {
+                                        showingDestination = false
+                                    }) {
+                                        Image(systemName: "chevron.left")
+                                            .foregroundColor(.blue)
+                                        Text("Back")
+                                    }
+                                }
+                            }
                     }
+                    .navigationViewStyle(StackNavigationViewStyle())
                 }
 
                 Spacer(minLength: 40)
@@ -212,10 +191,26 @@ struct HomeViewCard: View {
                 .scaledToFit()
                 .frame(height: isIpad ? 100 : 86)
                 .padding(.horizontal, 30)
-                .offset(y: 18) // 30 outside card
+                .offset(y: 18)
         }
-        .frame(height: isIpad ? 270 : 220) // increased so icon not clipped
+        .frame(height: isIpad ? 270 : 220)
         .clipped(antialiased: false)
+    }
+    
+    @ViewBuilder
+    private var destinationView: some View {
+        switch item.title {
+        case "Caption Box":
+            CaptionBoxView()
+        case "Hashtag Collection":
+            Text("Hashtag Collection View")
+        case "Save Insta":
+            Text("Save Insta View")
+        case "Soundtrack":
+            Text("Soundtrack View")
+        default:
+            EmptyView()
+        }
     }
     
     private var buttonLabel: some View {

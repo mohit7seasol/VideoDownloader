@@ -67,6 +67,7 @@ struct CaptionBoxView: View {
                     .padding(.top, 8) // Small top padding after nav bar
                     .padding(.bottom, 20)
                 }
+                .scrollIndicators(.hidden)
             }
         }
         .navigationBarHidden(true) // Hide default navigation bar
