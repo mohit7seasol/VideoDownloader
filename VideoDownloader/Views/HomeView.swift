@@ -48,40 +48,37 @@ let homeItems: [HomeItem] = [
 
 struct HomeView: View {
 
-    private var isIpad: Bool {
-        UIDevice.current.userInterfaceIdiom == .pad
-    }
+    private var isIpad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
 
     private var columns: [GridItem] {
         Array(repeating: GridItem(.flexible(), spacing: 16), count: 2)
     }
 
     var body: some View {
+        NavigationView {
+            ZStack {
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
 
-        ZStack {
+                VStack(spacing: 24) {
+                    TopHomeView()
 
-            Image("app_bg_image")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-
-            VStack(spacing: 24) {
-
-                TopHomeView()
-
-                LazyVGrid(columns: columns, spacing: 18) {
-
-                    ForEach(homeItems.indices, id: \.self) { index in
-                        HomeViewCard(item: homeItems[index])
+                    LazyVGrid(columns: columns, spacing: 18) {
+                        ForEach(homeItems.indices, id: \.self) { index in
+                            HomeViewCard(item: homeItems[index])
+                        }
                     }
+                    .padding(.horizontal, 20)
 
+                    Spacer()
                 }
-                .padding(.horizontal, 20)
-
-                Spacer()
+                .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
             }
-            .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
         }
+        .navigationViewStyle(StackNavigationViewStyle())
+        .hideNavigationbar() // ✅ Use your extension
     }
 }
 struct TopHomeView: View {
@@ -162,26 +159,48 @@ struct HomeViewCard: View {
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
 
-                // Button
-                Button {
-
-                } label: {
-
-                    Text("View More")
-                        .font(Font.custom("Urbanist-Bold", size: 12))
-                        .foregroundColor(Color(hex: "#0D1426"))
-                        .frame(
-                            width: isIpad ? 110 : 90,
-                            height: isIpad ? 42 : 30
-                        )
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .shadow(
-                            color: Color(hex: "#0D1426").opacity(0.4),
-                            radius: 6,
-                            x: 0,
-                            y: 4
-                        )
+                // Button with Navigation based on item type
+                Group {
+                    switch item.title {
+                    case "Caption Box":
+                        NavigationLink {
+                            CaptionBoxView()
+                                .navigationBarTitleDisplayMode(.inline)
+                                .toolbar(.hidden, for: .tabBar)
+                        } label: {
+                            buttonLabel
+                        }
+                        
+                    case "Hashtag Collection":
+                        NavigationLink {
+                            Text("Hashtag Collection View")
+                                .navigationBarTitleDisplayMode(.inline)
+                                .toolbar(.hidden, for: .tabBar)
+                        } label: {
+                            buttonLabel
+                        }
+                        
+                    case "Save Insta":
+                        NavigationLink {
+                            Text("Save Insta View")
+                                .navigationBarTitleDisplayMode(.inline)
+                                .toolbar(.hidden, for: .tabBar)
+                        } label: {
+                            buttonLabel
+                        }
+                        
+                    case "Soundtrack":
+                        NavigationLink {
+                            Text("Soundtrack View")
+                                .navigationBarTitleDisplayMode(.inline)
+                                .toolbar(.hidden, for: .tabBar)
+                        } label: {
+                            buttonLabel
+                        }
+                        
+                    default:
+                        buttonLabel
+                    }
                 }
 
                 Spacer(minLength: 40)
@@ -197,6 +216,24 @@ struct HomeViewCard: View {
         }
         .frame(height: isIpad ? 270 : 220) // increased so icon not clipped
         .clipped(antialiased: false)
+    }
+    
+    private var buttonLabel: some View {
+        Text("View More")
+            .font(Font.custom("Urbanist-Bold", size: 12))
+            .foregroundColor(Color(hex: "#0D1426"))
+            .frame(
+                width: isIpad ? 110 : 90,
+                height: isIpad ? 42 : 30
+            )
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(
+                color: Color(hex: "#0D1426").opacity(0.4),
+                radius: 6,
+                x: 0,
+                y: 4
+            )
     }
 }
 #Preview {

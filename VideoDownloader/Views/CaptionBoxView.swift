@@ -9,18 +9,53 @@ import SwiftUI
 
 struct CaptionBoxView: View {
     @ObservedObject var viewModel = CategoryViewModel()
+    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
+            // Background
             Image("app_bg_image")
                 .resizable()
                 .scaledToFill()
                 .edgesIgnoringSafeArea(.all)
             
+            // Custom Navigation Bar
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(.white)
+                        .font(.system(size: 18, weight: .medium))
+                        .padding(.leading, 16)
+                }
+                
+                Spacer()
+                
+                Text("Happiness Caption Box")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                
+                Spacer()
+                
+                // Empty view for balance
+                Color.clear
+                    .frame(width: 40, height: 40)
+            }
+            .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 47)
+            .padding(.bottom, 10)
+            .background(Color.clear)
+            .zIndex(1)
+            
+            // Content starts from top (below custom nav bar)
             VStack(spacing: 0) {
-                // Content starts from safe area top
+                // Spacer for custom nav bar height
+                Color.clear
+                    .frame(height: (UIApplication.shared.windows.first?.safeAreaInsets.top ?? 47) + 44)
+                
                 ScrollView {
-                    LazyVStack(spacing: 8) { // Reduced spacing between cards to 8
+                    LazyVStack(spacing: 12) { // Minimal spacing between cards
                         ForEach(viewModel.categories.indices, id: \.self) { index in
                             CaptionBoxCardView(
                                 index: index + 1,
@@ -29,20 +64,24 @@ struct CaptionBoxView: View {
                             .padding(.horizontal, 16)
                         }
                     }
-                    .padding(.top, 16) // Small top padding from safe area
-                    .padding(.bottom, 16)
+                    .padding(.top, 8) // Small top padding after nav bar
+                    .padding(.bottom, 20)
                 }
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.hidden, for: .navigationBar) // Hide navigation bar background
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("Caption Box")
-                    .font(.headline)
-                    .foregroundColor(.white)
-            }
+        .navigationBarHidden(true) // Hide default navigation bar
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar) // Hide tab bar
+        .ignoresSafeArea(.all, edges: .top)
+        .onAppear {
+            // Ensure tab bar is hidden when this view appears
+            hideTabBar()
         }
+    }
+    
+    private func hideTabBar() {
+        // This will help ensure tab bar is hidden
+        NotificationCenter.default.post(name: NSNotification.Name("HideTabBar"), object: nil)
     }
 }
 
@@ -61,7 +100,7 @@ struct CaptionBoxCardView: View {
                 .frame(width: 10, height: 16)
         }
         .padding(.horizontal, 15)
-        .frame(height: 60)
+        .frame(height: 52) // Reduced height for tighter spacing
         .background(
             LinearGradient(
                 gradient: Gradient(colors: [Color(hex: "#541834"), Color(hex: "#302555")]),
@@ -72,7 +111,6 @@ struct CaptionBoxCardView: View {
         .cornerRadius(16)
     }
 }
-
 
 #Preview {
     CaptionBoxView()
