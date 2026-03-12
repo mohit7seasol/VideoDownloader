@@ -165,7 +165,7 @@ struct HashTagCategoryCard: View {
                     Spacer()
                 }
                 .padding(.horizontal, 10)
-                .padding(.bottom, 10)
+                .padding(.bottom, 15)
             }
         }
         .frame(height: 110)
