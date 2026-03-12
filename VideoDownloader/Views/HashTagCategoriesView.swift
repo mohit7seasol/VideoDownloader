@@ -14,7 +14,7 @@ struct HashTagCategoriesView: View {
     let category = [
         "Animals","Architecture","Celebrities","Eid","Family","Fashion","Follow",
         "Food","Holidays","Instagram","Nature","People","Photography",
-        "Sports","Text","Tiktok","Travel","Weather"
+        "Sports","Text Art","Tiktok","Travel","Weather"
     ]
     
     var columns: [GridItem] {
@@ -73,7 +73,9 @@ struct HashTagCategoriesView: View {
                     
                     VStack(spacing: 20) {
                         
-                        HashTagBannerView()
+                        NavigationLink(destination: AddHashTagView()) {
+                            HashTagBannerView()
+                        }
                         
                         LazyVGrid(columns: columns, spacing: 8) {
                             ForEach(category, id: \.self) { item in
