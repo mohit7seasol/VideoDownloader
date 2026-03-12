@@ -33,7 +33,7 @@ struct CaptionBoxView: View {
                 
                 Spacer()
                 
-                Text("Happiness Caption Box")
+                Text("Caption Box")
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
