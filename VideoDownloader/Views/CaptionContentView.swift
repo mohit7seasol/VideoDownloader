@@ -131,16 +131,9 @@ struct CaptionContentView: View {
 }
 
 struct CaptionContentCardView: View {
+    
     let content: String
     @State private var showCopyAlert = false
-    
-    // Dynamic height based on content
-    @State private var contentHeight: CGFloat = 0
-    
-    // Device specific sizing
-    private var cardHeight: CGFloat {
-        UIDevice.current.userInterfaceIdiom == .pad ? 220 : 180
-    }
     
     private var buttonHeight: CGFloat {
         UIDevice.current.userInterfaceIdiom == .pad ? 54 : 48
@@ -151,30 +144,20 @@ struct CaptionContentCardView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Content Label - Top side
+        
+        VStack(alignment: .leading, spacing: 12) {
+            
+            // Caption text (dynamic height)
             Text(content)
                 .foregroundColor(.white)
                 .font(.custom("Urbanist-Regular", size: 16))
-                .lineLimit(nil)
                 .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 15)
-                .padding(.top, 15)
-                .background(
-                    GeometryReader { geometry in
-                        Color.clear
-                            .onAppear {
-                                contentHeight = geometry.size.height
-                            }
-                    }
-                )
             
-            Spacer(minLength: 0)
-            
-            // Bottom buttons - Copy and Share
+            // Buttons
             HStack(spacing: 10) {
-                // Copy Button
+                
                 Button(action: {
                     copyToClipboard()
                 }) {
@@ -183,18 +166,16 @@ struct CaptionContentCardView: View {
                             .resizable()
                             .renderingMode(.template)
                             .frame(width: 20, height: 20)
-                            .foregroundColor(.white)
                         
                         Text("Copy")
                             .font(.custom("Urbanist-Regular", size: 16))
-                            .foregroundColor(.white)
                     }
+                    .foregroundColor(.white)
                     .frame(width: buttonWidth, height: buttonHeight)
                     .background(Color.white.opacity(0.2))
                     .cornerRadius(8)
                 }
                 
-                // Share Button
                 Button(action: {
                     shareContent()
                 }) {
@@ -203,12 +184,11 @@ struct CaptionContentCardView: View {
                             .resizable()
                             .renderingMode(.template)
                             .frame(width: 20, height: 20)
-                            .foregroundColor(.white)
                         
                         Text("Share")
                             .font(.custom("Urbanist-Regular", size: 16))
-                            .foregroundColor(.white)
                     }
+                    .foregroundColor(.white)
                     .frame(width: buttonWidth, height: buttonHeight)
                     .background(Color.white.opacity(0.2))
                     .cornerRadius(8)
@@ -216,10 +196,8 @@ struct CaptionContentCardView: View {
                 
                 Spacer()
             }
-            .padding(.horizontal, 15)
-            .padding(.bottom, 15)
         }
-        .frame(height: max(cardHeight, contentHeight + buttonHeight + 40))
+        .padding(15)
         .frame(maxWidth: .infinity)
         .background(
             LinearGradient(
@@ -251,22 +229,36 @@ struct CaptionContentCardView: View {
     }
     
     private func shareContent() {
-        let av = UIActivityViewController(activityItems: [content], applicationActivities: nil)
+        // Create the activity view controller with the content
+        let activityViewController = UIActivityViewController(
+            activityItems: [content],
+            applicationActivities: nil
+        )
         
-        // For iPad, set popover presentation
-        if UIDevice.current.userInterfaceIdiom == .pad {
+        // For iPad support - set popover presentation style
+        if let popoverController = activityViewController.popoverPresentationController {
+            // Find the source view for the popover
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let rootViewController = windowScene.windows.first?.rootViewController {
-                av.popoverPresentationController?.sourceView = rootViewController.view
-                av.popoverPresentationController?.sourceRect = CGRect(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2, width: 0, height: 0)
-                av.popoverPresentationController?.permittedArrowDirections = []
-                rootViewController.present(av, animated: true)
+                
+                // Set the source view and rect for the popover
+                popoverController.sourceView = rootViewController.view
+                popoverController.sourceRect = CGRect(x: UIScreen.main.bounds.midX, y: UIScreen.main.bounds.midY, width: 0, height: 0)
+                popoverController.permittedArrowDirections = []
             }
-        } else {
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let rootViewController = windowScene.windows.first?.rootViewController {
-                rootViewController.present(av, animated: true)
+        }
+        
+        // Present the activity view controller
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first?.rootViewController {
+            
+            // Find the top-most presented view controller
+            var topViewController = rootViewController
+            while let presentedViewController = topViewController.presentedViewController {
+                topViewController = presentedViewController
             }
+            
+            topViewController.present(activityViewController, animated: true)
         }
     }
 }
