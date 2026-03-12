@@ -55,61 +55,69 @@ struct CaptionBoxView: View {
                     .frame(height: (UIApplication.shared.windows.first?.safeAreaInsets.top ?? 47) + 44)
                 
                 ScrollView {
-                    LazyVStack(spacing: 12) { // Minimal spacing between cards
+                    LazyVStack(spacing: 12) {
                         ForEach(viewModel.categories.indices, id: \.self) { index in
                             CaptionBoxCardView(
+                                viewModel: viewModel, 
                                 index: index + 1,
-                                title: viewModel.categories[index].category_name
+                                title: viewModel.categories[index].category_name,
+                                categoryId: viewModel.categories[index].id
                             )
                             .padding(.horizontal, 16)
                         }
                     }
-                    .padding(.top, 8) // Small top padding after nav bar
+                    .padding(.top, 8)
                     .padding(.bottom, 20)
                 }
                 .scrollIndicators(.hidden)
             }
         }
-        .navigationBarHidden(true) // Hide default navigation bar
+        .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .tabBar) // Hide tab bar
+        .toolbar(.hidden, for: .tabBar)
         .ignoresSafeArea(.all, edges: .top)
         .onAppear {
-            // Ensure tab bar is hidden when this view appears
             hideTabBar()
         }
     }
     
     private func hideTabBar() {
-        // This will help ensure tab bar is hidden
         NotificationCenter.default.post(name: NSNotification.Name("HideTabBar"), object: nil)
     }
 }
 
 struct CaptionBoxCardView: View {
+    @ObservedObject var viewModel: CategoryViewModel
     var index: Int
     var title: String
+    var categoryId: Int
     
     var body: some View {
-        HStack {
-            Text("\(index).    \(title)")
-                .foregroundColor(.white)
-                .font(.system(size: 16, weight: .medium))
-            Spacer()
-            Image("rightArrow")
-                .resizable()
-                .frame(width: 10, height: 16)
-        }
-        .padding(.horizontal, 15)
-        .frame(height: 52) // Reduced height for tighter spacing
-        .background(
-            LinearGradient(
-                gradient: Gradient(colors: [Color(hex: "#541834"), Color(hex: "#302555")]),
-                startPoint: .top,
-                endPoint: .bottom
+        NavigationLink(destination: CaptionContentView(
+            viewModel: viewModel,
+            selectedCategoryId: categoryId,
+            categoryTitle: title
+        )) {
+            HStack {
+                Text("\(index).    \(title)")
+                    .foregroundColor(.white)
+                    .font(.system(size: 16, weight: .medium))
+                Spacer()
+                Image("rightArrow")
+                    .resizable()
+                    .frame(width: 10, height: 16)
+            }
+            .padding(.horizontal, 15)
+            .frame(height: 52)
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [Color(hex: "#541834"), Color(hex: "#302555")]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             )
-        )
-        .cornerRadius(16)
+            .cornerRadius(16)
+        }
     }
 }
 
