@@ -77,7 +77,9 @@ struct HashTagCategoriesView: View {
                         
                         LazyVGrid(columns: columns, spacing: 8) {
                             ForEach(category, id: \.self) { item in
-                                HashTagCategoryCard(name: item)
+                                NavigationLink(destination: HashTagCollectionView(category: item)) {
+                                    HashTagCategoryCard(name: item)
+                                }
                             }
                         }
                     }
