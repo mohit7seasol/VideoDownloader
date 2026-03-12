@@ -50,14 +50,15 @@ struct CaptionContentView: View {
                 Text(categoryTitle)
                     .font(.headline)
                     .foregroundColor(.white)
-                
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 10)
                 Spacer()
                 
                 // Empty view for balance
                 Color.clear
                     .frame(width: 40, height: 40)
             }
-            .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 47)
+            .padding(.top, UIApplication.shared.safeAreaTop)
             .padding(.bottom, 10)
             .background(Color.clear)
             .zIndex(1)
@@ -66,7 +67,7 @@ struct CaptionContentView: View {
             VStack(spacing: 0) {
                 // Spacer for custom nav bar height
                 Color.clear
-                    .frame(height: (UIApplication.shared.windows.first?.safeAreaInsets.top ?? 47) + 44)
+                    .frame(height: UIApplication.shared.safeAreaTop + 44)
                 
                 if isLoading {
                     Spacer()

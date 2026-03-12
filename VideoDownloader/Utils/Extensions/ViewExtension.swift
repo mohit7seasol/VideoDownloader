@@ -155,6 +155,14 @@ extension UIApplication {
     func clearMemoryCache() {
         SDImageCache.shared.clearMemory()
     }
+    var safeAreaTop: CGFloat {
+        return connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?
+            .windows
+            .first?
+            .safeAreaInsets.top ?? 0
+    }
 }
 
 class Haptics {

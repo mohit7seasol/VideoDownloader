@@ -92,7 +92,10 @@ struct LinkView: View {
 
                 Spacer()
             }
-            .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
+            .padding(.top, UIApplication.shared.connectedScenes
+                        .compactMap { $0 as? UIWindowScene }
+                        .first?.windows
+                        .first?.safeAreaInsets.top ?? 0)
         }
         .alert(alertMessage, isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
