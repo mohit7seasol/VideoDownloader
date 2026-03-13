@@ -56,7 +56,6 @@ struct HomeView: View {
     @State private var navigateToSomeView = false
 
     var body: some View {
-//        NavigationView {
             ZStack {
                 Image("app_bg_image")
                     .resizable()
@@ -126,7 +125,7 @@ struct TopHomeView: View {
 }
 struct HomeViewCard: View {
     let item: HomeItem
-    @State private var showingDestination = false
+    @State private var navigateToDestination = false
 
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -164,30 +163,11 @@ struct HomeViewCard: View {
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
 
-                // Button that triggers fullScreenCover with its own NavigationView
+                // Navigation button
                 Button(action: {
-                    showingDestination = true
+                    navigateToDestination = true
                 }) {
                     buttonLabel
-                }
-                .fullScreenCover(isPresented: $showingDestination) {
-                    // Each destination gets its own NavigationView
-                    NavigationView {
-                        destinationView
-                            .navigationBarTitleDisplayMode(.inline)
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarLeading) {
-                                    Button(action: {
-                                        showingDestination = false
-                                    }) {
-                                        Image(systemName: "chevron.left")
-                                            .foregroundColor(.blue)
-                                        Text("Back")
-                                    }
-                                }
-                            }
-                    }
-                    .navigationViewStyle(StackNavigationViewStyle())
                 }
 
                 Spacer(minLength: 40)
@@ -203,8 +183,12 @@ struct HomeViewCard: View {
         }
         .frame(height: isIpad ? 270 : 220)
         .clipped(antialiased: false)
+        // ✅ Modern navigation using NavigationStack
+        .navigationDestination(isPresented: $navigateToDestination) {
+            destinationView
+        }
     }
-    
+
     @ViewBuilder
     private var destinationView: some View {
         switch item.title {
@@ -220,7 +204,7 @@ struct HomeViewCard: View {
             EmptyView()
         }
     }
-    
+
     private var buttonLabel: some View {
         Text("View More")
             .font(Font.custom("Urbanist-Bold", size: 12))
