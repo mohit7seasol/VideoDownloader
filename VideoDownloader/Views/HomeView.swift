@@ -53,9 +53,10 @@ struct HomeView: View {
     private var columns: [GridItem] {
         Array(repeating: GridItem(.flexible(), spacing: 16), count: 2)
     }
+    @State private var navigateToSomeView = false
 
     var body: some View {
-        NavigationView {
+//        NavigationView {
             ZStack {
                 Image("app_bg_image")
                     .resizable()
@@ -68,21 +69,26 @@ struct HomeView: View {
                     LazyVGrid(columns: columns, spacing: 18) {
                         ForEach(homeItems.indices, id: \.self) { index in
                             HomeViewCard(item: homeItems[index])
+                                .onTapGesture {
+                                    // Example: navigate somewhere if needed
+                                    navigateToSomeView = true
+                                }
                         }
                     }
                     .padding(.horizontal, 20)
 
                     Spacer()
                 }
-//                .padding(.top, UIApplication.shared.connectedScenes
-//                            .compactMap { $0 as? UIWindowScene }
-//                            .first?.windows
-//                            .first?.safeAreaInsets.top ?? 0)
-                .padding(.top, 48)
-            }
+                .padding(.top, UIApplication.shared.connectedScenes
+                            .compactMap { $0 as? UIWindowScene }
+                            .first?.windows
+                            .first?.safeAreaInsets.top ?? 0)
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .hideNavigationbar() // ✅ Use your extension
+        .navigationDestination(isPresented: $navigateToSomeView) {
+            SettingView()
+        }
     }
 }
 struct TopHomeView: View {

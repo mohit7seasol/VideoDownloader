@@ -23,10 +23,12 @@ struct SplashView: View {
     var body: some View {
         
         VStack {
-            if isShowHomeView {
-                TabBarView()
-            } else {
-                SplashContent(isLottiePlaying: $isLottiePlaying)
+            NavigationStack {
+                if isShowHomeView {
+                    TabBarView()
+                } else {
+                    SplashContent(isLottiePlaying: $isLottiePlaying)
+                }
             }
         }
         .ignoresSafeArea()

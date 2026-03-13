@@ -18,7 +18,6 @@ struct LinkView: View {
     }
 
     var body: some View {
-        NavigationView {
             ZStack {
                 
                 Image("app_bg_image")
@@ -92,9 +91,11 @@ struct LinkView: View {
                     
                     Spacer()
                 }
-                .padding(.top, 48)
+                .padding(.top, UIApplication.shared.connectedScenes
+                            .compactMap { $0 as? UIWindowScene }
+                            .first?.windows
+                            .first?.safeAreaInsets.top ?? 0)
             }
-        }
         
         .alert(alertMessage, isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
