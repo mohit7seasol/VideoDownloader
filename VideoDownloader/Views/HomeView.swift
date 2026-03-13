@@ -200,6 +200,7 @@ struct HomeViewCard: View {
             Text("Save Insta View")
         case "Soundtrack":
             Text("Soundtrack View")
+            SoundTrackView()
         default:
             EmptyView()
         }

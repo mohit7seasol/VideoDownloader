@@ -7,9 +7,10 @@
 
 import SwiftUI
 
+// MARK: - SoundTrackView
 struct SoundTrackView: View {
     @Environment(\.dismiss) var dismiss
-    @State private var navigateToAddMusic = false
+    @State private var navigateToVideoChoose = false
     
     var body: some View {
         ZStack {
@@ -35,7 +36,6 @@ struct SoundTrackView: View {
                     Text("Soundtrack")
                         .font(.custom("Poppins-Black", size: 20))
                         .foregroundColor(.white)
-                        .padding(.leading, 10)
                     
                     Spacer()
                     
@@ -51,8 +51,8 @@ struct SoundTrackView: View {
                 // Vertically Centered Content
                 VStack(spacing: 20) {
                     // Lottie Animation
-                    LottieView(name: "Music Note Add")
-                        .frame(width: 150, height: 150)
+                    LottieView(name: "Link")
+                        .frame(width: 60, height: 60)
                         .background(Color.clear)
                     
                     // Title Label
@@ -64,23 +64,23 @@ struct SoundTrackView: View {
                     
                     // Subtitle Label
                     Text("Enhance your video experience with the right music.")
-                        .font(.custom("Urbanist-Medium", size: 18))
+                        .font(.custom("Urbanist-Medium", size: 16))
                         .foregroundColor(.white.opacity(0.8))
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                         .padding(.horizontal, 50)
                 }
-                .offset(y: -40)
+                
                 Spacer()
                 
                 // Bottom Button with screen width/3
                 Button {
-                    navigateToAddMusic = true
+                    navigateToVideoChoose = true
                 } label: {
                     Text("Add Soundtrack")
                         .font(.custom("Urbanist-Bold", size: 18))
                         .foregroundColor(.white)
-                        .frame(width: UIScreen.main.bounds.width / 2.0)
+                        .frame(width: UIScreen.main.bounds.width / 2)
                         .frame(height: 56)
                         .background(
                             LinearGradient(
@@ -104,8 +104,8 @@ struct SoundTrackView: View {
             }
         }
         .navigationBarHidden(true)
-        .navigationDestination(isPresented: $navigateToAddMusic) {
-            AddMusicView()
+        .navigationDestination(isPresented: $navigateToVideoChoose) {
+            VideoChooseView()
         }
     }
 }
