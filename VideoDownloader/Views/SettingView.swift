@@ -94,6 +94,7 @@ struct PremiumTopView: View {
                 Text("Join Full Experience")
                     .font(.custom("Urbanist-Medium", size: 16))
                     .foregroundColor(.white)
+                    .padding(.top, 30)   // ✅ Top space 15
                 
                 Text("Upgrade")
                     .font(.custom("Unlock-Regular", size: 28))
