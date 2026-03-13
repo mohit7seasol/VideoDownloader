@@ -55,7 +55,7 @@ struct HomeView: View {
     }
 
     var body: some View {
-//        NavigationView {
+        NavigationView {
             ZStack {
                 Image("app_bg_image")
                     .resizable()
@@ -74,26 +74,27 @@ struct HomeView: View {
 
                     Spacer()
                 }
-                .padding(.top, UIApplication.shared.connectedScenes
-                            .compactMap { $0 as? UIWindowScene }
-                            .first?.windows
-                            .first?.safeAreaInsets.top ?? 0)
+//                .padding(.top, UIApplication.shared.connectedScenes
+//                            .compactMap { $0 as? UIWindowScene }
+//                            .first?.windows
+//                            .first?.safeAreaInsets.top ?? 0)
+                .padding(.top, 48)
             }
-//        }
+        }
         .navigationViewStyle(StackNavigationViewStyle())
         .hideNavigationbar() // ✅ Use your extension
     }
 }
 struct TopHomeView: View {
-
+    
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
-
+    
     var body: some View {
-
+        
         HStack {
-
+            
             Image("app_logo")
                 .resizable()
                 .scaledToFit()
@@ -101,12 +102,10 @@ struct TopHomeView: View {
                     width: isIpad ? 140 : 120,
                     height: isIpad ? 42 : 32
                 )
-
+            
             Spacer()
-
-            Button {
-
-            } label: {
+            
+            NavigationLink(destination: SettingView()) {
                 Image("setting_ic")
                     .resizable()
                     .scaledToFit()

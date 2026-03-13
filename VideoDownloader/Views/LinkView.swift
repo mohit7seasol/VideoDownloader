@@ -18,85 +18,84 @@ struct LinkView: View {
     }
 
     var body: some View {
-
-        ZStack {
-
-            Image("app_bg_image")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-                .onTapGesture {
-                    // ✅ Dismiss keyboard when tapping background
-                    UIApplication.shared.endEditing(true)
-                }
-            VStack(spacing: 20) {
-
-                // 1️⃣ Top View (Reuse)
-                TopHomeView()
-
-                Text("Instant Video Download")
-                    .font(Font.custom("Unlock-Regular", size: 22))
-                    .foregroundColor(.white)
-
-                Text("Paste the link and enjoy fast, hassle-free video downloads")
-                    .font(Font.custom("Urbanist-Medium", size: 16))
-                    .foregroundColor(.white.opacity(0.9))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(3)
-                    .padding(.horizontal, 40)
-
-                PostLinkView(
-                    postLink: $postLink,
-                    pasteAction: handlePaste
-                )
-                .frame(height: isIpad ? 80 : 60)
-                .padding(.horizontal, 30)
-
-                // 8️⃣ Download Button
-                Button {
-
-                } label: {
-
-                    Text("Download")
-                        .font(Font.custom("Urbanist-Bold", size: 16))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 50)
-                        .padding(.vertical, 14)
-                        .background(
-                            LinearGradient(
-                                colors: [
-                                    Color(hex: "#1973E8"),
-                                    Color(hex: "#0E4082")
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .clipShape(Capsule())
-                        .shadow(
-                            color: Color(hex: "#1973E8").opacity(0.3),
-                            radius: 10,
-                            x: 0,
-                            y: 6
-                        )
-                }
-                .padding(.top, 10)
-
-                // 9️⃣ Bottom Image
-                Image("link_bottom_ic")
+        NavigationView {
+            ZStack {
+                
+                Image("app_bg_image")
                     .resizable()
-                    .scaledToFit()
-                    .padding(.horizontal, 20)
-                    .padding(.top, 15)
-                    .padding(.bottom, 30)
-
-                Spacer()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        // ✅ Dismiss keyboard when tapping background
+                        UIApplication.shared.endEditing(true)
+                    }
+                VStack(spacing: 20) {
+                    
+                    // 1️⃣ Top View (Reuse)
+                    TopHomeView()
+                    
+                    Text("Instant Video Download")
+                        .font(Font.custom("Unlock-Regular", size: 22))
+                        .foregroundColor(.white)
+                    
+                    Text("Paste the link and enjoy fast, hassle-free video downloads")
+                        .font(Font.custom("Urbanist-Medium", size: 16))
+                        .foregroundColor(.white.opacity(0.9))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(3)
+                        .padding(.horizontal, 40)
+                    
+                    PostLinkView(
+                        postLink: $postLink,
+                        pasteAction: handlePaste
+                    )
+                    .frame(height: isIpad ? 80 : 60)
+                    .padding(.horizontal, 30)
+                    
+                    // 8️⃣ Download Button
+                    Button {
+                        
+                    } label: {
+                        
+                        Text("Download")
+                            .font(Font.custom("Urbanist-Bold", size: 16))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 50)
+                            .padding(.vertical, 14)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        Color(hex: "#1973E8"),
+                                        Color(hex: "#0E4082")
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .clipShape(Capsule())
+                            .shadow(
+                                color: Color(hex: "#1973E8").opacity(0.3),
+                                radius: 10,
+                                x: 0,
+                                y: 6
+                            )
+                    }
+                    .padding(.top, 10)
+                    
+                    // 9️⃣ Bottom Image
+                    Image("link_bottom_ic")
+                        .resizable()
+                        .scaledToFit()
+                        .padding(.horizontal, 20)
+                        .padding(.top, 15)
+                        .padding(.bottom, 30)
+                    
+                    Spacer()
+                }
+                .padding(.top, 48)
             }
-            .padding(.top, UIApplication.shared.connectedScenes
-                        .compactMap { $0 as? UIWindowScene }
-                        .first?.windows
-                        .first?.safeAreaInsets.top ?? 0)
         }
+        
         .alert(alertMessage, isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
         }
