@@ -51,8 +51,8 @@ struct SoundTrackView: View {
                 // Vertically Centered Content
                 VStack(spacing: 20) {
                     // Lottie Animation
-                    LottieView(name: "Link")
-                        .frame(width: 60, height: 60)
+                    LottieView(name: "Music Note Add")
+                        .frame(width: 140, height: 140)
                         .background(Color.clear)
                     
                     // Title Label
@@ -64,7 +64,7 @@ struct SoundTrackView: View {
                     
                     // Subtitle Label
                     Text("Enhance your video experience with the right music.")
-                        .font(.custom("Urbanist-Medium", size: 16))
+                        .font(.custom("Urbanist-Medium", size: 18))
                         .foregroundColor(.white.opacity(0.8))
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
@@ -100,7 +100,8 @@ struct SoundTrackView: View {
                             y: 4
                         )
                 }
-                .padding(.bottom, 40)
+                .padding(.bottom, 50)
+                .ignoresSafeArea()
             }
         }
         .navigationBarHidden(true)
