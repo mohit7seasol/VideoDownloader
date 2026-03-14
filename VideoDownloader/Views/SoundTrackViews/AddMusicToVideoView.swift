@@ -50,7 +50,7 @@ struct AddMusicToVideoView: View {
     private let navigationBarHeight: CGFloat = 100 // Top bar + padding
     private let timelineHeight: CGFloat = 40 // Slider height with padding
     private let playControlHeight: CGFloat = 50 // Play controls height
-    private let videoFrameHeight: CGFloat = 80 // Video frame row height with padding
+    private let videoFrameHeight: CGFloat = 100 // Video frame row height with padding
     private let musicRowHeight: CGFloat = 100 // Music row height with padding (increased for waveform)
     private let bottomPadding: CGFloat = 20 // Bottom safe area padding
     
@@ -431,7 +431,7 @@ extension AddMusicToVideoView {
                 }
             }
         }
-        .frame(height: 80)
+        .frame(height: 100)
     }
 }
 
@@ -456,21 +456,26 @@ struct MusicWaveView: View {
                 // Background waveform (gray)
                 waveformView
                     .foregroundColor(Color.white.opacity(0.3))
+                    .padding(.top, 4) // Add top padding to move waveform down
+                    .padding(.bottom, 10) // Add bottom padding for time labels
                 
                 // Selected range waveform (blue)
                 waveformView
+                    .foregroundColor(Color(hex: "1973E8"))
+                    .padding(.top, 4) // Same padding as background
+                    .padding(.bottom, 10)
                     .mask(
                         Rectangle()
                             .frame(width: max(0, geometry.size.width * CGFloat((endTime - startTime) / max(duration, 1))))
                             .offset(x: geometry.size.width * CGFloat(startTime / max(duration, 1)))
                     )
-                    .foregroundColor(Color(hex: "1973E8"))
                 
                 // Start handle
                 RangeHandle(
                     position: geometry.size.width * CGFloat(startTime / max(duration, 1)),
                     isLeft: true,
-                    isDragging: $isDraggingStart
+                    isDragging: $isDraggingStart,
+                    totalHeight: 80 // Pass total height for handle positioning
                 )
                 .gesture(
                     DragGesture(coordinateSpace: .local)
@@ -491,7 +496,8 @@ struct MusicWaveView: View {
                 RangeHandle(
                     position: geometry.size.width * CGFloat(endTime / max(duration, 1)),
                     isLeft: false,
-                    isDragging: $isDraggingEnd
+                    isDragging: $isDraggingEnd,
+                    totalHeight: 80 // Pass total height for handle positioning
                 )
                 .gesture(
                     DragGesture(coordinateSpace: .local)
@@ -508,7 +514,7 @@ struct MusicWaveView: View {
                         }
                 )
                 
-                // Time labels
+                // Time labels - Positioned at bottom with proper spacing
                 VStack {
                     Spacer()
                     HStack {
@@ -524,7 +530,7 @@ struct MusicWaveView: View {
                             .foregroundColor(.white)
                             .offset(x: geometry.size.width * CGFloat(endTime / max(duration, 1)) - 20)
                     }
-                    .padding(.bottom, -20)
+                    .padding(.bottom, 0) // Small padding from bottom
                 }
             }
             .onAppear {
@@ -560,16 +566,17 @@ struct RangeHandle: View {
     let position: CGFloat
     let isLeft: Bool
     @Binding var isDragging: Bool
+    let totalHeight: CGFloat // Total height of the waveform container
     
     var body: some View {
         ZStack {
-            // Handle line
+            // Handle line - Full height of container
             Rectangle()
                 .fill(Color.white)
                 .frame(width: 3)
-                .frame(height: 50)
+                .frame(height: totalHeight - 30) // Reduced height to leave space for time labels
             
-            // Handle circle
+            // Handle circle - Positioned in the middle
             Circle()
                 .fill(Color.white)
                 .frame(width: 20, height: 20)
@@ -578,13 +585,13 @@ struct RangeHandle: View {
                         .stroke(Color(hex: "1973E8"), lineWidth: 2)
                 )
                 .overlay(
-                    Image(systemName: isLeft ? "grip-lines" : "grip-lines")
-                        .font(.system(size: 10))
+                    Image(systemName: "line.horizontal.3")
+                        .font(.system(size: 10, weight: .bold))
                         .foregroundColor(Color(hex: "1973E8"))
                 )
-                .offset(y: isLeft ? -25 : 25)
+                .offset(y: isLeft ? -15 : 15) // Slight offset for left/right handles
         }
-        .offset(x: position - 1.5) // Center the handle
+        .offset(x: position - 1.5, y: -5) // Slight upward adjustment
         .scaleEffect(isDragging ? 1.2 : 1.0)
         .animation(.spring(), value: isDragging)
     }
