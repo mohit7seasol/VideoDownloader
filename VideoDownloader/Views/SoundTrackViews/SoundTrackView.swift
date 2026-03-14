@@ -11,6 +11,7 @@ import SwiftUI
 struct SoundTrackView: View {
     @Environment(\.dismiss) var dismiss
     @State private var navigateToVideoChoose = false
+    @State private var shouldNavigateToSelf = false
     
     var body: some View {
         ZStack {
