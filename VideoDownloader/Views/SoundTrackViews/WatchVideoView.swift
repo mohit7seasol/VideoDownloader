@@ -13,6 +13,9 @@ import AVFoundation
 struct WatchVideoView: View {
     let videoURL: URL
     let musicTrack: MusicTrack?
+    let musicStartTime: Double
+    let musicEndTime: Double
+    
     @Environment(\.dismiss) var dismiss
     @State private var player: AVPlayer?
     @State private var isPlaying = false
@@ -140,9 +143,10 @@ struct WatchVideoView: View {
                                     .font(.custom("Urbanist-Medium", size: 14))
                                     .foregroundColor(.white.opacity(0.6))
                             } else {
-                                Text("Added to video")
+                                // Show selected time range
+                                Text("\(formatTime(musicStartTime)) - \(formatTime(musicEndTime))")
                                     .font(.custom("Urbanist-Medium", size: 14))
-                                    .foregroundColor(.white.opacity(0.6))
+                                    .foregroundColor(Color(hex: "1973E8"))
                             }
                         }
                         
@@ -282,5 +286,11 @@ struct WatchVideoView: View {
                 }
             }
         }
+    }
+    
+    private func formatTime(_ time: Double) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 }

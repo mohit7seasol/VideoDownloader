@@ -31,6 +31,13 @@ struct AddMusicToVideoView: View {
     @State private var showMusicLibrary = false
     @State private var showWaveform = false
     
+    // Music range selection properties
+    @State private var musicStartTime: Double = 0
+    @State private var musicEndTime: Double = 30 // Default 30 seconds
+    @State private var musicDuration: Double = 0
+    @State private var isDraggingStartHandle = false
+    @State private var isDraggingEndHandle = false
+    
     @State private var exportURL: URL?
     @State private var navigateToWatch = false
     @State private var isExporting = false
@@ -44,7 +51,7 @@ struct AddMusicToVideoView: View {
     private let timelineHeight: CGFloat = 40 // Slider height with padding
     private let playControlHeight: CGFloat = 50 // Play controls height
     private let videoFrameHeight: CGFloat = 80 // Video frame row height with padding
-    private let musicRowHeight: CGFloat = 70 // Music row height with padding
+    private let musicRowHeight: CGFloat = 100 // Music row height with padding (increased for waveform)
     private let bottomPadding: CGFloat = 20 // Bottom safe area padding
     
     // Calculate video preview height based on screen size
@@ -93,7 +100,7 @@ struct AddMusicToVideoView: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom, 15)
                 
-                // Music Row - Fixed at bottom
+                // Music Row - Fixed at bottom with waveform
                 musicRow
                     .padding(.horizontal, 24)
                     .padding(.bottom, 10)
@@ -106,7 +113,9 @@ struct AddMusicToVideoView: View {
         }
         .navigationDestination(isPresented: $navigateToWatch) {
             if let url = exportURL {
-                WatchVideoView(videoURL: url, musicTrack: selectedMusic)
+                WatchVideoView(videoURL: url, musicTrack: selectedMusic,
+                              musicStartTime: musicStartTime,
+                              musicEndTime: musicEndTime)
             }
         }
         .overlay {
@@ -137,6 +146,12 @@ struct AddMusicToVideoView: View {
         .onChange(of: selectedMusic) { newValue in
             withAnimation(.easeInOut(duration: 0.3)) {
                 showWaveform = newValue != nil
+                if let music = newValue {
+                    // Get music duration
+                    let asset = AVAsset(url: music.url)
+                    musicDuration = asset.duration.seconds
+                    musicEndTime = min(30, musicDuration) // Default to 30 seconds or full duration if shorter
+                }
             }
         }
     }
@@ -362,16 +377,33 @@ extension AddMusicToVideoView {
             }
             .frame(width: 30)
             
-            // Music Content
+            // Music Content with Waveform
             if showWaveform, let music = selectedMusic {
-                HStack {
-                    WaveformView(audioURL: music.url)
-                        .frame(height: 40)
+                VStack(alignment: .leading, spacing: 8) {
+                    // Music name and duration info
+                    HStack {
+                        Text(music.name)
+                            .font(.custom("Urbanist-Medium", size: 14))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                        
+                        Spacer()
+                        
+                        Text("\(formatTime(musicStartTime)) - \(formatTime(musicEndTime))")
+                            .font(.custom("Urbanist-Medium", size: 12))
+                            .foregroundColor(Color(hex: "1973E8"))
+                    }
                     
-                    Text(music.name)
-                        .font(.custom("Urbanist-Medium", size: 14))
-                        .foregroundColor(.white.opacity(0.8))
-                        .lineLimit(1)
+                    // Waveform with Range Slider
+                    MusicWaveView(
+                        audioURL: music.url,
+                        startTime: $musicStartTime,
+                        endTime: $musicEndTime,
+                        duration: musicDuration,
+                        isDraggingStart: $isDraggingStartHandle,
+                        isDraggingEnd: $isDraggingEndHandle
+                    )
+                    .frame(height: 50)
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
@@ -389,7 +421,7 @@ extension AddMusicToVideoView {
                         .foregroundColor(.white.opacity(0.5))
                     Spacer()
                 }
-                .frame(height: 40)
+                .frame(height: 50)
                 .background(Color.white.opacity(0.1))
                 .cornerRadius(8)
                 .onTapGesture {
@@ -397,7 +429,162 @@ extension AddMusicToVideoView {
                 }
             }
         }
-        .frame(height: 60)
+        .frame(height: 80)
+    }
+}
+
+// MARK: - MusicWaveView (Third Party Waveform with Range Slider)
+struct MusicWaveView: View {
+    let audioURL: URL
+    @Binding var startTime: Double
+    @Binding var endTime: Double
+    let duration: Double
+    @Binding var isDraggingStart: Bool
+    @Binding var isDraggingEnd: Bool
+    
+    @State private var samples: [Float] = []
+    @State private var waveformWidth: CGFloat = 0
+    
+    // Minimum range duration (1 second)
+    private let minRangeDuration: Double = 1.0
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                // Background waveform (gray)
+                waveformView
+                    .foregroundColor(Color.white.opacity(0.3))
+                
+                // Selected range waveform (blue)
+                waveformView
+                    .mask(
+                        Rectangle()
+                            .frame(width: max(0, geometry.size.width * CGFloat((endTime - startTime) / max(duration, 1))))
+                            .offset(x: geometry.size.width * CGFloat(startTime / max(duration, 1)))
+                    )
+                    .foregroundColor(Color(hex: "1973E8"))
+                
+                // Start handle
+                RangeHandle(
+                    position: geometry.size.width * CGFloat(startTime / max(duration, 1)),
+                    isLeft: true,
+                    isDragging: $isDraggingStart
+                )
+                .gesture(
+                    DragGesture(coordinateSpace: .local)
+                        .onChanged { value in
+                            isDraggingStart = true
+                            let newX = min(
+                                geometry.size.width * CGFloat((endTime - minRangeDuration) / max(duration, 1)),
+                                max(0, value.location.x)
+                            )
+                            startTime = Double(newX / geometry.size.width) * duration
+                        }
+                        .onEnded { _ in
+                            isDraggingStart = false
+                        }
+                )
+                
+                // End handle
+                RangeHandle(
+                    position: geometry.size.width * CGFloat(endTime / max(duration, 1)),
+                    isLeft: false,
+                    isDragging: $isDraggingEnd
+                )
+                .gesture(
+                    DragGesture(coordinateSpace: .local)
+                        .onChanged { value in
+                            isDraggingEnd = true
+                            let newX = max(
+                                geometry.size.width * CGFloat((startTime + minRangeDuration) / max(duration, 1)),
+                                min(geometry.size.width, value.location.x)
+                            )
+                            endTime = Double(newX / geometry.size.width) * duration
+                        }
+                        .onEnded { _ in
+                            isDraggingEnd = false
+                        }
+                )
+                
+                // Time labels
+                VStack {
+                    Spacer()
+                    HStack {
+                        Text(formatTime(startTime))
+                            .font(.custom("Urbanist-Medium", size: 10))
+                            .foregroundColor(.white)
+                            .offset(x: geometry.size.width * CGFloat(startTime / max(duration, 1)) - 20)
+                        
+                        Spacer()
+                        
+                        Text(formatTime(endTime))
+                            .font(.custom("Urbanist-Medium", size: 10))
+                            .foregroundColor(.white)
+                            .offset(x: geometry.size.width * CGFloat(endTime / max(duration, 1)) - 20)
+                    }
+                    .padding(.bottom, -20)
+                }
+            }
+            .onAppear {
+                waveformWidth = geometry.size.width
+                generateWaveformSamples()
+            }
+        }
+    }
+    
+    private var waveformView: some View {
+        HStack(spacing: 2) {
+            ForEach(0..<min(samples.count, 100), id: \.self) { index in
+                let sample = samples[index]
+                let height = CGFloat(max(4, min(40, abs(sample) * 40)))
+                
+                Capsule()
+                    .frame(width: 3, height: height)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private func generateWaveformSamples() {
+        // Generate sample waveform data (in real implementation, this would analyze the audio file)
+        samples = (0..<100).map { _ in
+            Float.random(in: 0.3...1.0)
+        }
+    }
+}
+
+// MARK: - RangeHandle
+struct RangeHandle: View {
+    let position: CGFloat
+    let isLeft: Bool
+    @Binding var isDragging: Bool
+    
+    var body: some View {
+        ZStack {
+            // Handle line
+            Rectangle()
+                .fill(Color.white)
+                .frame(width: 3)
+                .frame(height: 50)
+            
+            // Handle circle
+            Circle()
+                .fill(Color.white)
+                .frame(width: 20, height: 20)
+                .overlay(
+                    Circle()
+                        .stroke(Color(hex: "1973E8"), lineWidth: 2)
+                )
+                .overlay(
+                    Image(systemName: isLeft ? "grip-lines" : "grip-lines")
+                        .font(.system(size: 10))
+                        .foregroundColor(Color(hex: "1973E8"))
+                )
+                .offset(y: isLeft ? -25 : 25)
+        }
+        .offset(x: position - 1.5) // Center the handle
+        .scaleEffect(isDragging ? 1.2 : 1.0)
+        .animation(.spring(), value: isDragging)
     }
 }
 
@@ -434,44 +621,6 @@ struct VideoPlayerController: UIViewControllerRepresentable {
     
     class Coordinator {
         var playerLayer: AVPlayerLayer?
-    }
-}
-
-// MARK: - WaveformView
-struct WaveformView: View {
-    let audioURL: URL
-    @State private var samples: [Float] = []
-    
-    var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 2) {
-                ForEach(0..<min(samples.count, Int(geometry.size.width / 4)), id: \.self) { index in
-                    let sample = samples[index]
-                    let height = CGFloat(max(4, min(36, abs(sample) * 36)))
-                    
-                    Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color(hex: "1973E8"), Color(hex: "0E4082")],
-                                startPoint: .bottom,
-                                endPoint: .top
-                            )
-                        )
-                        .frame(width: 3, height: height)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .onAppear {
-            generateWaveformSamples()
-        }
-    }
-    
-    private func generateWaveformSamples() {
-        // Generate sample waveform data
-        samples = (0..<100).map { _ in
-            Float.random(in: 0.3...1.0)
-        }
     }
 }
 
@@ -574,28 +723,58 @@ extension AddMusicToVideoView {
             
             let composition = AVMutableComposition()
             
+            // Get video duration
+            let videoDuration = videoAsset.duration
+            
             // Add video track
             guard let videoTrack = videoAsset.tracks(withMediaType: .video).first,
                   let compositionVideoTrack = composition.addMutableTrack(
                     withMediaType: .video,
                     preferredTrackID: kCMPersistentTrackID_Invalid) else { return }
             
+            // Insert video for its full duration
             try? compositionVideoTrack.insertTimeRange(
-                CMTimeRange(start: .zero, duration: videoAsset.duration),
+                CMTimeRange(start: .zero, duration: videoDuration),
                 of: videoTrack,
                 at: .zero)
             
-            // Add audio track from music
+            // Add audio track from music (with selected range)
             let musicAsset = AVAsset(url: music.url)
             if let audioTrack = musicAsset.tracks(withMediaType: .audio).first,
                let compositionAudioTrack = composition.addMutableTrack(
                 withMediaType: .audio,
                 preferredTrackID: kCMPersistentTrackID_Invalid) {
                 
+                let musicStartCMTime = CMTime(seconds: musicStartTime, preferredTimescale: 600)
+                
+                // Calculate music duration to use - either the selected range or video duration, whichever is shorter
+                let selectedMusicDuration = CMTime(seconds: musicEndTime - musicStartTime, preferredTimescale: 600)
+                
+                // Use the minimum of video duration and selected music duration
+                let durationToUse = CMTimeMinimum(videoDuration, selectedMusicDuration)
+                
+                let musicTimeRange = CMTimeRange(start: musicStartCMTime, duration: durationToUse)
+                
                 try? compositionAudioTrack.insertTimeRange(
-                    CMTimeRange(start: .zero, duration: videoAsset.duration),
+                    musicTimeRange,
                     of: audioTrack,
                     at: .zero)
+            }
+            
+            // Also add original video audio if not muted (optional - depends on your requirement)
+            if !isMuted, let audioTrack = videoAsset.tracks(withMediaType: .audio).first,
+               let compositionAudioTrack = composition.addMutableTrack(
+                withMediaType: .audio,
+                preferredTrackID: kCMPersistentTrackID_Invalid) {
+                
+                // Add original video audio at reduced volume (optional)
+                try? compositionAudioTrack.insertTimeRange(
+                    CMTimeRange(start: .zero, duration: videoDuration),
+                    of: audioTrack,
+                    at: .zero)
+                
+                // You can adjust volume here if needed
+                // For volume control, you'd need to use AVMutableAudioMix
             }
             
             // Export
@@ -615,6 +794,8 @@ extension AddMusicToVideoView {
                     if exporter.status == .completed {
                         exportURL = outputURL
                         navigateToWatch = true
+                    } else if let error = exporter.error {
+                        print("Export error: \(error.localizedDescription)")
                     }
                 }
             }
