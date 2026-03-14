@@ -68,10 +68,6 @@ struct HomeView: View {
                     LazyVGrid(columns: columns, spacing: 18) {
                         ForEach(homeItems.indices, id: \.self) { index in
                             HomeViewCard(item: homeItems[index])
-                                .onTapGesture {
-                                    // Example: navigate somewhere if needed
-                                    navigateToSomeView = true
-                                }
                         }
                     }
                     .padding(.horizontal, 20)

@@ -46,6 +46,9 @@ struct AddMusicToVideoView: View {
     @State private var thumbnails: [UIImage] = []
     @State private var thumbnailSize: CGSize = .zero
     
+    // Add this to track video audio status
+    @State private var isVideoAudioAvailable = false
+    
     // Fixed heights for other components to calculate video preview height
     private let navigationBarHeight: CGFloat = 100 // Top bar + padding
     private let timelineHeight: CGFloat = 40 // Slider height with padding
@@ -154,6 +157,9 @@ struct AddMusicToVideoView: View {
                 }
             }
         }
+        .onChange(of: isMuted) { newValue in
+            player?.isMuted = newValue
+        }
     }
 }
 
@@ -179,6 +185,9 @@ extension AddMusicToVideoView {
             
             if selectedMusic != nil {
                 Button {
+                    // Stop video playback before exporting
+                    player?.pause()
+                    isPlaying = false
                     exportVideo()
                 } label: {
                     Text("Done")
@@ -219,6 +228,10 @@ extension AddMusicToVideoView {
             if let player = player {
                 VideoPlayerController(player: player)
                     .cornerRadius(16)
+                    .onAppear {
+                        // Ensure video audio is enabled by default
+                        player.isMuted = isMuted
+                    }
             } else {
                 ProgressView()
                     .tint(.white)
@@ -326,7 +339,6 @@ extension AddMusicToVideoView {
             // Volume Button
             Button {
                 isMuted.toggle()
-                player?.isMuted = isMuted
             } label: {
                 Image(systemName: isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
                     .resizable()
@@ -456,13 +468,13 @@ struct MusicWaveView: View {
                 // Background waveform (gray)
                 waveformView
                     .foregroundColor(Color.white.opacity(0.3))
-                    .padding(.top, 4) // Add top padding to move waveform down
-                    .padding(.bottom, 10) // Add bottom padding for time labels
+                    .padding(.top, 4)
+                    .padding(.bottom, 10)
                 
                 // Selected range waveform (blue)
                 waveformView
                     .foregroundColor(Color(hex: "1973E8"))
-                    .padding(.top, 4) // Same padding as background
+                    .padding(.top, 4)
                     .padding(.bottom, 10)
                     .mask(
                         Rectangle()
@@ -475,7 +487,7 @@ struct MusicWaveView: View {
                     position: geometry.size.width * CGFloat(startTime / max(duration, 1)),
                     isLeft: true,
                     isDragging: $isDraggingStart,
-                    totalHeight: 80 // Pass total height for handle positioning
+                    totalHeight: 80
                 )
                 .gesture(
                     DragGesture(coordinateSpace: .local)
@@ -497,7 +509,7 @@ struct MusicWaveView: View {
                     position: geometry.size.width * CGFloat(endTime / max(duration, 1)),
                     isLeft: false,
                     isDragging: $isDraggingEnd,
-                    totalHeight: 80 // Pass total height for handle positioning
+                    totalHeight: 80
                 )
                 .gesture(
                     DragGesture(coordinateSpace: .local)
@@ -514,7 +526,7 @@ struct MusicWaveView: View {
                         }
                 )
                 
-                // Time labels - Positioned at bottom with proper spacing
+                // Time labels
                 VStack {
                     Spacer()
                     HStack {
@@ -530,7 +542,7 @@ struct MusicWaveView: View {
                             .foregroundColor(.white)
                             .offset(x: geometry.size.width * CGFloat(endTime / max(duration, 1)) - 20)
                     }
-                    .padding(.bottom, 0) // Small padding from bottom
+                    .padding(.bottom, 0)
                 }
             }
             .onAppear {
@@ -554,7 +566,7 @@ struct MusicWaveView: View {
     }
     
     private func generateWaveformSamples() {
-        // Generate sample waveform data (in real implementation, this would analyze the audio file)
+        // Generate sample waveform data
         samples = (0..<100).map { _ in
             Float.random(in: 0.3...1.0)
         }
@@ -566,17 +578,15 @@ struct RangeHandle: View {
     let position: CGFloat
     let isLeft: Bool
     @Binding var isDragging: Bool
-    let totalHeight: CGFloat // Total height of the waveform container
+    let totalHeight: CGFloat
     
     var body: some View {
         ZStack {
-            // Handle line - Full height of container
             Rectangle()
                 .fill(Color.white)
                 .frame(width: 3)
-                .frame(height: totalHeight - 30) // Reduced height to leave space for time labels
+                .frame(height: totalHeight - 30)
             
-            // Handle circle - Positioned in the middle
             Circle()
                 .fill(Color.white)
                 .frame(width: 20, height: 20)
@@ -589,9 +599,9 @@ struct RangeHandle: View {
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(Color(hex: "1973E8"))
                 )
-                .offset(y: isLeft ? -15 : 15) // Slight offset for left/right handles
+                .offset(y: isLeft ? -15 : 15)
         }
-        .offset(x: position - 1.5, y: -5) // Slight upward adjustment
+        .offset(x: position - 1.5, y: -5)
         .scaleEffect(isDragging ? 1.2 : 1.0)
         .animation(.spring(), value: isDragging)
     }
@@ -643,6 +653,13 @@ extension AddMusicToVideoView {
                 let item = AVPlayerItem(asset: asset)
                 playerItem = item
                 player = AVPlayer(playerItem: item)
+                
+                // Ensure audio is enabled
+                player?.isMuted = isMuted
+                
+                // Check if video has audio track
+                isVideoAudioAvailable = !asset.tracks(withMediaType: .audio).isEmpty
+                
                 duration = asset.duration.seconds
                 
                 // Add observer for when video ends
@@ -655,9 +672,6 @@ extension AddMusicToVideoView {
                     currentTime = 0
                     player?.seek(to: .zero)
                 }
-                
-                player?.play()
-                isPlaying = true
                 
                 timeObserver = player?.addPeriodicTimeObserver(
                     forInterval: CMTime(seconds: 0.1, preferredTimescale: 600),
@@ -728,26 +742,44 @@ extension AddMusicToVideoView {
         isExporting = true
         
         PHImageManager.default().requestAVAsset(forVideo: videoAsset.asset, options: nil) { avAsset, _, _ in
-            guard let videoAsset = avAsset else { return }
+            guard let videoAsset = avAsset else {
+                DispatchQueue.main.async {
+                    isExporting = false
+                }
+                return
+            }
             
             let composition = AVMutableComposition()
             
             // Get video duration
             let videoDuration = videoAsset.duration
             
-            // Add video track
+            // Add video track (video only, no audio)
             guard let videoTrack = videoAsset.tracks(withMediaType: .video).first,
                   let compositionVideoTrack = composition.addMutableTrack(
                     withMediaType: .video,
-                    preferredTrackID: kCMPersistentTrackID_Invalid) else { return }
+                    preferredTrackID: kCMPersistentTrackID_Invalid) else {
+                DispatchQueue.main.async {
+                    isExporting = false
+                }
+                return
+            }
             
             // Insert video for its full duration
-            try? compositionVideoTrack.insertTimeRange(
-                CMTimeRange(start: .zero, duration: videoDuration),
-                of: videoTrack,
-                at: .zero)
+            do {
+                try compositionVideoTrack.insertTimeRange(
+                    CMTimeRange(start: .zero, duration: videoDuration),
+                    of: videoTrack,
+                    at: .zero)
+            } catch {
+                print("Error inserting video track: \(error)")
+                DispatchQueue.main.async {
+                    isExporting = false
+                }
+                return
+            }
             
-            // Add audio track from music (with selected range)
+            // Add ONLY the selected music track (no original video audio)
             let musicAsset = AVAsset(url: music.url)
             if let audioTrack = musicAsset.tracks(withMediaType: .audio).first,
                let compositionAudioTrack = composition.addMutableTrack(
@@ -755,44 +787,44 @@ extension AddMusicToVideoView {
                 preferredTrackID: kCMPersistentTrackID_Invalid) {
                 
                 let musicStartCMTime = CMTime(seconds: musicStartTime, preferredTimescale: 600)
+                let musicEndCMTime = CMTime(seconds: musicEndTime, preferredTimescale: 600)
                 
-                // Calculate music duration to use - either the selected range or video duration, whichever is shorter
-                let selectedMusicDuration = CMTime(seconds: musicEndTime - musicStartTime, preferredTimescale: 600)
+                // Calculate music duration to use
+                let selectedMusicDuration = CMTimeSubtract(musicEndCMTime, musicStartCMTime)
                 
                 // Use the minimum of video duration and selected music duration
                 let durationToUse = CMTimeMinimum(videoDuration, selectedMusicDuration)
                 
                 let musicTimeRange = CMTimeRange(start: musicStartCMTime, duration: durationToUse)
                 
-                try? compositionAudioTrack.insertTimeRange(
-                    musicTimeRange,
-                    of: audioTrack,
-                    at: .zero)
+                do {
+                    try compositionAudioTrack.insertTimeRange(
+                        musicTimeRange,
+                        of: audioTrack,
+                        at: .zero)
+                } catch {
+                    print("Error inserting music track: \(error)")
+                }
             }
             
-            // Also add original video audio if not muted (optional - depends on your requirement)
-            if !isMuted, let audioTrack = videoAsset.tracks(withMediaType: .audio).first,
-               let compositionAudioTrack = composition.addMutableTrack(
-                withMediaType: .audio,
-                preferredTrackID: kCMPersistentTrackID_Invalid) {
-                
-                // Add original video audio at reduced volume (optional)
-                try? compositionAudioTrack.insertTimeRange(
-                    CMTimeRange(start: .zero, duration: videoDuration),
-                    of: audioTrack,
-                    at: .zero)
-                
-                // You can adjust volume here if needed
-                // For volume control, you'd need to use AVMutableAudioMix
-            }
+            // IMPORTANT: Do NOT add the original video audio track
+            // The code below that added video audio has been completely removed
             
             // Export
             let outputURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent(UUID().uuidString + ".mov")
             
+            // Remove any existing file at that URL
+            try? FileManager.default.removeItem(at: outputURL)
+            
             guard let exporter = AVAssetExportSession(
                 asset: composition,
-                presetName: AVAssetExportPresetHighestQuality) else { return }
+                presetName: AVAssetExportPresetHighestQuality) else {
+                DispatchQueue.main.async {
+                    isExporting = false
+                }
+                return
+            }
             
             exporter.outputURL = outputURL
             exporter.outputFileType = .mov
@@ -800,11 +832,16 @@ extension AddMusicToVideoView {
             exporter.exportAsynchronously {
                 DispatchQueue.main.async {
                     isExporting = false
-                    if exporter.status == .completed {
+                    switch exporter.status {
+                    case .completed:
                         exportURL = outputURL
                         navigateToWatch = true
-                    } else if let error = exporter.error {
-                        print("Export error: \(error.localizedDescription)")
+                    case .failed:
+                        print("Export failed: \(exporter.error?.localizedDescription ?? "Unknown error")")
+                    case .cancelled:
+                        print("Export cancelled")
+                    default:
+                        break
                     }
                 }
             }
