@@ -39,6 +39,21 @@ struct AddMusicToVideoView: View {
     @State private var thumbnails: [UIImage] = []
     @State private var thumbnailSize: CGSize = .zero
     
+    // Calculate available height for video preview
+    private var videoPreviewHeight: CGFloat {
+        let screenHeight = UIScreen.main.bounds.height
+        let navigationBarHeight: CGFloat = 100 // Top bar + padding
+        let playControlHeight: CGFloat = 50
+        let timelineHeight: CGFloat = 30
+        let videoFrameHeight: CGFloat = 70
+        let musicRowHeight: CGFloat = 60
+        let bottomSpacing: CGFloat = 40
+        let totalFixedHeight = navigationBarHeight + playControlHeight + timelineHeight +
+                               videoFrameHeight + musicRowHeight + bottomSpacing
+        
+        return screenHeight - totalFixedHeight - 100 // Extra padding
+    }
+    
     var body: some View {
         ZStack {
             // Background Image
@@ -51,12 +66,12 @@ struct AddMusicToVideoView: View {
                 navigationBar
                     .padding(.bottom, 15)
                 
-                // Video Preview with fixed height
+                // Video Preview with dynamic height
                 videoPreview
-                    .frame(height: 300)
+                    .frame(height: videoPreviewHeight)
                     .padding(.horizontal, 24)
                 
-                // Play Controls - 15pt spacing from video
+                // Play Controls
                 playControl
                     .padding(.horizontal, 24)
                     .padding(.top, 15)
@@ -192,23 +207,9 @@ extension AddMusicToVideoView {
                         }
                     }
                 )
-            
-            // Center Play/Pause Button
-            Button {
-                togglePlay()
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(Color.black.opacity(0.6))
-                        .frame(width: 60, height: 60)
-                    
-                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 28))
-                        .foregroundColor(.white)
-                }
-            }
+            // Removed the center play/pause button
         }
-        .frame(height: 300) // Fixed height
+        .frame(height: 300)
         .padding(.horizontal, 24)
     }
 }
@@ -382,32 +383,30 @@ extension AddMusicToVideoView {
 // MARK: - VideoPlayerController
 struct VideoPlayerController: UIViewControllerRepresentable {
     let player: AVPlayer
+    var height: CGFloat = 300
     
     func makeUIViewController(context: Context) -> UIViewController {
         let controller = UIViewController()
         controller.view.backgroundColor = .clear
         
         let playerLayer = AVPlayerLayer(player: player)
-        playerLayer.videoGravity = .resizeAspect // Maintain aspect ratio
-        playerLayer.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width - 48, height: 300)
+        playerLayer.videoGravity = .resizeAspect
+        playerLayer.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width - 48, height: height)
         playerLayer.cornerRadius = 16
         playerLayer.masksToBounds = true
         
         controller.view.layer.addSublayer(playerLayer)
-        
-        // Store playerLayer reference in context
         context.coordinator.playerLayer = playerLayer
         
         return controller
     }
     
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        // Update player layer frame if needed
         context.coordinator.playerLayer?.frame = CGRect(
             x: 0,
             y: 0,
             width: UIScreen.main.bounds.width - 48,
-            height: 300
+            height: height
         )
         context.coordinator.playerLayer?.player = player
     }
@@ -471,6 +470,17 @@ extension AddMusicToVideoView {
                 player = AVPlayer(playerItem: item)
                 duration = asset.duration.seconds
                 
+                // Add observer for when video ends
+                NotificationCenter.default.addObserver(
+                    forName: .AVPlayerItemDidPlayToEndTime,
+                    object: item,
+                    queue: .main
+                ) { _ in
+                    isPlaying = false
+                    currentTime = 0
+                    player?.seek(to: .zero)
+                }
+                
                 player?.play()
                 isPlaying = true
                 
@@ -479,6 +489,8 @@ extension AddMusicToVideoView {
                     queue: .main
                 ) { time in
                     currentTime = time.seconds
+                    // Update isPlaying based on player state
+                    isPlaying = player?.rate != 0
                 }
             }
         }
@@ -498,7 +510,7 @@ extension AddMusicToVideoView {
         } else {
             player?.play()
         }
-        isPlaying.toggle()
+        // Don't toggle isPlaying here - let the observer handle it
     }
     
     func generateThumbnails() {

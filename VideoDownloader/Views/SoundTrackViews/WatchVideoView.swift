@@ -19,6 +19,17 @@ struct WatchVideoView: View {
     @State private var showSaveSuccess = false
     @State private var showPermissionAlert = false
     @State private var isSaving = false
+    @State private var timeObserver: Any?
+    
+    // Calculate dynamic video height
+    private var videoHeight: CGFloat {
+        let screenHeight = UIScreen.main.bounds.height
+        let navigationBarHeight: CGFloat = 100
+        let musicInfoHeight: CGFloat = musicTrack != nil ? 80 : 0
+        let bottomSpacing: CGFloat = 50
+        
+        return screenHeight - navigationBarHeight - musicInfoHeight - bottomSpacing - 150
+    }
     
     var body: some View {
         ZStack {
@@ -70,13 +81,12 @@ struct WatchVideoView: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 60)
                 
-                Spacer()
+                Spacer(minLength: 20)
                 
                 // Video Preview
                 ZStack {
                     if let player = player {
-                        VideoPlayerController(player: player)
-                            .frame(height: 400)
+                        VideoPlayerController(player: player, height: videoHeight)
                             .cornerRadius(24)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 24)
@@ -99,6 +109,7 @@ struct WatchVideoView: View {
                         }
                     }
                 }
+                .frame(height: videoHeight)
                 .padding(.horizontal, 24)
                 
                 // Music Info (if selected)
@@ -124,18 +135,24 @@ struct WatchVideoView: View {
                                 .font(.custom("Urbanist-Bold", size: 16))
                                 .foregroundColor(.white)
                             
-                            Text("Added to video")
-                                .font(.custom("Urbanist-Medium", size: 14))
-                                .foregroundColor(.white.opacity(0.6))
+                            if let artist = music.artist {
+                                Text(artist)
+                                    .font(.custom("Urbanist-Medium", size: 14))
+                                    .foregroundColor(.white.opacity(0.6))
+                            } else {
+                                Text("Added to video")
+                                    .font(.custom("Urbanist-Medium", size: 14))
+                                    .foregroundColor(.white.opacity(0.6))
+                            }
                         }
                         
                         Spacer()
                     }
                     .padding(.horizontal, 24)
-                    .padding(.top, 30)
+                    .padding(.top, 20)
                 }
                 
-                Spacer()
+                Spacer(minLength: 20)
             }
         }
         .navigationBarHidden(true)
@@ -143,8 +160,7 @@ struct WatchVideoView: View {
             setupPlayer()
         }
         .onDisappear {
-            player?.pause()
-            player = nil
+            cleanupPlayer()
         }
         .alert("Video Saved", isPresented: $showSaveSuccess) {
             Button("OK") {
@@ -185,8 +201,39 @@ struct WatchVideoView: View {
     
     private func setupPlayer() {
         player = AVPlayer(url: videoURL)
+        
+        // Ensure audio plays even when device is on silent
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
+        try? AVAudioSession.sharedInstance().setActive(true)
+        
+        // Add observer for when video ends
+        NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: player?.currentItem,
+            queue: .main
+        ) { _ in
+            isPlaying = false
+            player?.seek(to: .zero)
+        }
+        
         player?.play()
         isPlaying = true
+        
+        // Add time observer to track playback state
+        timeObserver = player?.addPeriodicTimeObserver(
+            forInterval: CMTime(seconds: 0.1, preferredTimescale: 600),
+            queue: .main
+        ) { _ in
+            isPlaying = player?.rate != 0
+        }
+    }
+    
+    private func cleanupPlayer() {
+        if let observer = timeObserver {
+            player?.removeTimeObserver(observer)
+        }
+        player?.pause()
+        player = nil
     }
     
     private func togglePlay() {
@@ -195,7 +242,7 @@ struct WatchVideoView: View {
         } else {
             player?.play()
         }
-        isPlaying.toggle()
+        // isPlaying will be updated by the time observer
     }
     
     private func saveVideoToGallery() {
