@@ -44,7 +44,10 @@ struct SoundTrackView: View {
                         .frame(width: 20, height: 20)
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 60)
+                .padding(.top, UIApplication.shared.connectedScenes
+                            .compactMap { $0 as? UIWindowScene }
+                            .first?.windows
+                            .first?.safeAreaInsets.top ?? 0)
                 
                 Spacer()
                 
