@@ -124,7 +124,8 @@ struct CustomTabBar: View {
                         .frame(width: 40, height: 40)
                 }
             }
-            .offset(y: -35)        }
+            .offset(y: -42)
+        }
     }
 }
 struct TabBarCurve: Shape {
