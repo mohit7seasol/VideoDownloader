@@ -19,6 +19,7 @@ struct AddMusicToVideoView: View {
     @State private var isPlaying = false
     @State private var currentTime: TimeInterval = 0
     @State private var navigateToWatchVideo = false
+    @State private var videoDuration: TimeInterval = 0
     
     var body: some View {
         ZStack {
@@ -49,13 +50,12 @@ struct AddMusicToVideoView: View {
                     
                     // Done Button
                     Button {
-                        // Navigate to watch video
                         navigateToWatchVideo = true
                     } label: {
                         Text("Done")
                             .font(.custom("Urbanist-Bold", size: 16))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 20)
                             .padding(.vertical, 8)
                             .background(
                                 LinearGradient(
@@ -67,91 +67,176 @@ struct AddMusicToVideoView: View {
                                     endPoint: .bottom
                                 )
                             )
-                            .cornerRadius(16)
+                            .cornerRadius(20)
                     }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 60)
                 
-                // Video Preview
-                VideoPlayerView(player: $player, isPlaying: $isPlaying, currentTime: $currentTime)
-                    .frame(height: 300)
-                    .padding(.top, 20)
-                
-                // Time Label (01:00/3:20 format)
-                HStack {
-                    Text(formatTime(currentTime))
-                        .font(.custom("Urbanist-Medium", size: 14))
-                        .foregroundColor(.white)
+                // Video Preview Container
+                VStack(spacing: 0) {
+                    // Video Preview
+                    ZStack {
+                        VideoPlayerView(player: $player, isPlaying: $isPlaying, currentTime: $currentTime)
+                            .frame(height: 220)
+                            .cornerRadius(16)
+                        
+                        // Play/Pause Overlay Button
+                        Button {
+                            isPlaying.toggle()
+                            if isPlaying {
+                                player?.play()
+                            } else {
+                                player?.pause()
+                            }
+                        } label: {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.black.opacity(0.5))
+                                    .frame(width: 50, height: 50)
+                                
+                                Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                    }
                     
-                    Text("/")
-                        .font(.custom("Urbanist-Medium", size: 14))
-                        .foregroundColor(.white.opacity(0.6))
+                    // Time Label (01:00/3:20 format) - As shown in uploaded image
+                    HStack {
+                        Text(formatTime(currentTime))
+                            .font(.custom("Urbanist-Medium", size: 14))
+                            .foregroundColor(.white)
+                        
+                        Text("/")
+                            .font(.custom("Urbanist-Medium", size: 14))
+                            .foregroundColor(.white.opacity(0.6))
+                        
+                        Text(formatTime(videoDuration))
+                            .font(.custom("Urbanist-Medium", size: 14))
+                            .foregroundColor(.white)
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal, 4)
+                    .padding(.top, 12)
                     
-                    Text(formatTime(player?.currentItem?.duration.seconds ?? videoAsset.duration))
-                        .font(.custom("Urbanist-Medium", size: 14))
-                        .foregroundColor(.white)
-                    
-                    Spacer()
+                    // Video Timeline Slider
+                    VideoTimelineView(currentTime: $currentTime, duration: videoDuration, player: player)
+                        .padding(.top, 8)
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 10)
-                
-                // Video Timeline Slider
-                VideoTimelineView(currentTime: $currentTime, duration: player?.currentItem?.duration.seconds ?? videoAsset.duration, player: player)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 10)
+                .padding(.top, 20)
                 
                 Spacer()
                 
-                // Bottom Controls
-                HStack(spacing: 40) {
-                    // Music Button
-                    Button {
-                        showMusicLibrary = true
-                    } label: {
-                        VStack(spacing: 8) {
-                            Image(systemName: "music.note")
-                                .font(.system(size: 24))
-                                .foregroundColor(selectedMusic != nil ? Color(hex: "1973E8") : .white)
-                            
-                            Text("Music")
-                                .font(.custom("Urbanist-Medium", size: 12))
-                                .foregroundColor(selectedMusic != nil ? Color(hex: "1973E8") : .white)
-                        }
-                    }
+                // Music Preview Section (Bottom)
+                VStack(spacing: 16) {
+                    Divider()
+                        .background(Color.white.opacity(0.2))
                     
-                    // Play/Pause Button
-                    Button {
-                        isPlaying.toggle()
-                        if isPlaying {
-                            player?.play()
-                        } else {
-                            player?.pause()
-                        }
-                    } label: {
-                        Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: 50))
+                    // Music Preview Header
+                    HStack {
+                        Text("Music Preview")
+                            .font(.custom("Urbanist-Bold", size: 16))
                             .foregroundColor(.white)
-                    }
-                    
-                    // Save Button
-                    Button {
-                        // Save video functionality
-                        saveVideo()
-                    } label: {
-                        VStack(spacing: 8) {
-                            Image(systemName: "square.and.arrow.down")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                            
-                            Text("Save")
-                                .font(.custom("Urbanist-Medium", size: 12))
-                                .foregroundColor(.white)
+                        
+                        Spacer()
+                        
+                        Button {
+                            showMusicLibrary = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(selectedMusic != nil ? "Change" : "Add Music")
+                                    .font(.custom("Urbanist-Medium", size: 14))
+                                    .foregroundColor(Color(hex: "1973E8"))
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(Color(hex: "1973E8"))
+                            }
                         }
+                    }
+                    .padding(.horizontal, 24)
+                    
+                    if let music = selectedMusic {
+                        // Selected Music Preview
+                        HStack(spacing: 12) {
+                            // Music Icon with Gradient Background
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(hex: "1973E8"),
+                                            Color(hex: "0E4082")
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 50, height: 50)
+                                .overlay {
+                                    Image(systemName: "music.note")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.white)
+                                }
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(music.name)
+                                    .font(.custom("Urbanist-Bold", size: 16))
+                                    .foregroundColor(.white)
+                                
+                                Text(music.artist)
+                                    .font(.custom("Urbanist-Medium", size: 14))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                            
+                            Spacer()
+                            
+                            // Music Duration
+                            Text(formatTime(music.duration))
+                                .font(.custom("Urbanist-Medium", size: 14))
+                                .foregroundColor(.white.opacity(0.7))
+                            
+                            // Play Music Button
+                            Button {
+                                // Play music preview
+                            } label: {
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 32))
+                                    .foregroundColor(Color(hex: "1973E8"))
+                            }
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 30)
+                    } else {
+                        // No Music Selected Placeholder
+                        HStack {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.white.opacity(0.1))
+                                .frame(width: 50, height: 50)
+                                .overlay {
+                                    Image(systemName: "music.note")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.white.opacity(0.5))
+                                }
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("No Music Selected")
+                                    .font(.custom("Urbanist-Bold", size: 16))
+                                    .foregroundColor(.white.opacity(0.5))
+                                
+                                Text("Tap Add Music to choose")
+                                    .font(.custom("Urbanist-Medium", size: 14))
+                                    .foregroundColor(.white.opacity(0.3))
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 30)
                     }
                 }
-                .padding(.bottom, 50)
             }
         }
         .navigationBarHidden(true)
@@ -162,7 +247,9 @@ struct AddMusicToVideoView: View {
             MusicLibraryView(selectedMusic: $selectedMusic)
         }
         .navigationDestination(isPresented: $navigateToWatchVideo) {
-            WatchVideoView(videoAsset: videoAsset, musicTrack: selectedMusic)
+            if let video = videoAsset as? VideoAsset {
+                WatchVideoView(videoAsset: video, musicTrack: selectedMusic)
+            }
         }
     }
     
@@ -174,6 +261,7 @@ struct AddMusicToVideoView: View {
             DispatchQueue.main.async {
                 if let playerItem = playerItem {
                     self.player = AVPlayer(playerItem: playerItem)
+                    self.videoDuration = playerItem.asset.duration.seconds
                     self.player?.play()
                     self.isPlaying = true
                     
@@ -191,18 +279,6 @@ struct AddMusicToVideoView: View {
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
-    
-    private func saveVideo() {
-        // Request permission and save video
-        PHPhotoLibrary.requestAuthorization { status in
-            DispatchQueue.main.async {
-                if status == .authorized || status == .limited {
-                    // Save video logic here
-                    print("Video saved successfully")
-                }
-            }
-        }
-    }
 }
 // MARK: - VideoPlayerView
 struct VideoPlayerView: UIViewRepresentable {
@@ -212,17 +288,19 @@ struct VideoPlayerView: UIViewRepresentable {
     
     func makeUIView(context: Context) -> UIView {
         let view = UIView(frame: .zero)
-        let playerLayer = AVPlayerLayer()
-        playerLayer.videoGravity = .resizeAspectFill
-        view.layer.addSublayer(playerLayer)
+        view.backgroundColor = .black
         return view
     }
     
     func updateUIView(_ uiView: UIView, context: Context) {
-        if let playerLayer = uiView.layer.sublayers?.first as? AVPlayerLayer {
-            playerLayer.player = player
-            playerLayer.frame = uiView.bounds
-        }
+        // Remove existing player layer
+        uiView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+        
+        // Add new player layer
+        let playerLayer = AVPlayerLayer(player: player)
+        playerLayer.videoGravity = .resizeAspectFill
+        playerLayer.frame = uiView.bounds
+        uiView.layer.addSublayer(playerLayer)
     }
 }
 
@@ -234,50 +312,56 @@ struct VideoTimelineView: View {
     let player: AVPlayer?
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                // Background timeline
-                Rectangle()
-                    .fill(Color.white.opacity(0.3))
-                    .frame(height: 4)
-                    .cornerRadius(2)
-                
-                // Progress timeline
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(hex: "1973E8"),
-                                Color(hex: "0E4082")
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(width: geometry.size.width * CGFloat(currentTime / duration), height: 4)
-                    .cornerRadius(2)
-                
-                // Thumb
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 12, height: 12)
-                    .offset(x: geometry.size.width * CGFloat(currentTime / duration) - 6)
-                    .shadow(radius: 2)
+        VStack(spacing: 8) {
+            // Timeline Slider
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    // Background track
+                    Rectangle()
+                        .fill(Color.white.opacity(0.2))
+                        .frame(height: 4)
+                        .cornerRadius(2)
+                    
+                    // Progress track
+                    Rectangle()
+                        .fill(Color(hex: "1973E8"))
+                        .frame(width: geometry.size.width * CGFloat(currentTime / max(duration, 1)), height: 4)
+                        .cornerRadius(2)
+                    
+                    // Thumb
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 12, height: 12)
+                        .offset(x: geometry.size.width * CGFloat(currentTime / max(duration, 1)) - 6)
+                        .shadow(radius: 2)
+                }
+                .frame(height: 20)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            let percentage = max(0, min(1, value.location.x / geometry.size.width))
+                            currentTime = percentage * duration
+                            player?.seek(to: CMTime(seconds: currentTime, preferredTimescale: 600))
+                        }
+                )
             }
             .frame(height: 20)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        let percentage = max(0, min(1, value.location.x / geometry.size.width))
-                        currentTime = percentage * duration
-                        
-                        // Seek video
-                        player?.seek(to: CMTime(seconds: currentTime, preferredTimescale: 600))
+            
+            // Timeline markers (optional - for visual reference)
+            HStack {
+                ForEach(0..<5) { index in
+                    Spacer()
+                    if index < 4 {
+                        Circle()
+                            .fill(Color.white.opacity(0.3))
+                            .frame(width: 4, height: 4)
                     }
-            )
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 2)
         }
-        .frame(height: 20)
     }
 }
 
@@ -295,10 +379,11 @@ struct MusicLibraryView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var selectedMusic: MusicTrack?
     @State private var musicTracks: [MusicTrack] = []
+    @State private var searchText = ""
     
     var body: some View {
         ZStack {
-            Color.black.opacity(0.95)
+            Color.black.opacity(0.98)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -307,6 +392,7 @@ struct MusicLibraryView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .font(.custom("Urbanist-Medium", size: 16))
                     .foregroundColor(.white)
                     
                     Spacer()
@@ -320,23 +406,54 @@ struct MusicLibraryView: View {
                     Button("Done") {
                         dismiss()
                     }
-                    .foregroundColor(Color(hex: "1973E8"))
+                    .font(.custom("Urbanist-Bold", size: 16))
+                    .foregroundColor(selectedMusic != nil ? Color(hex: "1973E8") : .gray)
+                    .disabled(selectedMusic == nil)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 60)
                 
+                // Search Bar
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                        .font(.system(size: 16))
+                    
+                    TextField("Search music", text: $searchText)
+                        .font(.custom("Urbanist-Medium", size: 16))
+                        .foregroundColor(.white)
+                        .accentColor(Color(hex: "1973E8"))
+                    
+                    if !searchText.isEmpty {
+                        Button {
+                            searchText = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                                .font(.system(size: 16))
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color.white.opacity(0.1))
+                .cornerRadius(12)
+                .padding(.horizontal, 24)
+                .padding(.top, 20)
+                
                 // Music List
                 ScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(musicTracks) { track in
+                    LazyVStack(spacing: 12) {
+                        ForEach(filteredTracks) { track in
                             MusicTrackRow(track: track, isSelected: selectedMusic?.id == track.id)
                                 .onTapGesture {
                                     selectedMusic = track
-                                    dismiss()
                                 }
+                                .padding(.horizontal, 24)
                         }
                     }
-                    .padding(24)
+                    .padding(.top, 16)
+                    .padding(.bottom, 30)
                 }
             }
         }
@@ -345,16 +462,30 @@ struct MusicLibraryView: View {
         }
     }
     
+    private var filteredTracks: [MusicTrack] {
+        if searchText.isEmpty {
+            return musicTracks
+        } else {
+            return musicTracks.filter {
+                $0.name.localizedCaseInsensitiveContains(searchText) ||
+                $0.artist.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
+    
     private func loadMusicTracks() {
         // Load music from bundle or local storage
-        // This is sample data
         musicTracks = [
             MusicTrack(name: "Summer Vibes", artist: "Artist 1", duration: 180, url: URL(string: "file://")!),
             MusicTrack(name: "Chill Beats", artist: "Artist 2", duration: 210, url: URL(string: "file://")!),
-            MusicTrack(name: "Upbeat Energy", artist: "Artist 3", duration: 195, url: URL(string: "file://")!)
+            MusicTrack(name: "Upbeat Energy", artist: "Artist 3", duration: 195, url: URL(string: "file://")!),
+            MusicTrack(name: "Midnight Jazz", artist: "Artist 4", duration: 240, url: URL(string: "file://")!),
+            MusicTrack(name: "Electronic Dreams", artist: "Artist 5", duration: 185, url: URL(string: "file://")!),
+            MusicTrack(name: "Acoustic Soul", artist: "Artist 6", duration: 200, url: URL(string: "file://")!)
         ]
     }
 }
+
 
 
 // MARK: - MusicTrackRow
@@ -363,33 +494,34 @@ struct MusicTrackRow: View {
     let isSelected: Bool
     
     var body: some View {
-        HStack {
-            // Thumbnail
-            RoundedRectangle(cornerRadius: 8)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(hex: "1973E8"),
-                            Color(hex: "0E4082")
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+        HStack(spacing: 16) {
+            // Track Number or Play Button
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(
+                        LinearGradient(
+                            colors: isSelected ?
+                                [Color(hex: "1973E8"), Color(hex: "0E4082")] :
+                                [Color.white.opacity(0.1), Color.white.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                )
-                .frame(width: 50, height: 50)
-                .overlay {
-                    Image(systemName: "music.note")
-                        .foregroundColor(.white)
-                }
+                    .frame(width: 50, height: 50)
+                
+                Image(systemName: isSelected ? "checkmark" : "music.note")
+                    .font(.system(size: 18))
+                    .foregroundColor(isSelected ? .white : .white.opacity(0.5))
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(track.name)
-                    .font(.custom("Poppins-Black", size: 16))
+                    .font(.custom("Urbanist-Bold", size: 16))
                     .foregroundColor(.white)
                 
                 Text(track.artist)
                     .font(.custom("Urbanist-Medium", size: 14))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.white.opacity(0.5))
             }
             
             Spacer()
@@ -397,18 +529,18 @@ struct MusicTrackRow: View {
             // Duration
             Text(formatDuration(track.duration))
                 .font(.custom("Urbanist-Medium", size: 14))
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.white.opacity(0.5))
             
-            // Selection indicator
-            if isSelected {
-                Image(systemName: "checkmark.circle.fill")
+            // Preview Button
+            Button {
+                // Preview music
+            } label: {
+                Image(systemName: "play.circle")
+                    .font(.system(size: 24))
                     .foregroundColor(Color(hex: "1973E8"))
-                    .font(.system(size: 20))
             }
         }
-        .padding()
-        .background(Color.white.opacity(0.1))
-        .cornerRadius(12)
+        .padding(.vertical, 8)
     }
     
     private func formatDuration(_ duration: TimeInterval) -> String {
@@ -417,6 +549,7 @@ struct MusicTrackRow: View {
         return String(format: "%02d:%02d", minutes, seconds)
     }
 }
+
 
 // MARK: - WatchVideoView
 struct WatchVideoView: View {
