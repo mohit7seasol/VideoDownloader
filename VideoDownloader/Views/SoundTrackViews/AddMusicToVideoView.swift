@@ -39,19 +39,24 @@ struct AddMusicToVideoView: View {
     @State private var thumbnails: [UIImage] = []
     @State private var thumbnailSize: CGSize = .zero
     
-    // Calculate available height for video preview
+    // Fixed heights for other components to calculate video preview height
+    private let navigationBarHeight: CGFloat = 100 // Top bar + padding
+    private let timelineHeight: CGFloat = 40 // Slider height with padding
+    private let playControlHeight: CGFloat = 50 // Play controls height
+    private let videoFrameHeight: CGFloat = 80 // Video frame row height with padding
+    private let musicRowHeight: CGFloat = 70 // Music row height with padding
+    private let bottomPadding: CGFloat = 20 // Bottom safe area padding
+    
+    // Calculate video preview height based on screen size
     private var videoPreviewHeight: CGFloat {
         let screenHeight = UIScreen.main.bounds.height
-        let navigationBarHeight: CGFloat = 100 // Top bar + padding
-        let playControlHeight: CGFloat = 50
-        let timelineHeight: CGFloat = 30
-        let videoFrameHeight: CGFloat = 70
-        let musicRowHeight: CGFloat = 60
-        let bottomSpacing: CGFloat = 40
-        let totalFixedHeight = navigationBarHeight + playControlHeight + timelineHeight +
-                               videoFrameHeight + musicRowHeight + bottomSpacing
+        let totalFixedHeight = navigationBarHeight + timelineHeight +
+                               playControlHeight + videoFrameHeight +
+                               musicRowHeight + bottomPadding
         
-        return screenHeight - totalFixedHeight - 100 // Extra padding
+        // Ensure minimum height of 200 and maximum of 400
+        let calculatedHeight = screenHeight - totalFixedHeight - 50 // Extra padding
+        return min(max(calculatedHeight, 200), 400)
     }
     
     var body: some View {
@@ -63,36 +68,37 @@ struct AddMusicToVideoView: View {
                 .scaledToFill()
             
             VStack(spacing: 0) {
+                // Navigation Bar - Fixed at top
                 navigationBar
-                    .padding(.bottom, 15)
+                    .padding(.bottom, 10)
                 
-                // Video Preview with dynamic height
+                // Video Preview with fixed calculated height
                 videoPreview
                     .frame(height: videoPreviewHeight)
                     .padding(.horizontal, 24)
+                    .padding(.bottom, 10)
                 
                 // Timeline Slider
                 timelineSlider
                     .padding(.horizontal, 24)
-                    .padding(.top, 8)
+                    .padding(.bottom, 10)
                 
                 // Play Controls
                 playControl
                     .padding(.horizontal, 24)
-                    .padding(.top, 15)
+                    .padding(.bottom, 15)
                 
                 // Video Frame Row
                 videoFrameRow
                     .padding(.horizontal, 24)
-                    .padding(.top, 16)
+                    .padding(.bottom, 15)
                 
-                // Music Row
+                // Music Row - Fixed at bottom
                 musicRow
                     .padding(.horizontal, 24)
-                    .padding(.top, 20)
-                
-                Spacer(minLength: 20)
+                    .padding(.bottom, 10)
             }
+            .frame(maxHeight: .infinity, alignment: .top)
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showMusicLibrary) {
@@ -181,43 +187,49 @@ extension AddMusicToVideoView {
         }
         .padding(.horizontal, 24)
         .padding(.top, 60)
+        .frame(height: 100)
     }
 }
 
 extension AddMusicToVideoView {
     var videoPreview: some View {
         ZStack {
-            // Fixed height container
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.black)
-                .frame(height: 300)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
                         .stroke(Color.white.opacity(0.2), lineWidth: 1)
                 )
-                .overlay(
-                    Group {
-                        if let player = player {
-                            VideoPlayerController(player: player)
-                                .frame(height: 300)
-                                .cornerRadius(16)
-                        } else {
-                            ProgressView()
-                                .tint(.white)
-                        }
-                    }
-                )
-            // Removed the center play/pause button
+            
+            if let player = player {
+                VideoPlayerController(player: player)
+                    .cornerRadius(16)
+            } else {
+                ProgressView()
+                    .tint(.white)
+            }
+            
+            // Center Play Button (only when paused)
+            if !isPlaying {
+                Button {
+                    togglePlay()
+                } label: {
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 40))
+                        .foregroundColor(.white)
+                        .padding(20)
+                        .background(Color.black.opacity(0.5))
+                        .clipShape(Circle())
+                }
+            }
         }
-        .frame(height: 300)
-        .padding(.horizontal, 24)
     }
 }
 
 extension AddMusicToVideoView {
     var playControl: some View {
         HStack {
-            // Play/Pause Button (22x22)
+            // Play/Pause Button
             Button {
                 togglePlay()
             } label: {
@@ -229,14 +241,14 @@ extension AddMusicToVideoView {
             
             Spacer()
             
-            // Duration Label (00:05/00:05 format as in your screenshot)
+            // Duration Label
             Text("\(formatTime(currentTime))/\(formatTime(duration))")
                 .font(.custom("Urbanist-Medium", size: 14))
                 .foregroundColor(.white)
             
             Spacer()
             
-            // Full Screen Button (18x18)
+            // Full Screen Button
             Button {
                 // Full screen action
             } label: {
@@ -246,14 +258,11 @@ extension AddMusicToVideoView {
                     .foregroundColor(.white)
             }
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 12)
     }
 }
 
 extension AddMusicToVideoView {
     var timelineSlider: some View {
-        // Custom Timeline Slider
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
                 // Background Track
@@ -292,14 +301,14 @@ extension AddMusicToVideoView {
                     }
             )
         }
-        .frame(height: 20)
+        .frame(height: 30)
     }
 }
 
 extension AddMusicToVideoView {
     var videoFrameRow: some View {
         HStack(spacing: 12) {
-            // Volume Button (22x22)
+            // Volume Button
             Button {
                 isMuted.toggle()
                 player?.isMuted = isMuted
@@ -309,12 +318,13 @@ extension AddMusicToVideoView {
                     .frame(width: 22, height: 22)
                     .foregroundColor(.white)
             }
+            .frame(width: 30)
             
-            // Video Frame Thumbnails Row (Height 55)
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 4) {
-                    ForEach(0..<thumbnails.count, id: \.self) { index in
-                        if index < thumbnails.count {
+            // Video Frame Thumbnails Row
+            if !thumbnails.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 4) {
+                        ForEach(0..<thumbnails.count, id: \.self) { index in
                             Image(uiImage: thumbnails[index])
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -328,15 +338,20 @@ extension AddMusicToVideoView {
                         }
                     }
                 }
+            } else {
+                ProgressView()
+                    .tint(.white)
+                    .frame(maxWidth: .infinity)
             }
         }
+        .frame(height: 60)
     }
 }
 
 extension AddMusicToVideoView {
     var musicRow: some View {
         HStack(spacing: 12) {
-            // Music Button (22x22)
+            // Music Button
             Button {
                 showMusicLibrary = true
             } label: {
@@ -345,45 +360,50 @@ extension AddMusicToVideoView {
                     .frame(width: 22, height: 22)
                     .foregroundColor(.white)
             }
+            .frame(width: 30)
             
-            // Music Wave View (shows only when music selected)
+            // Music Content
             if showWaveform, let music = selectedMusic {
                 HStack {
                     WaveformView(audioURL: music.url)
-                        .frame(height: 36)
+                        .frame(height: 40)
                     
                     Text(music.name)
                         .font(.custom("Urbanist-Medium", size: 14))
                         .foregroundColor(.white.opacity(0.8))
                         .lineLimit(1)
                 }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.white.opacity(0.1))
+                .cornerRadius(8)
                 .onTapGesture {
                     showMusicLibrary = true
                 }
             } else {
-                // Placeholder when no music selected - Make it tappable
+                // Placeholder when no music selected
                 HStack {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.white.opacity(0.1))
-                        .frame(height: 36)
-                        .overlay(
-                            Text("Tap to add music")
-                                .font(.custom("Urbanist-Medium", size: 14))
-                                .foregroundColor(.white.opacity(0.5))
-                        )
+                    Spacer()
+                    Text("Tap to add music")
+                        .font(.custom("Urbanist-Medium", size: 14))
+                        .foregroundColor(.white.opacity(0.5))
+                    Spacer()
                 }
+                .frame(height: 40)
+                .background(Color.white.opacity(0.1))
+                .cornerRadius(8)
                 .onTapGesture {
                     showMusicLibrary = true
                 }
             }
         }
+        .frame(height: 60)
     }
 }
 
 // MARK: - VideoPlayerController
 struct VideoPlayerController: UIViewControllerRepresentable {
     let player: AVPlayer
-    var height: CGFloat = 300
     
     func makeUIViewController(context: Context) -> UIViewController {
         let controller = UIViewController()
@@ -391,9 +411,9 @@ struct VideoPlayerController: UIViewControllerRepresentable {
         
         let playerLayer = AVPlayerLayer(player: player)
         playerLayer.videoGravity = .resizeAspect
-        playerLayer.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width - 48, height: height)
         playerLayer.cornerRadius = 16
         playerLayer.masksToBounds = true
+        playerLayer.frame = controller.view.bounds
         
         controller.view.layer.addSublayer(playerLayer)
         context.coordinator.playerLayer = playerLayer
@@ -402,13 +422,10 @@ struct VideoPlayerController: UIViewControllerRepresentable {
     }
     
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        context.coordinator.playerLayer?.frame = CGRect(
-            x: 0,
-            y: 0,
-            width: UIScreen.main.bounds.width - 48,
-            height: height
-        )
-        context.coordinator.playerLayer?.player = player
+        DispatchQueue.main.async {
+            context.coordinator.playerLayer?.frame = uiViewController.view.bounds
+            context.coordinator.playerLayer?.player = player
+        }
     }
     
     func makeCoordinator() -> Coordinator {
@@ -452,12 +469,12 @@ struct WaveformView: View {
     
     private func generateWaveformSamples() {
         // Generate sample waveform data
-        // In production, you'd extract actual audio samples
         samples = (0..<100).map { _ in
             Float.random(in: 0.3...1.0)
         }
     }
 }
+
 // MARK: - Helper Functions
 extension AddMusicToVideoView {
     func setupPlayer() {
@@ -489,7 +506,6 @@ extension AddMusicToVideoView {
                     queue: .main
                 ) { time in
                     currentTime = time.seconds
-                    // Update isPlaying based on player state
                     isPlaying = player?.rate != 0
                 }
             }
@@ -510,7 +526,6 @@ extension AddMusicToVideoView {
         } else {
             player?.play()
         }
-        // Don't toggle isPlaying here - let the observer handle it
     }
     
     func generateThumbnails() {
@@ -522,7 +537,7 @@ extension AddMusicToVideoView {
             generator.maximumSize = CGSize(width: 55 * 16/9 * 2, height: 55 * 2)
             
             let duration = asset.duration.seconds
-            let interval = duration / 10 // Generate 10 thumbnails
+            let interval = duration / 10
             
             var times: [NSValue] = []
             for i in 0..<10 {

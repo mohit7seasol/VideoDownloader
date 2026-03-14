@@ -86,7 +86,7 @@ struct WatchVideoView: View {
                 // Video Preview
                 ZStack {
                     if let player = player {
-                        VideoPlayerController(player: player, height: videoHeight)
+                        VideoPlayerController(player: player)
                             .cornerRadius(24)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 24)
