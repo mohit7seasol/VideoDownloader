@@ -71,15 +71,15 @@ struct AddMusicToVideoView: View {
                     .frame(height: videoPreviewHeight)
                     .padding(.horizontal, 24)
                 
-                // Play Controls
-                playControl
-                    .padding(.horizontal, 24)
-                    .padding(.top, 15)
-                
                 // Timeline Slider
                 timelineSlider
                     .padding(.horizontal, 24)
                     .padding(.top, 8)
+                
+                // Play Controls
+                playControl
+                    .padding(.horizontal, 24)
+                    .padding(.top, 15)
                 
                 // Video Frame Row
                 videoFrameRow
