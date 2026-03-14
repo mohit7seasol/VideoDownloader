@@ -338,21 +338,23 @@ extension AddMusicToVideoView {
             // Video Frame Thumbnails Row
             if !thumbnails.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 0) {
                         ForEach(0..<thumbnails.count, id: \.self) { index in
                             Image(uiImage: thumbnails[index])
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: 55 * 16/9, height: 55)
                                 .clipped()
-                                .cornerRadius(6)
+                                .cornerRadius(0)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: 0)
+                                        .stroke(Color.white.opacity(0.3), lineWidth: 0)
                                 )
                         }
                     }
                 }
+                .frame(maxWidth: .infinity)
+                .cornerRadius(8)
             } else {
                 ProgressView()
                     .tint(.white)
