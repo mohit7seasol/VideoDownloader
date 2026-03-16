@@ -83,7 +83,11 @@ struct CustomTabBar: View {
                         
                         Text("Home")
                             .font(.caption2)
-                            .foregroundColor(.white)
+                            .foregroundColor(
+                                selectedIndex == 0
+                                ? Color(red: 25/255, green: 115/255, blue: 232/255)
+                                : .white
+                            )
                     }
                 }
                 
@@ -102,7 +106,11 @@ struct CustomTabBar: View {
                         
                         Text("Save")
                             .font(.caption2)
-                            .foregroundColor(.white)
+                            .foregroundColor(
+                                selectedIndex == 2
+                                ? Color(red: 25/255, green: 115/255, blue: 232/255)
+                                : .white
+                            )
                     }
                 }
             }
