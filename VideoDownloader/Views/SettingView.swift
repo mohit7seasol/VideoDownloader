@@ -182,29 +182,27 @@ struct BottomSettingCard: View {
     ]
     
     var body: some View {
-        
         VStack(spacing: 0) {
-            
             ForEach(Array(settingsItems.enumerated()), id: \.offset) { index, item in
-                
                 VStack(spacing: 0) {
-                    
                     SettingRow(icon: item.icon, title: item.title)
                         .onTapGesture {
                             handleTap(for: item.title)
                         }
                     
+                    // Add line separator only if not the last item
                     if index < settingsItems.count - 1 {
-                        Image("line_seperator")
+                        Image("line_ic")
                             .resizable()
                             .frame(height: 1)
-                            .padding(.leading, 57) // start after icon
-                            .padding(.trailing, 15)
+                            .padding(.leading, 0) // Start after icon (40px icon + 14px spacing + 3px extra)
+                            .padding(.trailing, 0)
                     }
                 }
             }
         }
         .padding(.horizontal, 15)
+        .background(Color.clear)
     }
     
     func handleTap(for title: String) {
