@@ -281,7 +281,7 @@ extension AddMusicToVideoView {
             Button {
                 // Full screen action
             } label: {
-                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                Image("video_full_screen_ic")
                     .resizable()
                     .frame(width: 18, height: 18)
                     .foregroundColor(.white)

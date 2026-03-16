@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "video_full_screen_ic.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
