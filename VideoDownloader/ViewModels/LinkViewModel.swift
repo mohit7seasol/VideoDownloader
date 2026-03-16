@@ -246,12 +246,26 @@ class LinkViewModel: ObservableObject {
             let cgImage = try generator.copyCGImage(at: .zero, actualTime: nil)
             let thumbnail = UIImage(cgImage: cgImage)
             
-            // Save thumbnail to temporary directory
-            let tempDir = FileManager.default.temporaryDirectory
-            let thumbnailPath = tempDir.appendingPathComponent("thumbnail_\(UUID().uuidString).jpg")
+            // Save thumbnail to Application Support directory (permanent storage)
+            guard let appSupportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+                print("Could not access app support directory")
+                return nil
+            }
+            
+            // Create directory if needed
+            try? FileManager.default.createDirectory(at: appSupportDir, withIntermediateDirectories: true)
+            
+            var thumbnailPath = appSupportDir.appendingPathComponent("thumb_\(UUID().uuidString).jpg")
             
             if let data = thumbnail.jpegData(compressionQuality: 0.7) {
                 try data.write(to: thumbnailPath)
+                
+                // Exclude from iCloud backup
+                var resourceValues = URLResourceValues()
+                resourceValues.isExcludedFromBackup = true
+                try thumbnailPath.setResourceValues(resourceValues)
+                
+                print("Thumbnail saved permanently at: \(thumbnailPath.path)")
                 return thumbnailPath
             }
         } catch {
@@ -492,7 +506,7 @@ class LinkViewModel: ObservableObject {
         
         try? FileManager.default.createDirectory(at: appSupportDir, withIntermediateDirectories: true)
         
-        let fileName = "downloaded_\(Int(Date().timeIntervalSince1970)).mp4"
+        let fileName = "video_\(Int(Date().timeIntervalSince1970)).mp4"
         var localURL = appSupportDir.appendingPathComponent(fileName)
         
         do {
@@ -505,10 +519,10 @@ class LinkViewModel: ObservableObject {
             
             print("✅ Video saved at: \(localURL.path)")
             
-            // Generate thumbnail
+            // Generate thumbnail (now saves to permanent storage)
             let thumbnailURL = generateThumbnail(from: localURL)
             
-            // Save to history using SavedVideo model
+            // Save to history
             self.saveToHistory(videoURL: localURL, thumbnailURL: thumbnailURL, sourceURL: sourceURL)
             
         } catch {

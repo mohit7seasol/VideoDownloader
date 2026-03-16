@@ -323,16 +323,37 @@ struct WatchVideoView: View {
     }
     
     private func saveToHistory() {
-        // Save thumbnail to temporary directory
+        // Save thumbnail to Application Support directory (permanent storage)
         var thumbnailURL: URL? = nil
         if let thumbnail = thumbnailImage {
-            let tempDir = FileManager.default.temporaryDirectory
-            let thumbnailPath = tempDir.appendingPathComponent("thumbnail_\(UUID().uuidString).jpg")
+            guard let appSupportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+                print("Could not access app support directory")
+                return
+            }
+            
+            // Create directory if needed
+            try? FileManager.default.createDirectory(at: appSupportDir, withIntermediateDirectories: true)
+            
+            var thumbnailPath = appSupportDir.appendingPathComponent("thumb_\(UUID().uuidString).jpg")
+            
             if let data = thumbnail.jpegData(compressionQuality: 0.7) {
                 do {
                     try data.write(to: thumbnailPath)
+                    
+                    // Exclude from iCloud backup
+                    var resourceValues = URLResourceValues()
+                    resourceValues.isExcludedFromBackup = true
+                    try thumbnailPath.setResourceValues(resourceValues)
+                    
                     thumbnailURL = thumbnailPath
-                    print("Thumbnail saved at: \(thumbnailPath)")
+                    print("Thumbnail saved permanently at: \(thumbnailPath.path)")
+                    
+                    // Verify file was written
+                    if FileManager.default.fileExists(atPath: thumbnailPath.path) {
+                        print("✅ Thumbnail file verified at path")
+                    } else {
+                        print("❌ Thumbnail file not found after writing!")
+                    }
                 } catch {
                     print("Error saving thumbnail: \(error)")
                 }

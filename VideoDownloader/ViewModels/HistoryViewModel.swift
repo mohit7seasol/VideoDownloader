@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import AVFoundation
 
 class HistoryViewModel: ObservableObject {
     @Published var savedVideos: [SavedVideo] = []
@@ -23,16 +24,32 @@ class HistoryViewModel: ObservableObject {
     
     func loadVideos() {
         isLoading = true
-        // Simulate loading delay (remove in production)
+        
+        // Simulate loading delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.savedVideos = SavedVideosManager.shared.getSavedVideos()
-            self?.isLoading = false
+            guard let self = self else { return }
+            
+            let videos = SavedVideosManager.shared.getSavedVideos()
+            
+            // Debug: Print all video paths and check if thumbnails exist
+            print("📱 Loading \(videos.count) videos from storage")
+            for video in videos {
+                let (videoExists, thumbnailExists) = video.validateFiles()
+                print("  Video: \(video.id)")
+                print("    - Video path: \(video.videoURL.path)")
+                print("    - Video exists: \(videoExists)")
+                print("    - Thumbnail path: \(video.thumbnailURL?.path ?? "none")")
+                print("    - Thumbnail exists: \(thumbnailExists)")
+            }
+            
+            self.savedVideos = videos
+            self.isLoading = false
         }
     }
     
     func deleteVideo(_ video: SavedVideo) {
         SavedVideosManager.shared.deleteVideo(video)
-        loadVideos() // Reload after deletion
+        loadVideos()
     }
     
     func confirmDelete(_ video: SavedVideo) {
@@ -46,5 +63,18 @@ class HistoryViewModel: ObservableObject {
         }
         videoToDelete = nil
         showDeleteAlert = false
+    }
+    
+    // Remove the regenerateAllThumbnails method as it's causing issues
+    // If you need thumbnail regeneration, handle it in the SavedVideoCardView instead
+}
+
+// Extension to help with debugging
+extension SavedVideo {
+    func validateFiles() -> (videoExists: Bool, thumbnailExists: Bool) {
+        let fileManager = FileManager.default
+        let videoExists = fileManager.fileExists(atPath: videoURL.path)
+        let thumbnailExists = thumbnailURL.map { fileManager.fileExists(atPath: $0.path) } ?? false
+        return (videoExists, thumbnailExists)
     }
 }
