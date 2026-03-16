@@ -29,7 +29,6 @@ struct SavedVideoView: View {
                 .ignoresSafeArea()
                 .scaledToFill()
                 .onTapGesture {
-                    // ✅ Dismiss keyboard when tapping background
                     UIApplication.shared.endEditing(true)
                 }
             
@@ -73,7 +72,6 @@ struct SavedVideoView: View {
                                 }
                                 .onTapGesture {
                                     // Navigate to watch video
-                                    // You can add navigation here if needed
                                 }
                             }
                         }
@@ -115,42 +113,49 @@ struct SavedVideoCardView: View {
     let onDelete: () -> Void
     
     @State private var thumbnailImage: UIImage?
+    @State private var isLoading = false
     
     private var isIPad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
     
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            // Thumbnail (full card)
+        ZStack {
+            // Thumbnail Image
             Group {
-                if let thumbnail = thumbnailImage {
-                    Image(uiImage: thumbnail)
+                if let image = thumbnailImage {
+                    Image(uiImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipped()
                 } else {
-                    // Show placeholder while loading or if no thumbnail
-                    Color.gray.opacity(0.3)
-                        .overlay(
-                            ProgressView()
-                                .tint(.white)
-                        )
+                    Image("no_thumb")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipped()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             
-            // Delete button (bottom right)
-            Button(action: onDelete) {
-                Image("delete_ic")
-                    .resizable()
-                    .frame(width: isIPad ? 32 : 22, height: isIPad ? 32 : 22)
-                    .foregroundColor(.white)
-                    .padding(8)
-                    .background(Color.black.opacity(0.6))
-                    .clipShape(Circle())
+            // Delete Button (bottom right)
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button(action: onDelete) {
+                        Image("delete_ic")
+                            .resizable()
+                            .frame(width: isIPad ? 32 : 22, height: isIPad ? 32 : 22)
+                            .foregroundColor(.white)
+                            .padding(8)
+                            .background(Color.black.opacity(0.6))
+                            .clipShape(Circle())
+                    }
+                    .padding(12)
+                }
             }
-            .padding(12)
         }
         .frame(height: 180)
         .cornerRadius(12)
@@ -165,33 +170,23 @@ struct SavedVideoCardView: View {
     }
     
     private func loadThumbnail() {
-        // Clear current thumbnail
-        thumbnailImage = nil
+        guard !isLoading, thumbnailImage == nil else { return }
+        guard let url = video.thumbnailURL else { return }
         
-        // Load new thumbnail
-        guard let thumbnailURL = video.thumbnailURL else {
-            print("No thumbnail URL for video: \(video.id)")
-            return
-        }
+        isLoading = true
         
-        // Check if file exists
-        let fileManager = FileManager.default
-        if fileManager.fileExists(atPath: thumbnailURL.path) {
-            DispatchQueue.global(qos: .background).async {
-                if let data = try? Data(contentsOf: thumbnailURL),
-                   let image = UIImage(data: data) {
-                    DispatchQueue.main.async {
-                        self.thumbnailImage = image
-                        print("Thumbnail loaded successfully for video: \(video.id)")
-                    }
-                } else {
-                    DispatchQueue.main.async {
-                        print("Failed to load thumbnail data for video: \(video.id)")
-                    }
+        DispatchQueue.global(qos: .background).async {
+            if let data = try? Data(contentsOf: url),
+               let image = UIImage(data: data) {
+                DispatchQueue.main.async {
+                    self.thumbnailImage = image
+                    self.isLoading = false
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.isLoading = false
                 }
             }
-        } else {
-            print("Thumbnail file does not exist at path: \(thumbnailURL.path)")
         }
     }
 }

@@ -30,6 +30,10 @@ struct SavedVideo: Identifiable, Codable, Equatable {
         self.createdAt = Date()
         self.videoFileName = videoURL.lastPathComponent
     }
+    
+    static func == (lhs: SavedVideo, rhs: SavedVideo) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
 
 // UserDefaults Manager for Saved Videos
@@ -39,8 +43,9 @@ class SavedVideosManager {
     
     func saveVideo(_ video: SavedVideo) {
         var videos = getSavedVideos()
-        videos.insert(video, at: 0) // Add new video at the beginning
+        videos.insert(video, at: 0)
         saveVideos(videos)
+        print("Video saved successfully. Total videos: \(videos.count)")
     }
     
     func getSavedVideos() -> [SavedVideo] {
@@ -50,6 +55,7 @@ class SavedVideosManager {
         
         do {
             let videos = try JSONDecoder().decode([SavedVideo].self, from: data)
+            print("Loaded \(videos.count) videos from UserDefaults")
             return videos
         } catch {
             print("Error decoding saved videos: \(error)")
@@ -62,11 +68,12 @@ class SavedVideosManager {
         videos.removeAll { $0.id == video.id }
         saveVideos(videos)
         
-        // Optionally delete the actual video file
+        // Delete the actual video file
         try? FileManager.default.removeItem(at: video.videoURL)
         if let thumbnailURL = video.thumbnailURL {
             try? FileManager.default.removeItem(at: thumbnailURL)
         }
+        print("Video deleted successfully. Remaining videos: \(videos.count)")
     }
     
     private func saveVideos(_ videos: [SavedVideo]) {
