@@ -1,0 +1,17 @@
+//
+//  TabSelectionManager.swift
+//  VideoDownloader
+//
+//  Created by DREAMWORLD on 16/03/26.
+//
+
+import SwiftUI
+import Combine
+
+class TabSelectionManager: ObservableObject {
+    @Published var selectedTab: Int = 1 // Default to LinkView (index 1)
+    
+    func navigateToHistory() {
+        selectedTab = 2
+    }
+}

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct LinkView: View {
     @StateObject private var viewModel = LinkViewModel()
+    @EnvironmentObject var tabManager: TabSelectionManager
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -39,7 +40,7 @@ struct LinkView: View {
                     .lineLimit(3)
                     .padding(.horizontal, 40)
                 
-                // Post Link View (exactly as in your original code)
+                // Post Link View
                 PostLinkView(
                     postLink: $viewModel.postLink,
                     pasteAction: viewModel.handlePaste
@@ -100,12 +101,18 @@ struct LinkView: View {
                 .first?.safeAreaInsets.top ?? 0)
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
-            Button("OK", role: .cancel) {}
+            Button("OK", role: .cancel) {
+                // Navigate to history tab (index 2) when user taps OK
+                tabManager.navigateToHistory()
+            }
+        }
+        .onAppear {
+            viewModel.setTabManager(tabManager)
         }
     }
 }
 
-// MARK: - PostLinkView (exactly as in your original code)
+// MARK: - PostLinkView
 struct PostLinkView: View {
     @Binding var postLink: String
     var pasteAction: () -> Void

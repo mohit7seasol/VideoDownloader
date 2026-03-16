@@ -111,12 +111,18 @@ class LinkViewModel: ObservableObject {
     @Published var isSaving = false
     
     private var cancellables = Set<AnyCancellable>()
+    private var tabManager: TabSelectionManager?
     
     // API Keys
     private let youtubeAPIToken = "4c8a6959d4mshdda890c244de333p1a9559jsnfa944e297289"
     private let instagramAPIToken = "4c8a6959d4mshdda890c244de333p1a9559jsnfa944e297289"
     private let facebookAPIToken = "4c8a6959d4mshdda890c244de333p1a9559jsnfa944e297289"
     private let tiktokAPIToken = "4c8a6959d4mshdda890c244de333p1a9559jsnfa944e297289"
+    
+    // Method to set tab manager
+    func setTabManager(_ manager: TabSelectionManager) {
+        self.tabManager = manager
+    }
     
     // MARK: - Public Methods
     func handlePaste() {
@@ -208,7 +214,6 @@ class LinkViewModel: ObservableObject {
     
     private func saveSimpleURLToHistory(webURL: String) {
         // For simple URLs, create a bookmark entry
-        // Create a dummy URL for the bookmark
         let dummyURL = URL(string: webURL) ?? URL(string: "https://google.com")!
         
         let savedVideo = SavedVideo(
@@ -503,7 +508,7 @@ class LinkViewModel: ObservableObject {
             // Generate thumbnail
             let thumbnailURL = generateThumbnail(from: localURL)
             
-            // Save to history using SavedVideo model (same as edited videos)
+            // Save to history using SavedVideo model
             self.saveToHistory(videoURL: localURL, thumbnailURL: thumbnailURL, sourceURL: sourceURL)
             
         } catch {

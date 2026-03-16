@@ -10,33 +10,38 @@ import Lottie
 
 struct TabBarView: View {
     
-    @State private var selectedIndex: Int = 1
+    @StateObject private var tabManager = TabSelectionManager()
     
     var body: some View {
         ZStack {
             
             // MARK: Screens
             Group {
-                switch selectedIndex {
+                switch tabManager.selectedTab {
                 case 0:
                     HomeView()
+                        .environmentObject(tabManager)
                 case 1:
                     LinkView()
+                        .environmentObject(tabManager)
                 case 2:
                     SavedVideoView()
+                        .environmentObject(tabManager)
                 default:
                     LinkView()
+                        .environmentObject(tabManager)
                 }
             }
             
             VStack {
                 Spacer()
-                CustomTabBar(selectedIndex: $selectedIndex)
+                CustomTabBar(selectedIndex: $tabManager.selectedTab)
             }
         }
         .ignoresSafeArea()
     }
 }
+
 
 // MARK: - Custom Tabbar
 struct CustomTabBar: View {
@@ -102,9 +107,8 @@ struct CustomTabBar: View {
                 }
             }
             .padding(.horizontal, 60)
-            .padding(.bottom, 20)   // ⬅️ pushes icons down like design
+            .padding(.bottom, 20)
             .frame(height: 95)
-            
             
             // Center Button
             Button {
@@ -117,7 +121,7 @@ struct CustomTabBar: View {
                         .resizable()
                         .scaledToFill()
                         .frame(width: 65, height: 65)
-                        .clipShape(Circle())     // makes it perfectly circular
+                        .clipShape(Circle())
                         .shadow(radius: 6)
                     
                     LottieView(name: "Link")
@@ -128,6 +132,7 @@ struct CustomTabBar: View {
         }
     }
 }
+
 struct TabBarCurve: Shape {
     
     func path(in rect: CGRect) -> Path {
@@ -156,32 +161,6 @@ struct TabBarCurve: Shape {
             path.addLine(to: CGPoint(x: rect.width, y: rect.height))
             path.addLine(to: CGPoint(x: 0, y: rect.height))
         }
-    }
-}
-// MARK: - Tabbar Shape
-struct CustomTabShape: Shape {
-    
-    func path(in rect: CGRect) -> Path {
-        
-        var path = Path()
-        
-        path.move(to: CGPoint(x: 0, y: 0))
-        
-        path.addLine(to: CGPoint(x: rect.width * 0.35, y: 0))
-        
-        path.addQuadCurve(
-            to: CGPoint(x: rect.width * 0.65, y: 0),
-            control: CGPoint(x: rect.width * 0.5, y: -40)
-        )
-        
-        path.addLine(to: CGPoint(x: rect.width, y: 0))
-        
-        path.addLine(to: CGPoint(x: rect.width, y: rect.height))
-        path.addLine(to: CGPoint(x: 0, y: rect.height))
-        
-        path.closeSubpath()
-        
-        return path
     }
 }
 
