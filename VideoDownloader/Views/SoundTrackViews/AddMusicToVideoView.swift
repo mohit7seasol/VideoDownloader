@@ -49,6 +49,8 @@ struct AddMusicToVideoView: View {
     // Add this to track video audio status
     @State private var isVideoAudioAvailable = false
     
+    @State private var navigateToPreview = false
+    
     // Fixed heights for other components to calculate video preview height
     private let navigationBarHeight: CGFloat = 100 // Top bar + padding
     private let timelineHeight: CGFloat = 40 // Slider height with padding
@@ -279,7 +281,11 @@ extension AddMusicToVideoView {
             
             // Full Screen Button
             Button {
-                // Full screen action
+                // Pause video before going full screen
+                player?.pause()
+                isPlaying = false
+                // Trigger full screen navigation
+                navigateToPreview = true
             } label: {
                 Image("video_full_screen_ic")
                     .resizable()

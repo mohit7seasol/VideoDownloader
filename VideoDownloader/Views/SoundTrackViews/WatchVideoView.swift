@@ -23,15 +23,16 @@ struct WatchVideoView: View {
     @State private var showPermissionAlert = false
     @State private var isSaving = false
     @State private var timeObserver: Any?
+    @State private var thumbnailImage: UIImage?
     
     // Calculate dynamic video height
     private var videoHeight: CGFloat {
         let screenHeight = UIScreen.main.bounds.height
         let navigationBarHeight: CGFloat = 100
-        let musicInfoHeight: CGFloat = musicTrack != nil ? 80 : 0
-        let bottomSpacing: CGFloat = 50
+        let bottomSectionHeight: CGFloat = 180 // Height for music info + download button + spacing
+        let bottomSpacing: CGFloat = 30
         
-        return screenHeight - navigationBarHeight - musicInfoHeight - bottomSpacing - 150
+        return screenHeight - navigationBarHeight - bottomSectionHeight - bottomSpacing - 100
     }
     
     var body: some View {
@@ -54,39 +55,16 @@ struct WatchVideoView: View {
                             .foregroundColor(.white)
                     }
                     
-                    Spacer()
-                    
                     Text("Soundtrack")
                         .font(.custom("Poppins-Black", size: 20))
                         .foregroundColor(.white)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading, 10)
                     
                     Spacer()
-                    
-                    // Save Button
-                    Button {
-                        saveVideoToGallery()
-                    } label: {
-                        Text("Save")
-                            .font(.custom("Urbanist-Bold", size: 16))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 10)
-                            .background(
-                                LinearGradient(
-                                    colors: [Color(hex: "1973E8"), Color(hex: "0E4082")],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .cornerRadius(24)
-                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 60)
-                
-                Spacer(minLength: 20)
+                .frame(height: 100)
                 
                 // Video Preview
                 ZStack {
@@ -99,7 +77,7 @@ struct WatchVideoView: View {
                             )
                     }
                     
-                    // Center Play/Pause Button (60x60)
+                    // Center Play/Pause Button
                     Button {
                         togglePlay()
                     } label: {
@@ -116,54 +94,86 @@ struct WatchVideoView: View {
                 }
                 .frame(height: videoHeight)
                 .padding(.horizontal, 24)
-                
-                // Music Info (if selected)
-                if let music = musicTrack {
-                    HStack(spacing: 12) {
-                        // Music Icon
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color(hex: "1973E8"), Color(hex: "0E4082")],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 50, height: 50)
-                            .overlay(
-                                Image(systemName: "music.note")
-                                    .foregroundColor(.white)
-                            )
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(music.name)
-                                .font(.custom("Urbanist-Bold", size: 16))
-                                .foregroundColor(.white)
-                            
-                            if let artist = music.artist {
-                                Text(artist)
-                                    .font(.custom("Urbanist-Medium", size: 14))
-                                    .foregroundColor(.white.opacity(0.6))
-                            } else {
-                                // Show selected time range
-                                Text("\(formatTime(musicStartTime)) - \(formatTime(musicEndTime))")
-                                    .font(.custom("Urbanist-Medium", size: 14))
-                                    .foregroundColor(Color(hex: "1973E8"))
-                            }
-                        }
-                        
-                        Spacer()
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 20)
-                }
+                .padding(.top, 10)
                 
                 Spacer(minLength: 20)
+                
+                // Bottom Section - Music Info and Download Button
+                VStack(spacing: 20) {
+                    // Music Info (if selected)
+                    if let music = musicTrack {
+                        HStack(spacing: 12) {
+                            // Music Icon
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color(hex: "1973E8"), Color(hex: "0E4082")],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 50, height: 50)
+                                .overlay(
+                                    Image(systemName: "music.note")
+                                        .foregroundColor(.white)
+                                )
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(music.name)
+                                    .font(.custom("Urbanist-Bold", size: 16))
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                
+                                if let artist = music.artist {
+                                    Text(artist)
+                                        .font(.custom("Urbanist-Medium", size: 14))
+                                        .foregroundColor(.white.opacity(0.6))
+                                        .lineLimit(1)
+                                } else {
+                                    Text("\(formatTime(musicStartTime)) - \(formatTime(musicEndTime))")
+                                        .font(.custom("Urbanist-Medium", size: 14))
+                                        .foregroundColor(Color(hex: "1973E8"))
+                                }
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 24)
+                    }
+                    
+                    // Download Button - Positioned at bottom
+                    Button {
+                        saveVideoToGallery()
+                    } label: {
+                        HStack {
+                            Text("Save")
+                                .font(.custom("Urbanist-Bold", size: 18))
+                            Image("download_ic")
+                                .resizable()
+                                .frame(width: 16, height: 18)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "1973E8"), Color(hex: "0E4082")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(30)
+                        .shadow(color: Color(hex: "1973E8").opacity(0.3), radius: 10, x: 0, y: 5)
+                    }
+                    .padding(.horizontal, 24)
+                }
+                .padding(.bottom, 45)
             }
         }
         .navigationBarHidden(true)
         .onAppear {
             setupPlayer()
+            generateThumbnail()
         }
         .onDisappear {
             cleanupPlayer()
@@ -173,7 +183,7 @@ struct WatchVideoView: View {
                 dismiss()
             }
         } message: {
-            Text("Your video has been saved to gallery")
+            Text("Your video has been saved to gallery and history")
         }
         .alert("Permission Required", isPresented: $showPermissionAlert) {
             Button("Cancel", role: .cancel) { }
@@ -275,15 +285,17 @@ struct WatchVideoView: View {
     private func saveVideo() {
         isSaving = true
         
+        // First save to photo library
         PHPhotoLibrary.shared().performChanges({
             PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: videoURL)
         }) { success, error in
             DispatchQueue.main.async {
                 isSaving = false
                 if success {
+                    // Save to UserDefaults
+                    saveToHistory()
                     showSaveSuccess = true
                 } else {
-                    // Handle error
                     print("Error saving video: \(error?.localizedDescription ?? "Unknown error")")
                 }
             }
@@ -294,5 +306,49 @@ struct WatchVideoView: View {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
+    }
+    
+    private func generateThumbnail() {
+        let asset = AVAsset(url: videoURL)
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        generator.maximumSize = CGSize(width: 300, height: 300)
+        
+        do {
+            let cgImage = try generator.copyCGImage(at: .zero, actualTime: nil)
+            thumbnailImage = UIImage(cgImage: cgImage)
+        } catch {
+            print("Error generating thumbnail: \(error)")
+        }
+    }
+    
+    private func saveToHistory() {
+        // Save thumbnail to temporary directory
+        var thumbnailURL: URL? = nil
+        if let thumbnail = thumbnailImage {
+            let tempDir = FileManager.default.temporaryDirectory
+            let thumbnailPath = tempDir.appendingPathComponent("thumbnail_\(UUID().uuidString).jpg")
+            if let data = thumbnail.jpegData(compressionQuality: 0.7) {
+                do {
+                    try data.write(to: thumbnailPath)
+                    thumbnailURL = thumbnailPath
+                    print("Thumbnail saved at: \(thumbnailPath)")
+                } catch {
+                    print("Error saving thumbnail: \(error)")
+                }
+            }
+        }
+        
+        // Create saved video model
+        let savedVideo = SavedVideo(
+            videoURL: videoURL,
+            thumbnailURL: thumbnailURL,
+            musicTrack: musicTrack,
+            musicStartTime: musicStartTime,
+            musicEndTime: musicEndTime
+        )
+        
+        // Save to UserDefaults
+        SavedVideosManager.shared.saveVideo(savedVideo)
     }
 }
