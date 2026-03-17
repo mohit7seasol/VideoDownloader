@@ -38,6 +38,8 @@ struct SoundTrackView: View {
                     Text("Soundtrack".localized(self.language))
                         .font(.custom("Poppins-Black", size: 20))
                         .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 10)
                     
                     Spacer()
                     
