@@ -66,31 +66,12 @@ struct OnBoardingView: View {
                     
                     Spacer()
                     
-                    // ✅ 4. Custom Page Indicator
-                    HStack(spacing: 6) {
-                        ForEach(0..<pages.count, id: \.self) { index in
-                            Capsule()
-                                .fill(index == currentIndex ? Color(hex: "#FC466B") : Color(hex: "#55495E"))
-                                .frame(width: index == currentIndex ? 20 : 8, height: 6)
-                        }
-                    }
-                    .padding(.bottom, 12)
-                    
-                    // ✅ 3. Title
-                    Text(pages[currentIndex].title.localized(language))
-                        .font(.custom("Unlock-Regular", size: 22))
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 20)
-                    
-                    // ✅ Subtitle
-                    Text(pages[currentIndex].subtitle.localized(language))
-                        .font(.custom("Urbanist-Medium", size: 16))
-                        .foregroundColor(.white.opacity(0.9))
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .padding(.horizontal, 30)
-                        .padding(.top, 6)
+                    // ✅ Text Content View (Page Indicator + Title + Subtitle)
+                    OnboardingTextView(
+                        currentIndex: $currentIndex,
+                        pages: pages,
+                        language: language
+                    )
                     
                     Spacer()
                     
@@ -161,6 +142,50 @@ struct OnBoardingView: View {
                     }
             )
         }
+    }
+}
+
+// MARK: - Onboarding Text Content View
+struct OnboardingTextView: View {
+    @Binding var currentIndex: Int
+    let pages: [OnboardingItem]
+    let language: Language
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            // ✅ 4. Custom Page Indicator
+            HStack(spacing: 8) {
+                ForEach(0..<pages.count, id: \.self) { index in
+                    Capsule()
+                        .fill(index == currentIndex ? Color(hex: "#FC466B") : Color(hex: "#55495E"))
+                        .frame(width: index == currentIndex ? 24 : 8, height: 6)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentIndex)
+                }
+            }
+            .padding(.bottom, 4)
+            
+            // ✅ 3. Title
+            Text(pages[currentIndex].title.localized(language))
+                .font(.custom("Unlock-Regular", size: 24))
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 30)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+            
+            // ✅ Subtitle
+            Text(pages[currentIndex].subtitle.localized(language))
+                .font(.custom("Urbanist-Medium", size: 16))
+                .foregroundColor(.white.opacity(0.9))
+                .multilineTextAlignment(.center)
+                .lineLimit(3)
+                .padding(.horizontal, 35)
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.vertical, 20)
+        .frame(maxWidth: .infinity)
+        .background(Color.clear) // Transparent background
     }
 }
 
