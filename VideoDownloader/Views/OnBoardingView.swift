@@ -21,171 +21,131 @@ struct OnBoardingView: View {
         UIDevice.current.userInterfaceIdiom == .pad
     }
     
-    private var buttonSize: CGFloat {
-        isIpad ? 80 : 50
-    }
-    
-    private var pageControlWidth: CGFloat {
-        isIpad ? 150 : 100
-    }
-    
     private let pages: [OnboardingItem] = [
         OnboardingItem(
-            background: "on1",
-            centerImage: "on1_1",
-            title: "All Wallpaper You Need"
+            title: "Fast Video Downloader",
+            subtitle: "Download your favorite videos quickly and easily.",
+            topImageName: "on1"
         ),
         OnboardingItem(
-            background: "on2",
-            centerImage: "on2_1",
-            title: "High Quality Wallpaper Download"
+            title: "Fast Video Downloader",
+            subtitle: "Download your favorite videos quickly and easily.",
+            topImageName: "on2"
         ),
         OnboardingItem(
-            background: "on3",
-            centerImage: "on3_1",
-            title: "Upgrade Your Lock Screen"
-        ),
-        OnboardingItem(
-            background: "on4",
-            centerImage: "on4_1",
-            title: "Set Your Favorite Live Wallpaper"
+            title: "Fast Video Downloader",
+            subtitle: "Download your favorite videos quickly and easily.",
+            topImageName: "on3"
         )
     ]
     
     var body: some View {
         
-        // MARK: Language Screen First
         if !isLanguageDone {
             LanguageView()
         }
-        
-        // MARK: Onboarding Screens
         else if !isOnboardingDone {
             
             ZStack {
                 
-                // Background
-                Image(pages[currentIndex].background)
+                // ✅ 1. Background Image
+                Image("app_bg_image")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea()
                 
-                // Dark overlay
-                Color.black.opacity(0.4)
-                    .ignoresSafeArea()
-                
-                VStack {
+                VStack(spacing: 0) {
                     
-                    Spacer()
-                    
-                    // Center Image
-                    Image(pages[currentIndex].centerImage)
+                    // ✅ 5. Top Image
+                    Image(pages[currentIndex].topImageName)
                         .resizable()
                         .scaledToFit()
-                        .frame(maxWidth: isIpad ? 450 : 280)
-                        .padding(.bottom, 30)
-                    
-                    // Title
-                    Text(pages[currentIndex].title.localized(language))
-                        .font(.custom("Oxanium-SemiBold", size: 32))
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 30)
+                        .frame(height: UIScreen.main.bounds.height * 0.55)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, UIApplication.shared.safeAreaTop)
                     
                     Spacer()
                     
-                    // Bottom Controls
-                    HStack {
-                        
-                        // Previous Button
-                        if currentIndex != 0 {
-                            Button {
-                                withAnimation {
-                                    currentIndex -= 1
-                                }
-                            } label: {
-                                Image("on_previous")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: buttonSize, height: buttonSize)
+                    // ✅ 4. Custom Page Indicator
+                    HStack(spacing: 6) {
+                        ForEach(0..<pages.count, id: \.self) { index in
+                            Capsule()
+                                .fill(index == currentIndex ? Color(hex: "#FC466B") : Color(hex: "#55495E"))
+                                .frame(width: index == currentIndex ? 20 : 8, height: 6)
+                        }
+                    }
+                    .padding(.bottom, 12)
+                    
+                    // ✅ 3. Title
+                    Text(pages[currentIndex].title.localized(language))
+                        .font(.custom("Unlock-Regular", size: 22))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+                    
+                    // ✅ Subtitle
+                    Text(pages[currentIndex].subtitle.localized(language))
+                        .font(.custom("Urbanist-Medium", size: 16))
+                        .foregroundColor(.white.opacity(0.9))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .padding(.horizontal, 30)
+                        .padding(.top, 6)
+                    
+                    Spacer()
+                    
+                    // ✅ 2. Next Button
+                    Button {
+                        if currentIndex < pages.count - 1 {
+                            withAnimation {
+                                currentIndex += 1
                             }
                         } else {
-                            Spacer()
-                                .frame(width: buttonSize, height: buttonSize)
+                            isOnboardingDone = true
+                            presentationMode.wrappedValue.dismiss()
                         }
-                        
-                        Spacer()
-                        
-                        // Page Indicator
-                        HStack(spacing: 8) {
-                            ForEach(0..<pages.count, id: \.self) { index in
-                                Circle()
-                                    .fill(index == currentIndex ? Color.white : Color.white.opacity(0.4))
-                                    .frame(width: 8, height: 8)
-                            }
-                        }
-                        .frame(width: pageControlWidth)
-                        
-                        Spacer()
-                        
-                        // Next / Done Button
-                        Button {
-                            
-                            if currentIndex < pages.count - 1 {
-                                
-                                withAnimation {
-                                    currentIndex += 1
-                                }
-                                
-                            } else {
-                                
-                                // MARK: Last Screen Finished
-                                isOnboardingDone = true
-                                
-                                // dismiss onboarding
-                                presentationMode.wrappedValue.dismiss()
-                            }
-                            
-                        } label: {
-                            Image(currentIndex == pages.count - 1 ? "on_done" : "on_next")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: buttonSize, height: buttonSize)
-                        }
+                    } label: {
+                        Text(currentIndex == pages.count - 1 ? "Done".localized(language) : "Next".localized(language))
+                            .font(.custom("Urbanist-Bold", size: 18))
+                            .foregroundColor(.white)
+                            .frame(
+                                width: UIScreen.main.bounds.width / 2.5,
+                                height: isIpad ? 66 : 56
+                            )
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        Color(hex: "#1973E8").opacity(0.3),
+                                        Color(hex: "#0E4082")
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .cornerRadius(30)
                     }
-                    .padding(.horizontal, 30)
-                    .padding(.bottom, isIpad ? 60 : 40)
-                }
-                .onAppear {
-                    if currentIndex == 3 { // 4th screen (index 3)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                            if currentIndex == 3 {
-                                isOnboardingDone = true
-                                presentationMode.wrappedValue.dismiss()
-                            }
-                        }
-                    }
+                    .padding(.bottom,
+                        10 + (UIApplication.shared.connectedScenes
+                                .compactMap { $0 as? UIWindowScene }
+                                .first?.windows
+                                .first?.safeAreaInsets.bottom ?? 0)
+                    )
+                    
                 }
             }
-            // MARK: - Swipe Gesture Added (No UI changes)
+            .ignoresSafeArea()
+            
+            // ✅ 6. Swipe Gesture
             .gesture(
                 DragGesture(minimumDistance: 50)
                     .onEnded { value in
-                        let horizontalAmount = value.translation.width
-                        
-                        if horizontalAmount < -50 {
-                            // Swipe Left - Next
+                        if value.translation.width < -50 {
                             if currentIndex < pages.count - 1 {
                                 withAnimation {
                                     currentIndex += 1
                                 }
-                            } else if currentIndex == pages.count - 1 {
-                                // On last screen, swipe left to complete
-                                isOnboardingDone = true
-                                presentationMode.wrappedValue.dismiss()
                             }
-                        } else if horizontalAmount > 50 {
-                            // Swipe Right - Previous
+                        } else if value.translation.width > 50 {
                             if currentIndex > 0 {
                                 withAnimation {
                                     currentIndex -= 1
@@ -199,9 +159,9 @@ struct OnBoardingView: View {
 }
 
 struct OnboardingItem {
-    let background: String
-    let centerImage: String
     let title: String
+    let subtitle: String
+    let topImageName: String
 }
 
 #Preview {
