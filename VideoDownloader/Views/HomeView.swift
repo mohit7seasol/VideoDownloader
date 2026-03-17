@@ -110,9 +110,10 @@ struct TopHomeView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(
-                        width: isIpad ? 32 : 24,
-                        height: isIpad ? 32 : 24
+                        width: isIpad ? 36 : 26,
+                        height: isIpad ? 36 : 26
                     )
+                    .padding(.trailing, 5)
             }
         }
         .padding(.horizontal, 20)
@@ -203,7 +204,7 @@ struct HomeViewCard: View {
     }
 
     private var buttonLabel: some View {
-        Text("View More")
+        Text("View More".localized(self.language))
             .font(Font.custom("Urbanist-Bold", size: 12))
             .foregroundColor(Color(hex: "#0D1426"))
             .frame(
