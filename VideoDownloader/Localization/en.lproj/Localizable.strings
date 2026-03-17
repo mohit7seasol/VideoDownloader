@@ -22,7 +22,7 @@
 "Enter Insta post link" = "Enter Insta post link";
 "Download" = "Download";
 "OK" = "OK";
-"No copied text found to paste." = "No copied text found to paste."
+"No copied text found to paste." = "No copied text found to paste.";
 "⛔ Save already in progress – skipped" = "⛔ Save already in progress – skipped";
 "URL cannot be empty" = "URL cannot be empty";
 "Please enter a valid URL" = "Please enter a valid URL";
@@ -36,7 +36,8 @@
 "Animals" = "Animals";
 "Architecture" = "Architecture";
 "Celebrities" = "Celebrities";
-"Eid","Family" = "Eid","Family";
+"Eid" = "Eid";
+"Family" = "Family";
 "Fashion" = "Fashion";
 "Follow" = "Follow";
 "Food" = "Food";

@@ -186,7 +186,7 @@ struct BottomSettingCard: View {
         VStack(spacing: 0) {
             ForEach(Array(settingsItems.enumerated()), id: \.offset) { index, item in
                 VStack(spacing: 0) {
-                    SettingRow(icon: item.icon, title: item.title)
+                    SettingRow(icon: item.icon, title: item.title.localized(self.language))
                         .onTapGesture {
                             handleTap(for: item.title.localized(self.language))
                         }
@@ -208,13 +208,13 @@ struct BottomSettingCard: View {
     
     func handleTap(for title: String) {
         switch title {
-        case "Language":
+        case "Language".localized(self.language):
             isShowingLanguageView = true
-        case "Rate App":
+        case "Rate App".localized(self.language):
             if let url = URL(string: reviewLink) {
                 UIApplication.shared.open(url)
             }
-        case "Share App":
+        case "Share App".localized(self.language):
             let shareText = "\("Check out this app!".localized(self.language)) \(shareApp)"
             let activityVC = UIActivityViewController(
                 activityItems: [shareText],
@@ -224,11 +224,11 @@ struct BottomSettingCard: View {
                let rootVC = windowScene.windows.first?.rootViewController {
                 rootVC.present(activityVC, animated: true)
             }
-        case "Privacy Policy":
+        case "Privacy Policy".localized(self.language):
             if let url = URL(string: privacyPolicy) {
                 UIApplication.shared.open(url)
             }
-        case "Terms":
+        case "Terms".localized(self.language):
             if let url = URL(string: termsOfUse) {
                 UIApplication.shared.open(url)
             }
@@ -238,6 +238,7 @@ struct BottomSettingCard: View {
     }
 }
 struct SettingRow: View {
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     let icon: String
     let title: String
@@ -250,7 +251,7 @@ struct SettingRow: View {
                 .resizable()
                 .frame(width: 40, height: 40)
             
-            Text(title)
+            Text(title.localized(self.language))
                 .font(.custom("Urbanist-Medium", size: 16))
                 .foregroundColor(.white)
             
