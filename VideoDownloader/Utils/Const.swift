@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-var appName             = "Wallpaper"
+var appName             = "Clipfusion"
 let privacyPolicy       = "https://smart-view.netlify.app/"
 let termsOfUse          = "https://smart-view.netlify.app/terms"
 let eula                = "https://smart-view.netlify.app/eula"

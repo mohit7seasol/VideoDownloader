@@ -23,7 +23,7 @@ enum InstagramMediaType: String {
     case reel, post, igtv
 }
 
-// MARK: - API Response Models (keep these as they are)
+// MARK: - API Response Models
 struct FacebookAPIResponse: Decodable {
     let success: Bool?
     let message: String?
@@ -114,11 +114,11 @@ class LinkViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var tabManager: TabSelectionManager?
     
-    // API Keys
-    private let youtubeAPIToken = "4c8a6959d4mshdda890c244de333p1a9559jsnfa944e297289"
-    private let instagramAPIToken = "4c8a6959d4mshdda890c244de333p1a9559jsnfa944e297289"
-    private let facebookAPIToken = "4c8a6959d4mshdda890c244de333p1a9559jsnfa944e297289"
-    private let tiktokAPIToken = "4c8a6959d4mshdda890c244de333p1a9559jsnfa944e297289"
+    // MARK: - API Keys from UserDefaults (set by SplashViewModel)
+    @AppStorage("YoutubeAPIToken") private var youtubeAPIToken: String = ""
+    @AppStorage("InstaAPIToken") private var instagramAPIToken: String = ""
+    @AppStorage("FacebookAPIToken") private var facebookAPIToken: String = ""
+    @AppStorage("TiktokAPIToken") private var tiktokAPIToken: String = ""
     
     // Method to set tab manager
     func setTabManager(_ manager: TabSelectionManager) {
@@ -137,7 +137,7 @@ class LinkViewModel: ObservableObject {
     
     func downloadVideo() {
         guard !isSaving else {
-            print("⛔ Save already in progress – skipped".localized(language))
+            print("⛔ Save already in progress – skipped")
             return
         }
         
@@ -189,19 +189,19 @@ class LinkViewModel: ObservableObject {
         saveSimpleURLToHistory(webURL: webURL)
     }
     
-    // MARK: - Save to History using SavedVideo model (same as edited videos)
+    // MARK: - Save to History using SavedVideo model
     private func saveToHistory(videoURL: URL, thumbnailURL: URL? = nil, sourceURL: String) {
         
-        // Create SavedVideo object - Passing nil for musicTrack since this is a downloaded video
+        // Create SavedVideo object
         let savedVideo = SavedVideo(
             videoURL: videoURL,
             thumbnailURL: thumbnailURL,
-            musicTrack: nil,  // No music track for downloaded videos
+            musicTrack: nil,
             musicStartTime: 0,
             musicEndTime: 0
         )
         
-        // Save to UserDefaults using SavedVideosManager (same as WatchVideoView)
+        // Save to UserDefaults using SavedVideosManager
         SavedVideosManager.shared.saveVideo(savedVideo)
         
         DispatchQueue.main.async { [weak self] in
@@ -220,7 +220,7 @@ class LinkViewModel: ObservableObject {
         let savedVideo = SavedVideo(
             videoURL: dummyURL,
             thumbnailURL: nil,
-            musicTrack: nil,  // No music track for bookmarks
+            musicTrack: nil,
             musicStartTime: 0,
             musicEndTime: 0
         )
@@ -251,7 +251,7 @@ class LinkViewModel: ObservableObject {
             let cgImage = try generator.copyCGImage(at: .zero, actualTime: nil)
             let thumbnail = UIImage(cgImage: cgImage)
             
-            // Save thumbnail to Application Support directory (permanent storage)
+            // Save thumbnail to Application Support directory
             guard let appSupportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
                 print("Could not access app support directory")
                 return nil
@@ -524,7 +524,7 @@ class LinkViewModel: ObservableObject {
             
             print("✅ Video saved at: \(localURL.path)")
             
-            // Generate thumbnail (now saves to permanent storage)
+            // Generate thumbnail
             let thumbnailURL = generateThumbnail(from: localURL)
             
             // Save to history
