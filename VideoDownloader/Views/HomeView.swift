@@ -31,12 +31,12 @@ let homeItems: [HomeItem] = [
         bgColor: "#6D41F5"
     ),
 
-    HomeItem(
-        title: "Save Insta",
-        subtitle: "Get posts, reels, profile pictures, & highlights.",
-        icon: "h3",
-        bgColor: "#104AD5"
-    ),
+//    HomeItem(
+//        title: "Save Insta",
+//        subtitle: "Get posts, reels, profile pictures, & highlights.",
+//        icon: "h3",
+//        bgColor: "#104AD5"
+//    ),
 
     HomeItem(
         title: "Soundtrack",
