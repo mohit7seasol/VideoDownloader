@@ -50,7 +50,7 @@ struct SettingView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
                         // Premium Top View
-                        PremiumTopView()
+                        /* PremiumTopView() */ // Hide for first version
                         
                         // Bottom Setting Card
                         BottomSettingCard(

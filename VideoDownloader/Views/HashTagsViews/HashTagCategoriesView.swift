@@ -73,9 +73,9 @@ struct HashTagCategoriesView: View {
                     
                     VStack(spacing: 20) {
                         
-                        NavigationLink(destination: AddHashTagView()) {
+                        /* NavigationLink(destination: AddHashTagView()) {
                             HashTagBannerView()
-                        }
+                        } */
                         
                         LazyVGrid(columns: columns, spacing: 8) {
                             ForEach(category, id: \.self) { item in
