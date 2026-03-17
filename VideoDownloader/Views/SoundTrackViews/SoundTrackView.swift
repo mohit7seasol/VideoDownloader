@@ -12,6 +12,7 @@ struct SoundTrackView: View {
     @Environment(\.dismiss) var dismiss
     @State private var navigateToVideoChoose = false
     @State private var shouldNavigateToSelf = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
         ZStack {
@@ -34,7 +35,7 @@ struct SoundTrackView: View {
                     
                     Spacer()
                     
-                    Text("Soundtrack")
+                    Text("Soundtrack".localized(self.language))
                         .font(.custom("Poppins-Black", size: 20))
                         .foregroundColor(.white)
                     
@@ -60,14 +61,14 @@ struct SoundTrackView: View {
                         .background(Color.clear)
                     
                     // Title Label
-                    Text("Enhance Video with Music")
+                    Text("Enhance Video with Music".localized(self.language))
                         .font(.custom("Poppins-Black", size: 22))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                     
                     // Subtitle Label
-                    Text("Enhance your video experience with the right music.")
+                    Text("Enhance your video experience with the right music.".localized(self.language))
                         .font(.custom("Urbanist-Medium", size: 18))
                         .foregroundColor(.white.opacity(0.8))
                         .multilineTextAlignment(.center)
@@ -81,7 +82,7 @@ struct SoundTrackView: View {
                 Button {
                     navigateToVideoChoose = true
                 } label: {
-                    Text("Add Soundtrack")
+                    Text("Add Soundtrack".localized(self.language))
                         .font(.custom("Urbanist-Bold", size: 18))
                         .foregroundColor(.white)
                         .frame(width: UIScreen.main.bounds.width / 2)
@@ -118,6 +119,7 @@ struct SoundTrackView: View {
 // MARK: - AddMusicView
 struct AddMusicView: View {
     @Environment(\.dismiss) var dismiss
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
         ZStack {
@@ -140,7 +142,7 @@ struct AddMusicView: View {
                     
                     Spacer()
                     
-                    Text("Add Music")
+                    Text("Add Music".localized(self.language))
                         .font(.custom("Poppins-Black", size: 20))
                         .foregroundColor(.white)
                     
@@ -160,11 +162,11 @@ struct AddMusicView: View {
                     LottieView(name: "Link")
                         .frame(width: 100, height: 100)
                     
-                    Text("Choose a Soundtrack")
+                    Text("Choose a Soundtrack".localized(self.language))
                         .font(.custom("Poppins-Black", size: 24))
                         .foregroundColor(.white)
                     
-                    Text("Select from your library or browse our collection")
+                    Text("Select from your library or browse our collection".localized(self.language))
                         .font(.custom("Urbanist-Medium", size: 16))
                         .foregroundColor(.white.opacity(0.7))
                         .multilineTextAlignment(.center)

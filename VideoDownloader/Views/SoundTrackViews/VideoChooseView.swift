@@ -18,6 +18,7 @@ struct VideoChooseView: View {
     @State private var selectedVideo: VideoAsset?
     @State private var navigateToAddMusic = false
     @State private var showPermissionAlert = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
         ZStack {
@@ -40,7 +41,7 @@ struct VideoChooseView: View {
                     
                     Spacer()
                     
-                    Text("Select Video")
+                    Text("Select Video".localized(self.language))
                         .font(.custom("Poppins-Black", size: 20))
                         .foregroundColor(.white)
                     
@@ -65,11 +66,11 @@ struct VideoChooseView: View {
                             .font(.system(size: 50))
                             .foregroundColor(.white.opacity(0.5))
                         
-                        Text("No Videos Found")
+                        Text("No Videos Found".localized(self.language))
                             .font(.custom("Poppins-Black", size: 18))
                             .foregroundColor(.white)
                         
-                        Text("Tap below to access your videos")
+                        Text("Tap below to access your videos".localized(self.language))
                             .font(.custom("Urbanist-Medium", size: 14))
                             .foregroundColor(.white.opacity(0.7))
                     }
@@ -79,7 +80,7 @@ struct VideoChooseView: View {
                     Button {
                         checkPermissionAndLoadVideos()
                     } label: {
-                        Text("Access Videos")
+                        Text("Access Videos".localized(self.language))
                             .font(.custom("Urbanist-Bold", size: 16))
                             .foregroundColor(.white)
                             .frame(width: 150)
@@ -124,15 +125,15 @@ struct VideoChooseView: View {
         .onAppear {
             checkPermissionAndLoadVideos()
         }
-        .alert("Permission Required", isPresented: $showPermissionAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Settings") {
+        .alert("Permission Required".localized(self.language), isPresented: $showPermissionAlert) {
+            Button("Cancel".localized(self.language), role: .cancel) { }
+            Button("Settings".localized(self.language)) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
         } message: {
-            Text("Please grant photo library access to select videos")
+            Text("Please grant photo library access to select videos".localized(self.language))
         }
         .navigationDestination(isPresented: $navigateToAddMusic) {
             if let video = selectedVideo {

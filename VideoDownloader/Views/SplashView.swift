@@ -70,7 +70,7 @@ struct SplashView: View {
 }
 
 struct SplashContent: View {
-    
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     @Binding var isLottiePlaying: Bool
     
     // Detect device type for adaptive sizing
@@ -94,7 +94,7 @@ struct SplashContent: View {
                     .foregroundColor(.white) // Adjust color as needed
                     .multilineTextAlignment(.center)
                 
-                Text("Save Your Favorite Videos in One Tap")
+                Text("Save Your Favorite Videos in One Tap".localized(self.language))
                     .font(.custom("Urbanist-Regular", size: 18))
                     .foregroundColor(.white.opacity(0.8)) // Adjust color as needed
                     .multilineTextAlignment(.center)

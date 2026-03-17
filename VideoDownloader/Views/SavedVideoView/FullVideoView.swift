@@ -20,6 +20,7 @@ struct FullVideoView: View {
     @State private var downloadMessage = ""
     @State private var isDownloading = false
     @State private var isPlayerReady = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     init(video: SavedVideo, onDelete: (() -> Void)? = nil) {
         self.video = video
@@ -118,7 +119,7 @@ struct FullVideoView: View {
                                 .tint(.white)
                                 .scaleEffect(1.5)
                             
-                            Text("Preparing video...")
+                            Text("Preparing video...".localized(self.language))
                                 .font(.custom("Urbanist-Medium", size: 14))
                                 .foregroundColor(.white.opacity(0.7))
                                 .padding(.top, 10)
@@ -146,7 +147,7 @@ struct FullVideoView: View {
                                 .frame(width: 20, height: 20)
                                 .foregroundColor(.white)
                             
-                            Text("Share")
+                            Text("Share".localized(self.language))
                                 .font(.custom("Urbanist-Medium", size: 16))
                                 .foregroundColor(.white)
                         }
@@ -174,7 +175,7 @@ struct FullVideoView: View {
                                 .frame(width: 20, height: 20)
                                 .foregroundColor(.white)
                             
-                            Text("Delete")
+                            Text("Delete".localized(self.language))
                                 .font(.custom("Urbanist-Medium", size: 16))
                                 .foregroundColor(.white)
                         }
@@ -199,16 +200,16 @@ struct FullVideoView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .ignoresSafeArea(.all, edges: .top)
-        .alert("Delete Video", isPresented: $showDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+        .alert("Delete Video".localized(self.language), isPresented: $showDeleteAlert) {
+            Button("Cancel".localized(self.language), role: .cancel) { }
+            Button("Delete".localized(self.language), role: .destructive) {
                 deleteCurrentVideo()
             }
         } message: {
-            Text("Are you sure you want to delete this video?")
+            Text("Are you sure you want to delete this video?".localized(self.language))
         }
-        .alert("Download", isPresented: $showDownloadAlert) {
-            Button("OK", role: .cancel) { }
+        .alert("Download".localized(self.language), isPresented: $showDownloadAlert) {
+            Button("OK".localized(self.language), role: .cancel) { }
         } message: {
             Text(downloadMessage)
         }
@@ -261,7 +262,7 @@ struct FullVideoView: View {
     private func downloadVideoToGallery() {
         // Check if file exists
         guard FileManager.default.fileExists(atPath: video.videoURL.path) else {
-            downloadMessage = "Video file not found"
+            downloadMessage = "Video file not found".localized(self.language)
             showDownloadAlert = true
             return
         }
@@ -302,7 +303,7 @@ struct FullVideoView: View {
                 isDownloading = false
                 
                 if success {
-                    downloadMessage = "Video saved to gallery successfully!"
+                    downloadMessage = "Video saved to gallery successfully!".localized(self.language)
                 } else {
                     downloadMessage = "Failed to save video: \(error?.localizedDescription ?? "Unknown error")"
                 }
@@ -313,7 +314,7 @@ struct FullVideoView: View {
     }
     
     private func showPermissionDeniedAlert() {
-        downloadMessage = "Please grant photo library access in Settings to save videos."
+        downloadMessage = "Please grant photo library access in Settings to save videos.".localized(self.language)
         showDownloadAlert = true
     }
     

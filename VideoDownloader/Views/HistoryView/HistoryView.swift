@@ -10,6 +10,7 @@ import SwiftUI
 struct HistoryView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel = HistoryViewModel()
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     private let columns: [GridItem] = {
         let isIPad = UIDevice.current.userInterfaceIdiom == .pad
@@ -36,7 +37,7 @@ struct HistoryView: View {
                             .foregroundColor(.white)
                     }
                     
-                    Text("Soundtrack History")
+                    Text("Soundtrack History".localized(self.language))
                         .font(.custom("Poppins-Black", size: 20))
                         .foregroundColor(.white)
                         .padding(.leading, 10)
@@ -60,11 +61,11 @@ struct HistoryView: View {
                             .font(.system(size: 60))
                             .foregroundColor(.white.opacity(0.3))
                         
-                        Text("No Videos Yet")
+                        Text("No Videos Yet".localized(self.language))
                             .font(.custom("Urbanist-Bold", size: 20))
                             .foregroundColor(.white)
                         
-                        Text("Your edited videos will appear here")
+                        Text("Your edited videos will appear here".localized(self.language))
                             .font(.custom("Urbanist-Medium", size: 16))
                             .foregroundColor(.white.opacity(0.6))
                             .multilineTextAlignment(.center)
@@ -93,18 +94,18 @@ struct HistoryView: View {
             }
         }
         .navigationBarHidden(true)
-        .alert("Delete Video", isPresented: $viewModel.showDeleteAlert) {
-            Button("Cancel", role: .cancel) {
+        .alert("Delete Video".localized(self.language), isPresented: $viewModel.showDeleteAlert) {
+            Button("Cancel".localized(self.language), role: .cancel) {
                 viewModel.handleDeleteConfirmation(confirmed: false)
             }
-            Button("Delete", role: .destructive) {
+            Button("Delete".localized(self.language), role: .destructive) {
                 viewModel.handleDeleteConfirmation(confirmed: true)
             }
         } message: {
             if let video = viewModel.videoToDelete {
-                Text("Are you sure you want to delete \"\(video.musicName ?? "this video")\"?")
+                Text("\("Are you sure you want to delete".localized(self.language)) \"\(video.musicName ?? ("this video".localized(self.language)))\"?")
             } else {
-                Text("Are you sure you want to delete this video?")
+                Text("Are you sure you want to delete this video?".localized(self.language))
             }
         }
         .onAppear {

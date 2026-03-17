@@ -47,7 +47,6 @@ let homeItems: [HomeItem] = [
 ]
 
 struct HomeView: View {
-
     private var isIpad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
 
     private var columns: [GridItem] {
@@ -122,6 +121,7 @@ struct TopHomeView: View {
 struct HomeViewCard: View {
     let item: HomeItem
     @State private var navigateToDestination = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
 
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -146,12 +146,12 @@ struct HomeViewCard: View {
                 Spacer().frame(height: 14)
 
                 // Title
-                Text(item.title)
+                Text(item.title.localized(self.language))
                     .font(Font.custom("Urbanist-Bold", size: 16))
                     .foregroundColor(.white)
 
                 // Subtitle (3 lines FIXED)
-                Text(item.subtitle)
+                Text(item.subtitle.localized(self.language))
                     .font(Font.custom("Urbanist-Regular", size: 12))
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)

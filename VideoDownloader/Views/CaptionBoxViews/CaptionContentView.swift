@@ -12,6 +12,7 @@ struct CaptionContentView: View {
     @ObservedObject var viewModel: CategoryViewModel
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.dismiss) var dismiss
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     // Selected category from CaptionBoxView
     var selectedCategoryId: Int
@@ -80,7 +81,7 @@ struct CaptionContentView: View {
                         Image(systemName: "text.quote")
                             .font(.system(size: 50))
                             .foregroundColor(.white.opacity(0.5))
-                        Text("No captions available")
+                        Text("No captions available".localized(self.language))
                             .foregroundColor(.white.opacity(0.7))
                             .font(.custom("Urbanist-Regular", size: 18))
                         Spacer()
@@ -132,7 +133,7 @@ struct CaptionContentView: View {
 }
 
 struct CaptionContentCardView: View {
-    
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     let content: String
     @State private var showCopyAlert = false
     
@@ -186,7 +187,7 @@ struct CaptionContentCardView: View {
                             .renderingMode(.template)
                             .frame(width: 20, height: 20)
                         
-                        Text("Share")
+                        Text("Share".localized(self.language))
                             .font(.custom("Urbanist-Regular", size: 16))
                     }
                     .foregroundColor(.white)
@@ -217,7 +218,7 @@ struct CaptionContentCardView: View {
         )
         .alert(isPresented: $showCopyAlert) {
             Alert(
-                title: Text("Copied!"),
+                title: Text("Copied!".localized(language)),
                 message: Text("Caption copied to clipboard"),
                 dismissButton: .default(Text("OK"))
             )

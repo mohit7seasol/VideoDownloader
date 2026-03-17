@@ -12,6 +12,7 @@ struct AddHashTagView: View {
     @State private var showAddHashtagSheet = false
     @State private var hashtagText = ""
     @FocusState private var isTextViewFocused: Bool
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -32,7 +33,7 @@ struct AddHashTagView: View {
                         .padding(.leading, 16)
                 }
                 
-                Text("Hashtag Collection")
+                Text("Hashtag Collection".localized(self.language))
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)

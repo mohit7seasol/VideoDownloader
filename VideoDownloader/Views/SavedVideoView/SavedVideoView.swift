@@ -13,6 +13,7 @@ struct SavedVideoView: View {
     @StateObject private var viewModel = HistoryViewModel()
     @State private var selectedVideo: SavedVideo?
     @State private var showFullVideoView = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     private let columns: [GridItem] = {
         let isIPad = UIDevice.current.userInterfaceIdiom == .pad
@@ -53,11 +54,11 @@ struct SavedVideoView: View {
                                 .font(.system(size: 60))
                                 .foregroundColor(.white.opacity(0.3))
                             
-                            Text("No Videos Yet")
+                            Text("No Videos Yet".localized(self.language))
                                 .font(.custom("Urbanist-Bold", size: 20))
                                 .foregroundColor(.white)
                             
-                            Text("Your downloaded or edited videos will appear here")
+                            Text("Your downloaded or edited videos will appear here".localized(self.language))
                                 .font(.custom("Urbanist-Medium", size: 16))
                                 .foregroundColor(.white.opacity(0.6))
                                 .multilineTextAlignment(.center)
@@ -98,18 +99,18 @@ struct SavedVideoView: View {
                 }
             }
         }
-        .alert("Delete Video", isPresented: $viewModel.showDeleteAlert) {
-            Button("Cancel", role: .cancel) {
+        .alert("Delete Video".localized(self.language), isPresented: $viewModel.showDeleteAlert) {
+            Button("Cancel".localized(self.language), role: .cancel) {
                 viewModel.handleDeleteConfirmation(confirmed: false)
             }
-            Button("Delete", role: .destructive) {
+            Button("Delete".localized(self.language), role: .destructive) {
                 viewModel.handleDeleteConfirmation(confirmed: true)
             }
         } message: {
             if let video = viewModel.videoToDelete {
-                Text("Are you sure you want to delete \"\(video.musicName ?? "this video")\"?")
+                Text("\("Are you sure you want to delete".localized(self.language)) \"\(video.musicName ?? "this video".localized(self.language))\"?")
             } else {
-                Text("Are you sure you want to delete this video?")
+                Text("Are you sure you want to delete this video?".localized(self.language))
             }
         }
         .onAppear {
@@ -127,7 +128,7 @@ struct SavedVideoCardView: View {
     @State private var isLoading = false
     @State private var loadError = false
     @State private var retryCount = 0
-    
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     private var isIPad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
@@ -148,10 +149,10 @@ struct SavedVideoCardView: View {
                         Image(systemName: "exclamationmark.triangle")
                             .font(.system(size: 30))
                             .foregroundColor(.yellow)
-                        Text("Failed to load")
+                        Text("Failed to load".localized(self.language))
                             .font(.caption)
                             .foregroundColor(.white)
-                        Button("Retry") {
+                        Button("Retry".localized(self.language)) {
                             retryLoadThumbnail()
                         }
                         .font(.caption)

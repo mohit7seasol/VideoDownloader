@@ -10,6 +10,7 @@ import SwiftUI
 struct LinkView: View {
     @StateObject private var viewModel = LinkViewModel()
     @EnvironmentObject var tabManager: TabSelectionManager
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -29,11 +30,11 @@ struct LinkView: View {
                 // 1️⃣ Top View (Reuse)
                 TopHomeView()
                 
-                Text("Instant Video Download")
+                Text("Instant Video Download".localized(self.language))
                     .font(Font.custom("Unlock-Regular", size: 22))
                     .foregroundColor(.white)
                 
-                Text("Paste the link and enjoy fast, hassle-free video downloads")
+                Text("Paste the link and enjoy fast, hassle-free video downloads".localized(self.language))
                     .font(Font.custom("Urbanist-Medium", size: 16))
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
@@ -58,7 +59,7 @@ struct LinkView: View {
                             .padding(.horizontal, 50)
                             .padding(.vertical, 14)
                     } else {
-                        Text("Download")
+                        Text("Download".localized(language))
                             .font(Font.custom("Urbanist-Bold", size: 16))
                             .foregroundColor(.white)
                             .padding(.horizontal, 50)
@@ -101,7 +102,7 @@ struct LinkView: View {
                 .first?.safeAreaInsets.top ?? 0)
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
-            Button("OK", role: .cancel) {
+            Button("OK".localized(language), role: .cancel) {
                 // Navigate to history tab (index 2) when user taps OK
                 tabManager.navigateToHistory()
             }
@@ -115,6 +116,7 @@ struct LinkView: View {
 // MARK: - PostLinkView
 struct PostLinkView: View {
     @Binding var postLink: String
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     var pasteAction: () -> Void
     
     private var isIpad: Bool {
@@ -135,7 +137,7 @@ struct PostLinkView: View {
             // TextField with placeholder
             ZStack(alignment: .leading) {
                 if postLink.isEmpty {
-                    Text("Enter Insta post link")
+                    Text("Enter Insta post link".localized(self.language))
                         .foregroundColor(.white.opacity(0.6))
                         .font(.system(size: 15))
                 }

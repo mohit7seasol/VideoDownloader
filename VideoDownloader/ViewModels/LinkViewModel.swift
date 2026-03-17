@@ -109,6 +109,7 @@ class LinkViewModel: ObservableObject {
     @Published var showAlert = false
     @Published var alertMessage = ""
     @Published var isSaving = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     private var cancellables = Set<AnyCancellable>()
     private var tabManager: TabSelectionManager?
@@ -129,28 +130,28 @@ class LinkViewModel: ObservableObject {
         if let clipboard = UIPasteboard.general.string, !clipboard.isEmpty {
             postLink = clipboard
         } else {
-            alertMessage = "No copied text found to paste."
+            alertMessage = "No copied text found to paste.".localized(language)
             showAlert = true
         }
     }
     
     func downloadVideo() {
         guard !isSaving else {
-            print("⛔ Save already in progress – skipped")
+            print("⛔ Save already in progress – skipped".localized(language))
             return
         }
         
         // Validate URL
         let webURL = postLink.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !webURL.isEmpty else {
-            alertMessage = "URL cannot be empty"
+            alertMessage = "URL cannot be empty".localized(language)
             showAlert = true
             return
         }
         
         guard let validURL = URL(string: webURL),
               ["http", "https"].contains(validURL.scheme?.lowercased()) else {
-            alertMessage = "Please enter a valid URL"
+            alertMessage = "Please enter a valid URL".localized(language)
             showAlert = true
             return
         }
@@ -230,7 +231,11 @@ class LinkViewModel: ObservableObject {
             self?.isLoading = false
             self?.isSaving = false
             self?.postLink = ""
-            self?.alertMessage = "Link saved to history!"
+            if let language = self?.language {
+                self?.alertMessage = "Link saved to history!".localized(language)
+            } else {
+                self?.alertMessage = "Link saved to history!"
+            }
             self?.showAlert = true
         }
     }
@@ -278,12 +283,12 @@ class LinkViewModel: ObservableObject {
     // MARK: - YouTube Handling
     private func handleYouTubeURL(_ urlString: String) {
         guard let videoID = extractYouTubeVideoID(from: urlString) else {
-            showError("Could not extract video ID")
+            showError("Could not extract video ID".localized(language))
             return
         }
         
         guard let apiURL = URL(string: "https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=\(videoID)") else {
-            showError("Invalid API URL")
+            showError("Invalid API URL".localized(language))
             return
         }
         

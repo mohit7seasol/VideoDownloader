@@ -11,6 +11,7 @@ struct CaptionBoxView: View {
     @ObservedObject var viewModel = CategoryViewModel()
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.dismiss) var dismiss
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -33,7 +34,7 @@ struct CaptionBoxView: View {
                 
                 Spacer()
                 
-                Text("Caption Box")
+                Text("Caption Box".localized(language))
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)

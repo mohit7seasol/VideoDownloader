@@ -24,6 +24,7 @@ struct WatchVideoView: View {
     @State private var isSaving = false
     @State private var timeObserver: Any?
     @State private var thumbnailImage: UIImage?
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     // Calculate dynamic video height
     private var videoHeight: CGFloat {
@@ -55,7 +56,7 @@ struct WatchVideoView: View {
                             .foregroundColor(.white)
                     }
                     
-                    Text("Soundtrack")
+                    Text("Soundtrack".localized(self.language))
                         .font(.custom("Poppins-Black", size: 20))
                         .foregroundColor(.white)
                         .padding(.leading, 10)
@@ -146,7 +147,7 @@ struct WatchVideoView: View {
                         saveVideoToGallery()
                     } label: {
                         HStack {
-                            Text("Save")
+                            Text("Save".localized(self.language))
                                 .font(.custom("Urbanist-Bold", size: 18))
                             Image("download_ic")
                                 .resizable()
@@ -178,22 +179,22 @@ struct WatchVideoView: View {
         .onDisappear {
             cleanupPlayer()
         }
-        .alert("Video Saved", isPresented: $showSaveSuccess) {
+        .alert("Video Saved".localized(self.language), isPresented: $showSaveSuccess) {
             Button("OK") {
                 dismiss()
             }
         } message: {
-            Text("Your video has been saved to gallery and history")
+            Text("Your video has been saved to gallery and history".localized(self.language))
         }
-        .alert("Permission Required", isPresented: $showPermissionAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Settings") {
+        .alert("Permission Required".localized(self.language), isPresented: $showPermissionAlert) {
+            Button("Cancel".localized(self.language), role: .cancel) { }
+            Button("Settings".localized(self.language)) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
         } message: {
-            Text("Please grant photo library access to save videos")
+            Text("Please grant photo library access to save videos".localized(self.language))
         }
         .overlay {
             if isSaving {
@@ -206,7 +207,7 @@ struct WatchVideoView: View {
                             .scaleEffect(1.5)
                             .tint(.white)
                         
-                        Text("Saving video...")
+                        Text("Saving video...".localized(self.language))
                             .font(.custom("Urbanist-Medium", size: 16))
                             .foregroundColor(.white)
                     }

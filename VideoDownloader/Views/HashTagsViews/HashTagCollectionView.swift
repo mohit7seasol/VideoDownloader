@@ -135,6 +135,7 @@ struct HashTagCollectionCard: View {
     let onCopy: (String) -> Void
     
     @State private var showCopyAlert = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     private var buttonHeight: CGFloat {
         UIDevice.current.userInterfaceIdiom == .pad ? 54 : 48
@@ -189,7 +190,7 @@ struct HashTagCollectionCard: View {
                             .renderingMode(.template)
                             .frame(width: 20, height: 20)
                         
-                        Text("Share")
+                        Text("Share".localized(self.language))
                             .font(.custom("Urbanist-Regular", size: 16))
                     }
                     .foregroundColor(.white)

@@ -137,7 +137,7 @@ struct HashTagBannerView: View {
     }
 }
 struct HashTagCategoryCard: View {
-    
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     let name: String
     
     var body: some View {
@@ -160,7 +160,7 @@ struct HashTagCategoryCard: View {
                 Spacer()
                 
                 HStack {
-                    Text(name)
+                    Text(name.localized(language))
                         .font(.custom("Urbanist-Medium", size: 15))
                         .foregroundColor(.white)
                         .lineLimit(2)

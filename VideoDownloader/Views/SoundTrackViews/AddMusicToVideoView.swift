@@ -50,6 +50,7 @@ struct AddMusicToVideoView: View {
     @State private var isVideoAudioAvailable = false
     
     @State private var navigateToPreview = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     // Fixed heights for other components to calculate video preview height
     private let navigationBarHeight: CGFloat = 100 // Top bar + padding
@@ -134,7 +135,7 @@ struct AddMusicToVideoView: View {
                             .scaleEffect(1.5)
                             .tint(.white)
                         
-                        Text("Exporting video...")
+                        Text("Exporting video...".localized(self.language))
                             .font(.custom("Urbanist-Medium", size: 16))
                             .foregroundColor(.white)
                     }
@@ -179,7 +180,7 @@ extension AddMusicToVideoView {
             
             Spacer()
             
-            Text("Soundtrack")
+            Text("Soundtrack".localized(self.language))
                 .font(.custom("Poppins-Black", size: 20))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -193,7 +194,7 @@ extension AddMusicToVideoView {
                     isPlaying = false
                     exportVideo()
                 } label: {
-                    Text("Done")
+                    Text("Done".localized(self.language))
                         .font(.custom("Urbanist-Bold", size: 16))
                         .padding(.horizontal, 20)
                         .padding(.vertical, 8)
@@ -437,7 +438,7 @@ extension AddMusicToVideoView {
                 // Placeholder when no music selected
                 HStack {
                     Spacer()
-                    Text("Tap to add music")
+                    Text("Tap to add music".localized(self.language))
                         .font(.custom("Urbanist-Medium", size: 14))
                         .foregroundColor(.white.opacity(0.5))
                     Spacer()

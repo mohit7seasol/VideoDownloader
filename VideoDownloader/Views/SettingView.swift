@@ -10,6 +10,7 @@ import SwiftUI
 struct SettingView: View {
     @State private var isShowingLanguageView = false
     @Environment(\.dismiss) var dismiss
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -30,7 +31,7 @@ struct SettingView: View {
                         .padding(.leading, 16)
                 }
                 
-                Text("Settings")
+                Text("Settings".localized(self.language))
                     .font(.custom("Urbanist-Medium", size: 20))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -79,7 +80,7 @@ struct SettingView: View {
 }
 
 struct PremiumTopView: View {
-    
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     var body: some View {
         ZStack {
             
@@ -91,22 +92,22 @@ struct PremiumTopView: View {
             
             VStack(alignment: .leading, spacing: 0) {
                 
-                Text("Join Full Experience")
+                Text("Join Full Experience".localized(self.language))
                     .font(.custom("Urbanist-Medium", size: 16))
                     .foregroundColor(.white)
                     .padding(.top, 30)   // ✅ Top space 15
                 
-                Text("Upgrade")
+                Text("Upgrade".localized(self.language))
                     .font(.custom("Unlock-Regular", size: 28))
                     .foregroundColor(.white)
                     .padding(.top, 4)
                 
                 VStack(alignment: .leading, spacing: 12) {
                     
-                    FeatureRow(text: "Ad-free experience")
-                    FeatureRow(text: "Saved All Video Links")
-                    FeatureRow(text: "Edit Photos & Videos")
-                    FeatureRow(text: "Enhance Videos with Music")
+                    FeatureRow(text: "Ad-free experience".localized(self.language))
+                    FeatureRow(text: "Saved All Video Links".localized(self.language))
+                    FeatureRow(text: "Edit Photos & Videos".localized(self.language))
+                    FeatureRow(text: "Enhance Videos with Music".localized(self.language))
                     
                 }
                 .padding(.top, 16)
@@ -120,7 +121,7 @@ struct PremiumTopView: View {
                         
                     } label: {
                         
-                        Text("Get Upgrade")
+                        Text("Get Upgrade".localized(self.language))
                             .font(.custom("Urbanist-Bold", size: 16))
                             .foregroundColor(.white)
                             .frame(width: 170, height: 50)
@@ -165,7 +166,7 @@ struct FeatureRow: View {
 
 struct BottomSettingCard: View {
     @Binding var isShowingLanguageView: Bool
-    
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     let privacyPolicy: String
     let termsOfUse: String
     let eula: String
@@ -187,7 +188,7 @@ struct BottomSettingCard: View {
                 VStack(spacing: 0) {
                     SettingRow(icon: item.icon, title: item.title)
                         .onTapGesture {
-                            handleTap(for: item.title)
+                            handleTap(for: item.title.localized(self.language))
                         }
                     
                     // Add line separator only if not the last item
@@ -214,7 +215,7 @@ struct BottomSettingCard: View {
                 UIApplication.shared.open(url)
             }
         case "Share App":
-            let shareText = "Check out this app! \(shareApp)"
+            let shareText = "\("Check out this app!".localized(self.language)) \(shareApp)"
             let activityVC = UIActivityViewController(
                 activityItems: [shareText],
                 applicationActivities: nil
