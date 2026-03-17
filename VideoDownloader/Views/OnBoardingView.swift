@@ -28,13 +28,13 @@ struct OnBoardingView: View {
             topImageName: "on1"
         ),
         OnboardingItem(
-            title: "Fast Video Downloader",
-            subtitle: "Download your favorite videos quickly and easily.",
+            title: "Add Music to Your Video",
+            subtitle: "Easily add your favorite songs and make videos more engaging.",
             topImageName: "on2"
         ),
         OnboardingItem(
-            title: "Fast Video Downloader",
-            subtitle: "Download your favorite videos quickly and easily.",
+            title: "Add Trending Hashtags",
+            subtitle: "Boost your reach with popular hashtags for every post.",
             topImageName: "on3"
         )
     ]
@@ -109,13 +109,13 @@ struct OnBoardingView: View {
                             .font(.custom("Urbanist-Bold", size: 18))
                             .foregroundColor(.white)
                             .frame(
-                                width: UIScreen.main.bounds.width / 2.5,
+                                width: UIScreen.main.bounds.width / 3.0,
                                 height: isIpad ? 66 : 56
                             )
                             .background(
                                 LinearGradient(
                                     colors: [
-                                        Color(hex: "#1973E8").opacity(0.3),
+                                        Color(hex: "#1973E8"),
                                         Color(hex: "#0E4082")
                                     ],
                                     startPoint: .top,
@@ -123,6 +123,12 @@ struct OnBoardingView: View {
                                 )
                             )
                             .cornerRadius(30)
+                            .shadow(
+                                color: Color(hex: "#1973E8").opacity(0.3),
+                                radius: 10,
+                                x: 0,
+                                y: 6
+                            )
                     }
                     .padding(.bottom,
                         10 + (UIApplication.shared.connectedScenes
