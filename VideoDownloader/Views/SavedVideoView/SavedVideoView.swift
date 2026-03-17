@@ -190,11 +190,12 @@ struct SavedVideoCardView: View {
                     Button(action: onDelete) {
                         Image("delete_ic")
                             .resizable()
-                            .frame(width: isIPad ? 32 : 22, height: isIPad ? 32 : 22)
+                            .frame(width: isIPad ? 32 : 18, height: isIPad ? 32 : 20)
                             .foregroundColor(.white)
-                            .padding(8)
-                            .background(Color.black.opacity(0.6))
+                            .padding(2)
                             .clipShape(Circle())
+                            .padding(.trailing, 0)
+                            .padding(.bottom, 68)
                     }
                     .padding(12)
                 }
