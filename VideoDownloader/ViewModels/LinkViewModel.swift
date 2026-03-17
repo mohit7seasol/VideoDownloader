@@ -119,6 +119,7 @@ class LinkViewModel: ObservableObject {
     @AppStorage("InstaAPIToken") private var instagramAPIToken: String = ""
     @AppStorage("FacebookAPIToken") private var facebookAPIToken: String = ""
     @AppStorage("TiktokAPIToken") private var tiktokAPIToken: String = ""
+    @Published var didDownloadSuccessfully: Bool = false
     
     // Method to set tab manager
     func setTabManager(_ manager: TabSelectionManager) {
@@ -215,6 +216,7 @@ class LinkViewModel: ObservableObject {
             self?.isSaving = false
             self?.postLink = ""
             self?.alertMessage = "Video downloaded and saved to history!"
+            self?.didDownloadSuccessfully = true
             self?.showAlert = true
         }
     }

@@ -103,8 +103,11 @@ struct LinkView: View {
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK".localized(language), role: .cancel) {
-                // Navigate to history tab (index 2) when user taps OK
-                tabManager.navigateToHistory()
+                // Only navigate to History if the video was downloaded successfully
+                if viewModel.didDownloadSuccessfully {
+                    tabManager.navigateToHistory()
+                    viewModel.didDownloadSuccessfully = false  // reset
+                }
             }
         }
         .onAppear {
