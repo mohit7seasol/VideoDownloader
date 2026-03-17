@@ -169,7 +169,7 @@ struct CaptionContentCardView: View {
                             .renderingMode(.template)
                             .frame(width: 20, height: 20)
                         
-                        Text("Copy")
+                        Text("Copy".localized(self.language))
                             .font(.custom("Urbanist-Regular", size: 16))
                     }
                     .foregroundColor(.white)

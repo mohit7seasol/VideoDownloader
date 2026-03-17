@@ -186,9 +186,11 @@ struct BottomSettingCard: View {
         VStack(spacing: 0) {
             ForEach(Array(settingsItems.enumerated()), id: \.offset) { index, item in
                 VStack(spacing: 0) {
+                    // Moved onTapGesture from SettingRow to here
                     SettingRow(icon: item.icon, title: item.title.localized(self.language))
+                        .contentShape(Rectangle()) // Makes entire area tappable
                         .onTapGesture {
-                            handleTap(for: item.title.localized(self.language))
+                            handleTap(for: item.title)
                         }
                     
                     // Add line separator only if not the last item
@@ -196,7 +198,7 @@ struct BottomSettingCard: View {
                         Image("line_ic")
                             .resizable()
                             .frame(height: 1)
-                            .padding(.leading, 0) // Start after icon (40px icon + 14px spacing + 3px extra)
+                            .padding(.leading, 0) 
                             .padding(.trailing, 0)
                     }
                 }
@@ -208,13 +210,13 @@ struct BottomSettingCard: View {
     
     func handleTap(for title: String) {
         switch title {
-        case "Language".localized(self.language):
+        case "Language":
             isShowingLanguageView = true
-        case "Rate App".localized(self.language):
+        case "Rate App":
             if let url = URL(string: reviewLink) {
                 UIApplication.shared.open(url)
             }
-        case "Share App".localized(self.language):
+        case "Share App":
             let shareText = "\("Check out this app!".localized(self.language)) \(shareApp)"
             let activityVC = UIActivityViewController(
                 activityItems: [shareText],
@@ -224,11 +226,11 @@ struct BottomSettingCard: View {
                let rootVC = windowScene.windows.first?.rootViewController {
                 rootVC.present(activityVC, animated: true)
             }
-        case "Privacy Policy".localized(self.language):
+        case "Privacy Policy":
             if let url = URL(string: privacyPolicy) {
                 UIApplication.shared.open(url)
             }
-        case "Terms".localized(self.language):
+        case "Terms":
             if let url = URL(string: termsOfUse) {
                 UIApplication.shared.open(url)
             }
@@ -244,9 +246,7 @@ struct SettingRow: View {
     let title: String
     
     var body: some View {
-        
         HStack(spacing: 14) {
-            
             Image(icon)
                 .resizable()
                 .frame(width: 40, height: 40)

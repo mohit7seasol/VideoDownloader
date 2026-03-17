@@ -45,7 +45,7 @@ struct TabBarView: View {
 
 // MARK: - Custom Tabbar
 struct CustomTabBar: View {
-    
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     @Binding var selectedIndex: Int
     
     var body: some View {
@@ -81,7 +81,7 @@ struct CustomTabBar: View {
                             .scaledToFit()
                             .frame(width: 22,height: 22)
                         
-                        Text("Home")
+                        Text("Home".localized(self.language))
                             .font(.caption2)
                             .foregroundColor(
                                 selectedIndex == 0
@@ -104,7 +104,7 @@ struct CustomTabBar: View {
                             .scaledToFit()
                             .frame(width: 22,height: 22)
                         
-                        Text("Save")
+                        Text("Save".localized(self.language))
                             .font(.caption2)
                             .foregroundColor(
                                 selectedIndex == 2
