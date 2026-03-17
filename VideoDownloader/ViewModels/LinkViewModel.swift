@@ -175,7 +175,13 @@ class LinkViewModel: ObservableObject {
         
         // Facebook
         if isFacebookURL(webURL) {
-            handleFacebookURL(webURL)
+            DispatchQueue.main.async { [weak self] in
+                self?.isLoading = false
+                self?.isSaving = false
+                self?.alertMessage = "Facebook video download is temporarily not supported. Please try again later."
+                self?.showAlert = true
+            }
+//            handleFacebookURL(webURL)
             return
         }
         
