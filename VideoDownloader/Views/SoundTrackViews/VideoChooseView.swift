@@ -19,8 +19,12 @@ struct VideoChooseView: View {
     @State private var selectedVideo: VideoAsset?
     @State private var navigateToAddMusic = false
     @State private var showPermissionAlert = false
+    @State private var showManageOptions = false
+    @State private var showPhotoPicker = false
+    @State private var showLimitedAccessBottomSheet = false
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     @StateObject private var photoObserver = PhotoLibraryObserver()
+    
     var body: some View {
         ZStack {
             // Background Image
@@ -50,9 +54,23 @@ struct VideoChooseView: View {
                     
                     Spacer()
                     
-                    // Empty view for balance
-                    Color.clear
-                        .frame(width: 20, height: 20)
+                    // Manage Button - Only show for limited access
+                    if PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
+                        Button {
+                            showManageOptions = true
+                        } label: {
+                            Text("Manage".localized(self.language))
+                                .font(.custom("Urbanist-Medium", size: 16))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .cornerRadius(15)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .stroke(Color.white, lineWidth: 1)
+                                )
+                        }
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 60)
@@ -141,6 +159,41 @@ struct VideoChooseView: View {
         } message: {
             Text("Please grant photo library access to select videos".localized(self.language))
         }
+        // Manage Options Action Sheet
+        .confirmationDialog(
+            "Manage Photos Access".localized(self.language),
+            isPresented: $showManageOptions,
+            titleVisibility: .visible
+        ) {
+            Button("Select More Photos".localized(self.language)) {
+                showPhotoPicker = true
+            }
+            
+            Button("Change Settings".localized(self.language)) {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            
+            Button("Cancel".localized(self.language), role: .cancel) { }
+        } message: {
+            Text("Choose an option to manage your photo library access".localized(self.language))
+        }
+        // PHPicker for selecting more media
+        .photosPicker(
+            isPresented: $showPhotoPicker,
+            selection: .constant([]),
+            matching: .any(of: [.videos, .images]),
+            preferredItemEncoding: .automatic
+        )
+        .onChange(of: showPhotoPicker) { newValue in
+            if !newValue {
+                // Reload videos after picker is dismissed
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    loadVideos()
+                }
+            }
+        }
         .navigationDestination(isPresented: $navigateToAddMusic) {
             if let video = selectedVideo {
                 AddMusicToVideoView(videoAsset: video)
@@ -182,7 +235,6 @@ struct VideoChooseView: View {
             NSSortDescriptor(key: "creationDate", ascending: false)
         ]
 
-        // ✅ THIS LINE FIXES LIMITED ACCESS ISSUE
         fetchOptions.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.video.rawValue)
 
         let fetchResult = PHAsset.fetchAssets(with: .video, options: fetchOptions)
@@ -199,7 +251,6 @@ struct VideoChooseView: View {
         }
     }
 }
-
 
 // MARK: - VideoThumbnailView
 struct VideoThumbnailView: View {
@@ -226,7 +277,7 @@ struct VideoThumbnailView: View {
                     }
             }
             
-            // Duration label - as shown in uploaded image (00:10 format)
+            // Duration label
             Text(formatDuration(video.duration))
                 .font(.custom("Urbanist-Medium", size: 12))
                 .foregroundColor(.white)
@@ -246,7 +297,7 @@ struct VideoThumbnailView: View {
         options.isSynchronous = false
         options.deliveryMode = .opportunistic
         options.resizeMode = .fast
-        options.isNetworkAccessAllowed = true   // ✅ IMPORTANT
+        options.isNetworkAccessAllowed = true
 
         PHImageManager.default().requestImage(
             for: video.asset,
@@ -257,7 +308,7 @@ struct VideoThumbnailView: View {
             guard let image = image else { return }
 
             DispatchQueue.main.async {
-                self.thumbnail = image   // ✅ ensures UI update
+                self.thumbnail = image
             }
         }
     }
@@ -278,6 +329,7 @@ struct VideoAsset: Identifiable {
         asset.duration
     }
 }
+
 class PhotoLibraryObserver: NSObject, ObservableObject, PHPhotoLibraryChangeObserver {
     
     var onChange: (() -> Void)?
