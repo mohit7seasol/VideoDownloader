@@ -212,12 +212,14 @@ class LinkViewModel: ObservableObject {
         SavedVideosManager.shared.saveVideo(savedVideo)
         
         DispatchQueue.main.async { [weak self] in
-            self?.isLoading = false
-            self?.isSaving = false
-            self?.postLink = ""
-            self?.alertMessage = "Video downloaded and saved to history!"
-            self?.didDownloadSuccessfully = true
-            self?.showAlert = true
+            guard let self = self else { return }
+
+            self.isLoading = false
+            self.isSaving = false
+            self.postLink = ""
+            self.alertMessage = "Video downloaded and saved to history!".localized(self.language)
+            self.didDownloadSuccessfully = true
+            self.showAlert = true
         }
     }
     
