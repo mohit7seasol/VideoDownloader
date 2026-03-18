@@ -9,6 +9,7 @@ import SwiftUI
 import PhotosUI
 import AVKit
 import Lottie
+import Combine
 
 // MARK: - VideoChooseView
 struct VideoChooseView: View {
@@ -19,7 +20,7 @@ struct VideoChooseView: View {
     @State private var navigateToAddMusic = false
     @State private var showPermissionAlert = false
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
-    
+    @StateObject private var photoObserver = PhotoLibraryObserver()
     var body: some View {
         ZStack {
             // Background Image
@@ -125,6 +126,9 @@ struct VideoChooseView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
+            photoObserver.onChange = {
+                loadVideos()   // ✅ reload when user adds more videos
+            }
             checkPermissionAndLoadVideos()
         }
         .alert("Permission Required".localized(self.language), isPresented: $showPermissionAlert) {
@@ -145,11 +149,14 @@ struct VideoChooseView: View {
     }
     
     private func checkPermissionAndLoadVideos() {
-        switch PHPhotoLibrary.authorizationStatus() {
+        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+
+        switch status {
         case .authorized, .limited:
             loadVideos()
+
         case .notDetermined:
-            PHPhotoLibrary.requestAuthorization { status in
+            PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
                 DispatchQueue.main.async {
                     if status == .authorized || status == .limited {
                         loadVideos()
@@ -158,23 +165,34 @@ struct VideoChooseView: View {
                     }
                 }
             }
-        default:
+
+        case .denied, .restricted:
             showPermissionAlert = true
+
+        @unknown default:
+            break
         }
     }
     
     private func loadVideos() {
         isLoading = true
+
         let fetchOptions = PHFetchOptions()
-        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-        
+        fetchOptions.sortDescriptors = [
+            NSSortDescriptor(key: "creationDate", ascending: false)
+        ]
+
+        // ✅ THIS LINE FIXES LIMITED ACCESS ISSUE
+        fetchOptions.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.video.rawValue)
+
         let fetchResult = PHAsset.fetchAssets(with: .video, options: fetchOptions)
-        
+
         var videoAssets: [VideoAsset] = []
+
         fetchResult.enumerateObjects { asset, _, _ in
             videoAssets.append(VideoAsset(asset: asset))
         }
-        
+
         DispatchQueue.main.async {
             self.videos = videoAssets
             self.isLoading = false
@@ -226,15 +244,21 @@ struct VideoThumbnailView: View {
     private func loadThumbnail() {
         let options = PHImageRequestOptions()
         options.isSynchronous = false
-        options.deliveryMode = .fastFormat
-        
+        options.deliveryMode = .opportunistic
+        options.resizeMode = .fast
+        options.isNetworkAccessAllowed = true   // ✅ IMPORTANT
+
         PHImageManager.default().requestImage(
             for: video.asset,
-            targetSize: CGSize(width: 200, height: 200),
+            targetSize: CGSize(width: 300, height: 300),
             contentMode: .aspectFill,
             options: options
-        ) { image, _ in
-            self.thumbnail = image
+        ) { image, info in
+            guard let image = image else { return }
+
+            DispatchQueue.main.async {
+                self.thumbnail = image   // ✅ ensures UI update
+            }
         }
     }
     
@@ -252,5 +276,24 @@ struct VideoAsset: Identifiable {
     
     var duration: TimeInterval {
         asset.duration
+    }
+}
+class PhotoLibraryObserver: NSObject, ObservableObject, PHPhotoLibraryChangeObserver {
+    
+    var onChange: (() -> Void)?
+    
+    override init() {
+        super.init()
+        PHPhotoLibrary.shared().register(self)
+    }
+    
+    deinit {
+        PHPhotoLibrary.shared().unregisterChangeObserver(self)
+    }
+    
+    func photoLibraryDidChange(_ changeInstance: PHChange) {
+        DispatchQueue.main.async {
+            self.onChange?()
+        }
     }
 }
