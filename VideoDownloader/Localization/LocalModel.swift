@@ -103,7 +103,7 @@ let languages = [
     
     AppLanguage(LocalName: "Dansk", image: .danish, englishName: "Danish", languageCode: .Danish),
     AppLanguage(LocalName: "Nederlands", image: .dutch, englishName: "Dutch", languageCode: .Dutch),
-    AppLanguage(LocalName: "日本語", image: .danish, englishName: "Japanese", languageCode: .Japanese),
-    AppLanguage(LocalName: "Русский", image: .dutch, englishName: "Russian", languageCode: .Russian)
+    AppLanguage(LocalName: "日本語", image: .japanese, englishName: "Japanese", languageCode: .Japanese),
+    AppLanguage(LocalName: "Русский", image: .russian, englishName: "Russian", languageCode: .Russian)
 ]
 
