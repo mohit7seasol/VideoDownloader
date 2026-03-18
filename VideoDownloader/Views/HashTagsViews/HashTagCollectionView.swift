@@ -15,6 +15,7 @@ struct HashTagCollectionView: View {
     @State private var selectedHashtag: HashtagModel.Hashtag?
     @State private var showCopyAlert = false
     @State private var copiedText = ""
+    @State private var mappedTitle: String = ""
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -96,7 +97,7 @@ struct HashTagCollectionView: View {
                 } else {
                     ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 16) {
-                            ForEach(viewModel.getHashtagsForCategory(category), id: \.id) { hashtag in
+                            ForEach(viewModel.getHashtagsForCategory(mappedTitle), id: \.id) { hashtag in
                                 HashTagCollectionCard(
                                     hashtag: hashtag,
                                     onCopy: { text in
@@ -119,7 +120,8 @@ struct HashTagCollectionView: View {
         .ignoresSafeArea(.all, edges: .top)
         .background(Color.clear) // Ensure clear background
         .onAppear {
-            viewModel.fetchHashtags(for: category)
+            mappedTitle = mapCategoryTitle(category)
+            viewModel.fetchHashtags(for: mappedTitle)
         }
         .alert(isPresented: $showCopyAlert) {
             Alert(
@@ -127,6 +129,26 @@ struct HashTagCollectionView: View {
                 message: Text("Hashtags copied to clipboard"),
                 dismissButton: .default(Text("OK"))
             )
+        }
+    }
+    func mapCategoryTitle(_ category: String) -> String {
+        switch category {
+        case "Weather":
+            return "Weather/Seasons"
+        case "People":
+            return "Social/People"
+        case "Holidays":
+            return "Holidays / Celebrations"
+        case "Photography":
+            return "Art/Photography"
+        case "Follow":
+            return "Follow/Shoutout/Like/Comment"
+        case "Travel":
+            return "Travel/Active/Sports"
+        case "Text":
+            return "Text Art"
+        default:
+            return category
         }
     }
 }

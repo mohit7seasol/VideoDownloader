@@ -15,7 +15,8 @@ struct LanguageView: View {
     @Environment(\.presentationMode) var presentationMode
     @AppStorage(SessionKeys.isLanguageDone) var isLanguageDone = false
     @StateObject var vm = LanguageViewModel()
-
+    var isOpenFromSetting: Bool = false
+    
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
@@ -33,56 +34,80 @@ struct LanguageView: View {
                 .scaledToFill()
                 .ignoresSafeArea()
 
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(spacing: 0) {
 
-                // MARK: Header
-                VStack(alignment: .leading, spacing: 8) {
+                // ✅ شرط: Show navbar only if opened from settings
+                if isOpenFromSetting {
+                    HStack {
+                        Button {
+                            presentationMode.wrappedValue.dismiss()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.white)
+                                .font(.system(size: 18, weight: .medium))
+                                .padding(.leading, 16)
+                        }
 
-                    Text("Instant Video Download".localized(self.language))
-                        .font(Font.custom("Unlock-Regular", size: 22))
-                        .foregroundColor(.white)
-
-                    Text("Paste the link and enjoy fast, hassle-free video downloads".localized(self.language))
-                        .font(Font.custom("Urbanist-Medium", size: 16))
-                        .foregroundColor(.white.opacity(0.8))
-                        .fixedSize(horizontal: false, vertical: true)
+                        Text("".localized(self.language))
+                            .font(.custom("Urbanist-Medium", size: 20))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 10)
+                    }
+                    .padding(.top, UIApplication.shared.safeAreaTop)
+                    .padding(.bottom, 10)
+                    .zIndex(1)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 48)
 
-                // MARK: Language Grid
-                ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
 
-                    LazyVGrid(columns: columns, spacing: 16) {
+                    // MARK: Header
+                    VStack(alignment: .leading, spacing: 8) {
 
-                        ForEach(languages, id: \.languageCode) { item in
+                        Text("Instant Video Download".localized(self.language))
+                            .font(Font.custom("Unlock-Regular", size: 22))
+                            .foregroundColor(.white)
 
-                            LanguageRow(
-                                item: item,
-                                isSelected: vm.selectedLanguage == item.languageCode
-                            )
-                            .onTapGesture {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    vm.selectedLanguage = item.languageCode
+                        Text("Paste the link and enjoy fast, hassle-free video downloads".localized(self.language))
+                            .font(Font.custom("Urbanist-Medium", size: 16))
+                            .foregroundColor(.white.opacity(0.8))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, isOpenFromSetting ? 20 : 48) // ✅ adjust spacing
+
+                    // MARK: Language Grid
+                    ScrollView(showsIndicators: false) {
+
+                        LazyVGrid(columns: columns, spacing: 16) {
+
+                            ForEach(languages, id: \.languageCode) { item in
+
+                                LanguageRow(
+                                    item: item,
+                                    isSelected: vm.selectedLanguage == item.languageCode
+                                )
+                                .onTapGesture {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        vm.selectedLanguage = item.languageCode
+                                    }
                                 }
                             }
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 25)
+                        .padding(.bottom, 120)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 25)
-                    .padding(.bottom, 120) // space for button
-                }
 
-                Spacer()
+                    Spacer()
+                }
             }
 
-            // MARK: Bottom Gradient + Button
+            // Bottom button (unchanged)
             VStack {
-
                 Spacer()
 
                 ZStack {
-
                     LinearGradient(
                         colors: [
                             Color.black.opacity(0),
@@ -95,7 +120,6 @@ struct LanguageView: View {
                     .ignoresSafeArea(edges: .bottom)
 
                     Button {
-
                         language = vm.selectedLanguage ?? .English
 
                         if !isLanguageDone {
@@ -105,7 +129,6 @@ struct LanguageView: View {
                         }
 
                     } label: {
-
                         Text("Done".localized(self.language))
                             .font(Font.custom("Urbanist-Bold", size: 16))
                             .foregroundColor(.white)
@@ -121,7 +144,7 @@ struct LanguageView: View {
                             .clipShape(Capsule())
                     }
                     .padding(.horizontal, 40)
-                    .padding(.bottom, 34) // safe area spacing
+                    .padding(.bottom, 34)
                 }
             }
         }

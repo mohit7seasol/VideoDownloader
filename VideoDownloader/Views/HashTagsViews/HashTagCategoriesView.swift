@@ -10,6 +10,7 @@ import SwiftUI
 struct HashTagCategoriesView: View {
     
     @Environment(\.dismiss) var dismiss
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     let category = [
         "Animals","Architecture","Celebrities","Eid","Family","Fashion","Follow",
@@ -49,7 +50,7 @@ struct HashTagCategoriesView: View {
                 
                 Spacer()
                 
-                Text("Hashtag Collection")
+                Text("Hashtag Collection".localized(self.language))
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)

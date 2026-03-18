@@ -72,7 +72,12 @@ struct SettingView: View {
         .toolbar(.hidden, for: .tabBar)
         .ignoresSafeArea(.all, edges: .top)
         .background(
-            NavigationLink(destination: LanguageView(), isActive: $isShowingLanguageView) {
+            NavigationLink(
+                destination: LanguageView(isOpenFromSetting: true)
+                    .navigationBarHidden(true) 
+                    .navigationBarBackButtonHidden(true),
+                isActive: $isShowingLanguageView
+            ) {
                 EmptyView()
             }
         )
