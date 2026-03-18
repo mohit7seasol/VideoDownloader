@@ -34,36 +34,6 @@
             endingLineNumber = "49"
             landmarkName = "getHashtagsForCategory(_:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "91580413-643A-477A-9155-ED96B7D63E22 - 64c18d50caca2f05"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "VideoDownloader.HashtagViewModel.getHashtagsForCategory(Swift.String) -&gt; Swift.Array&lt;VideoDownloader.HashtagModel.Hashtag&gt;"
-                  moduleName = "VideoDownloader.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/dreamworld/Desktop/MohitKanpara/VideoDownloader/VideoDownloader/ViewModels/HashTagViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "49"
-                  endingLineNumber = "49">
-               </Location>
-               <Location
-                  uuid = "91580413-643A-477A-9155-ED96B7D63E22 - e5ce63603d31f5ed"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (VideoDownloader.HashtagModel.Data) -&gt; Swift.Bool in VideoDownloader.HashtagViewModel.getHashtagsForCategory(Swift.String) -&gt; Swift.Array&lt;VideoDownloader.HashtagModel.Hashtag&gt;"
-                  moduleName = "VideoDownloader.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/dreamworld/Desktop/MohitKanpara/VideoDownloader/VideoDownloader/ViewModels/HashTagViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "50"
-                  endingLineNumber = "50">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

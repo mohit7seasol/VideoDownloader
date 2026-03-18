@@ -16,6 +16,7 @@ struct HashTagCollectionView: View {
     @State private var showCopyAlert = false
     @State private var copiedText = ""
     @State private var mappedTitle: String = ""
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -38,7 +39,7 @@ struct HashTagCollectionView: View {
                 
                 Spacer()
                 
-                Text(category)
+                Text(category.localized(self.language))
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -125,9 +126,9 @@ struct HashTagCollectionView: View {
         }
         .alert(isPresented: $showCopyAlert) {
             Alert(
-                title: Text("Copied!"),
-                message: Text("Hashtags copied to clipboard"),
-                dismissButton: .default(Text("OK"))
+                title: Text("Copied!".localized(self.language)),
+                message: Text("Hashtags copied to clipboard".localized(self.language)),
+                dismissButton: .default(Text("OK".localized(self.language)))
             )
         }
     }

@@ -219,8 +219,8 @@ struct CaptionContentCardView: View {
         .alert(isPresented: $showCopyAlert) {
             Alert(
                 title: Text("Copied!".localized(language)),
-                message: Text("Caption copied to clipboard"),
-                dismissButton: .default(Text("OK"))
+                message: Text("Caption copied to clipboard".localized(language)),
+                dismissButton: .default(Text("OK".localized(language)))
             )
         }
     }
