@@ -66,8 +66,14 @@ struct LinkView: View {
                         
                         // Download Button
                         Button {
-                            viewModel.downloadVideo()
+                            // Hide keyboard when download button is pressed
+                            UIApplication.shared.endEditing(true)
                             isTextFieldFocused = false
+                            
+                            // Small delay to ensure keyboard is dismissed before download starts
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                viewModel.downloadVideo()
+                            }
                         } label: {
                             if viewModel.isLoading {
                                 ProgressView()
@@ -112,10 +118,10 @@ struct LinkView: View {
                             .frame(maxWidth: geometry.size.width - 40)
                             .padding(.horizontal, 20)
                     }
-                    .padding(.bottom, UIApplication.shared.safeAreaBottom + 20) // .padding(.bottom, 50) // Consistent bottom padding from original
+                    .padding(.bottom, UIApplication.shared.safeAreaBottom + 20)
                     .opacity(1)
                 }
-                .offset(y: isTextFieldFocused ? -keyboardHeight * 0.15 : 0) // Reduced offset
+                .offset(y: isTextFieldFocused ? -keyboardHeight * 0.15 : 0)
             }
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
@@ -123,6 +129,12 @@ struct LinkView: View {
                 if viewModel.didDownloadSuccessfully {
                     tabManager.navigateToHistory()
                     viewModel.didDownloadSuccessfully = false
+                } else {
+                    // Clear the text field when alert is dismissed after failure
+                    DispatchQueue.main.async {
+                        viewModel.postLink = ""
+                        isTextFieldFocused = false
+                    }
                 }
             }
         }
@@ -170,8 +182,6 @@ struct PostLinkView: View {
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     var pasteAction: () -> Void
     @FocusState var isTextFieldFocused: Bool
-    @State private var textFieldText: String = ""
-    @State private var isFirstResponder: Bool = false
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -208,7 +218,9 @@ struct PostLinkView: View {
                     }
                     .onTapGesture {
                         // Clear the text field when tapped
-                        postLink = ""
+                        if !postLink.isEmpty {
+                            postLink = ""
+                        }
                     }
             }
             
@@ -228,12 +240,6 @@ struct PostLinkView: View {
         .frame(height: isIpad ? 80 : 60)
         .background(Color.white.opacity(0.15))
         .cornerRadius(16)
-        .onChange(of: isTextFieldFocused) { focused in
-            if focused {
-                // When text field gains focus, clear the text
-                postLink = ""
-            }
-        }
     }
 }
 
