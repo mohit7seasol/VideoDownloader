@@ -15,41 +15,12 @@ class HistoryViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var showDeleteAlert = false
     @Published var videoToDelete: SavedVideo?
-    
-    private var cancellables = Set<AnyCancellable>()
-    
-    init() {
-        loadVideos()
-    }
+    @Published var viewMode = 0 // 0 for folders, 1 for videos
     
     func loadVideos() {
         isLoading = true
-        
-        // Simulate loading delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            guard let self = self else { return }
-            
-            let videos = SavedVideosManager.shared.getSavedVideos()
-            
-            // Debug: Print all video paths and check if thumbnails exist
-            print("📱 Loading \(videos.count) videos from storage")
-            for video in videos {
-                let (videoExists, thumbnailExists) = video.validateFiles()
-                print("  Video: \(video.id)")
-                print("    - Video path: \(video.videoURL.path)")
-                print("    - Video exists: \(videoExists)")
-                print("    - Thumbnail path: \(video.thumbnailURL?.path ?? "none")")
-                print("    - Thumbnail exists: \(thumbnailExists)")
-            }
-            
-            self.savedVideos = videos
-            self.isLoading = false
-        }
-    }
-    
-    func deleteVideo(_ video: SavedVideo) {
-        SavedVideosManager.shared.deleteVideo(video)
-        loadVideos()
+        savedVideos = SavedVideosManager.shared.getSavedVideos()
+        isLoading = false
     }
     
     func confirmDelete(_ video: SavedVideo) {
@@ -59,14 +30,20 @@ class HistoryViewModel: ObservableObject {
     
     func handleDeleteConfirmation(confirmed: Bool) {
         if confirmed, let video = videoToDelete {
-            deleteVideo(video)
+            // Remove from folders first
+            var folderManager = FolderManager.shared
+            for (index, folder) in folderManager.folders.enumerated() {
+                folderManager.folders[index].videoIds.removeAll { $0 == video.id }
+            }
+            folderManager.saveFolders()
+            
+            // Then delete video
+            SavedVideosManager.shared.deleteVideo(video)
+            loadVideos()
         }
         videoToDelete = nil
         showDeleteAlert = false
     }
-    
-    // Remove the regenerateAllThumbnails method as it's causing issues
-    // If you need thumbnail regeneration, handle it in the SavedVideoCardView instead
 }
 
 // Extension to help with debugging

@@ -525,7 +525,12 @@ class LinkViewModel: ObservableObject {
         var localURL = appSupportDir.appendingPathComponent(fileName)
         
         do {
-            try? FileManager.default.removeItem(at: localURL)
+            // Remove if exists
+            if FileManager.default.fileExists(atPath: localURL.path) {
+                try FileManager.default.removeItem(at: localURL)
+            }
+            
+            // Move the downloaded file
             try FileManager.default.moveItem(at: tempURL, to: localURL)
             
             var resourceValues = URLResourceValues()
@@ -537,10 +542,21 @@ class LinkViewModel: ObservableObject {
             // Generate thumbnail
             let thumbnailURL = generateThumbnail(from: localURL)
             
-            // Save to history
-            self.saveToHistory(videoURL: localURL, thumbnailURL: thumbnailURL, sourceURL: sourceURL)
+            if let thumbnailURL = thumbnailURL {
+                print("✅ Thumbnail saved at: \(thumbnailURL.path)")
+            }
+            
+            // Show folder selection
+            DispatchQueue.main.async { [weak self] in
+                self?.showFolderSelectionForDownload(
+                    videoURL: localURL,
+                    thumbnailURL: thumbnailURL,
+                    sourceURL: sourceURL
+                )
+            }
             
         } catch {
+            print("❌ Failed to save file: \(error)")
             showError("Failed to save file: \(error.localizedDescription)")
         }
     }
@@ -699,5 +715,56 @@ class LinkViewModel: ObservableObject {
             let finalURL = (response as? HTTPURLResponse)?.url?.absoluteString
             completion(finalURL)
         }.resume()
+    }
+}
+extension LinkViewModel {
+    // Add this method to show folder selection before saving
+    func showFolderSelectionForDownload(videoURL: URL, thumbnailURL: URL?, sourceURL: String) {
+        DispatchQueue.main.async {
+            // This will be called from the view to show folder selection
+            NotificationCenter.default.post(
+                name: .showFolderSelection,
+                object: nil,
+                userInfo: [
+                    "videoURL": videoURL,
+                    "thumbnailURL": thumbnailURL as Any,
+                    "sourceURL": sourceURL
+                ]
+            )
+        }
+    }
+    
+    // Modify the saveToHistory method to include folder selection
+    private func saveToHistoryWithFolder(videoURL: URL, thumbnailURL: URL? = nil, sourceURL: String, folderId: UUID? = nil) {
+        let savedVideo = SavedVideo(
+            videoURL: videoURL,
+            thumbnailURL: thumbnailURL,
+            musicTrack: nil,
+            musicStartTime: 0,
+            musicEndTime: 0
+        )
+        
+        SavedVideosManager.shared.saveVideo(savedVideo)
+        
+        // Add to selected folder if provided
+        if let folderId = folderId {
+            FolderManager.shared.addVideoToFolder(videoId: savedVideo.id, folderId: folderId)
+        } else {
+            // Add to default folder (Downloads)
+            if let defaultFolder = FolderManager.shared.folders.first {
+                FolderManager.shared.addVideoToFolder(videoId: savedVideo.id, folderId: defaultFolder.id)
+            }
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.isLoading = false
+            self.isSaving = false
+            self.postLink = ""
+            self.alertMessage = "Video downloaded and saved to folder!".localized(self.language)
+            self.didDownloadSuccessfully = true
+            self.showAlert = true
+        }
     }
 }

@@ -14,6 +14,8 @@ struct LinkView: View {
     @State private var keyboardHeight: CGFloat = 0
     @FocusState private var isTextFieldFocused: Bool
     @State private var bottomImageOffset: CGFloat = 0
+    @StateObject private var folderSelectionManager = FolderSelectionManager()
+    @State private var showCreateFolderAlert = false
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -144,6 +146,34 @@ struct LinkView: View {
         }
         .onDisappear {
             removeKeyboardNotifications()
+        }
+        .sheet(isPresented: $folderSelectionManager.showFolderSelection) {
+            FolderSelectionView(
+                folderManager: folderSelectionManager.folderManager,
+                onFolderSelected: { folder in
+                    folderSelectionManager.saveToSelectedFolder(folderId: folder.id)
+                },
+                onCreateNewFolder: {
+                    folderSelectionManager.showFolderSelection = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        showCreateFolderAlert = true
+                    }
+                }
+            )
+        }
+        .createFolderAlert(isPresented: $showCreateFolderAlert) { folderName in
+            folderSelectionManager.createNewFolder(name: folderName)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showFolderSelection)) { notification in
+            if let videoURL = notification.userInfo?["videoURL"] as? URL,
+               let sourceURL = notification.userInfo?["sourceURL"] as? String {
+                let thumbnailURL = notification.userInfo?["thumbnailURL"] as? URL
+                folderSelectionManager.handleDownloadedVideo(
+                    videoURL: videoURL,
+                    thumbnailURL: thumbnailURL,
+                    sourceURL: sourceURL
+                )
+            }
         }
     }
     

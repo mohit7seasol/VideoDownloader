@@ -9,4 +9,5 @@ import Foundation
 
 extension Notification.Name {
     static let navigateToSoundTrack = Notification.Name("navigateToSoundTrack")
+    static let showFolderSelection = Notification.Name("showFolderSelection")
 }
