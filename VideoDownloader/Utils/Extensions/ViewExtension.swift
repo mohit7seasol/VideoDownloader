@@ -163,6 +163,12 @@ extension UIApplication {
             .first?
             .safeAreaInsets.top ?? 0
     }
+    var safeAreaBottom: CGFloat {
+        self.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows
+            .first?.safeAreaInsets.bottom ?? 0
+    }
 }
 
 class Haptics {
