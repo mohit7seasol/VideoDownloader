@@ -11,108 +11,156 @@ struct LinkView: View {
     @StateObject private var viewModel = LinkViewModel()
     @EnvironmentObject var tabManager: TabSelectionManager
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
+    @State private var keyboardHeight: CGFloat = 0
+    @FocusState private var isTextFieldFocused: Bool
+    @State private var bottomImageOffset: CGFloat = 0
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
     
     var body: some View {
-        ZStack {
-            Image("app_bg_image")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-                .onTapGesture {
-                    UIApplication.shared.endEditing(true)
-                }
-            
-            VStack(spacing: 20) {
-                // 1️⃣ Top View (Reuse)
-                TopHomeView()
-                
-                Text("Instant Video Download".localized(self.language))
-                    .font(Font.custom("Unlock-Regular", size: 22))
-                    .foregroundColor(.white)
-                
-                Text("Paste the link and enjoy fast, hassle-free video downloads".localized(self.language))
-                    .font(Font.custom("Urbanist-Medium", size: 16))
-                    .foregroundColor(.white.opacity(0.9))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(3)
-                    .padding(.horizontal, 40)
-                
-                // Post Link View
-                PostLinkView(
-                    postLink: $viewModel.postLink,
-                    pasteAction: viewModel.handlePaste
-                )
-                .frame(height: isIpad ? 80 : 60)
-                .padding(.horizontal, 30)
-                
-                // 8️⃣ Download Button
-                Button {
-                    viewModel.downloadVideo()
-                } label: {
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .tint(.white)
-                            .padding(.horizontal, 50)
-                            .padding(.vertical, 14)
-                    } else {
-                        Text("Download".localized(language))
-                            .font(Font.custom("Urbanist-Bold", size: 16))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 50)
-                            .padding(.vertical, 14)
-                    }
-                }
-                .background(
-                    LinearGradient(
-                        colors: [
-                            Color(hex: "#1973E8"),
-                            Color(hex: "#0E4082")
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .clipShape(Capsule())
-                .shadow(
-                    color: Color(hex: "#1973E8").opacity(0.3),
-                    radius: 10,
-                    x: 0,
-                    y: 6
-                )
-                .disabled(viewModel.isLoading)
-                .padding(.top, 10)
-                
-                // 9️⃣ Bottom Image
-                Image("link_bottom_ic")
+        GeometryReader { geometry in
+            ZStack {
+                Image("app_bg_image")
                     .resizable()
-                    .scaledToFit()
-                    .padding(.horizontal, 20)
-                    .padding(.top, 15)
-                    .padding(.bottom, 30)
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        UIApplication.shared.endEditing(true)
+                        isTextFieldFocused = false
+                    }
                 
-                Spacer()
+                VStack(spacing: 0) {
+                    // Top View (Reuse) - Fixed at top
+                    TopHomeView()
+                        .padding(.top, UIApplication.shared.connectedScenes
+                            .compactMap { $0 as? UIWindowScene }
+                            .first?.windows
+                            .first?.safeAreaInsets.top ?? 0)
+                    
+                    Spacer(minLength: 0)
+                    
+                    // Main content - Centered vertically
+                    VStack(spacing: 20) {
+                        Text("Instant Video Download".localized(self.language))
+                            .font(Font.custom("Unlock-Regular", size: 22))
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                        
+                        Text("Paste the link and enjoy fast, hassle-free video downloads".localized(self.language))
+                            .font(Font.custom("Urbanist-Medium", size: 16))
+                            .foregroundColor(.white.opacity(0.9))
+                            .multilineTextAlignment(.center)
+                            .lineLimit(3)
+                            .padding(.horizontal, 40)
+                        
+                        // Post Link View
+                        PostLinkView(
+                            postLink: $viewModel.postLink,
+                            pasteAction: viewModel.handlePaste,
+                            isTextFieldFocused: _isTextFieldFocused
+                        )
+                        .frame(height: isIpad ? 80 : 60)
+                        .padding(.horizontal, 30)
+                        
+                        // Download Button
+                        Button {
+                            viewModel.downloadVideo()
+                            isTextFieldFocused = false
+                        } label: {
+                            if viewModel.isLoading {
+                                ProgressView()
+                                    .tint(.white)
+                                    .padding(.horizontal, 50)
+                                    .padding(.vertical, 14)
+                            } else {
+                                Text("Download".localized(language))
+                                    .font(Font.custom("Urbanist-Bold", size: 16))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 50)
+                                    .padding(.vertical, 14)
+                            }
+                        }
+                        .background(
+                            LinearGradient(
+                                colors: [
+                                    Color(hex: "#1973E8"),
+                                    Color(hex: "#0E4082")
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .clipShape(Capsule())
+                        .shadow(
+                            color: Color(hex: "#1973E8").opacity(0.3),
+                            radius: 10,
+                            x: 0,
+                            y: 6
+                        )
+                        .disabled(viewModel.isLoading)
+                    }
+                    
+                    Spacer(minLength: 0)
+                    
+                    // Bottom Image - Fixed at bottom with proper spacing
+                    VStack {
+                        Image("link_bottom_ic")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: geometry.size.width - 40)
+                            .padding(.horizontal, 20)
+                    }
+                    .padding(.bottom, UIApplication.shared.safeAreaBottom + 20) // .padding(.bottom, 50) // Consistent bottom padding from original
+                    .opacity(1)
+                }
+                .offset(y: isTextFieldFocused ? -keyboardHeight * 0.15 : 0) // Reduced offset
             }
-            .padding(.top, UIApplication.shared.connectedScenes
-                .compactMap { $0 as? UIWindowScene }
-                .first?.windows
-                .first?.safeAreaInsets.top ?? 0)
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK".localized(language), role: .cancel) {
-                // Only navigate to History if the video was downloaded successfully
                 if viewModel.didDownloadSuccessfully {
                     tabManager.navigateToHistory()
-                    viewModel.didDownloadSuccessfully = false  // reset
+                    viewModel.didDownloadSuccessfully = false
                 }
             }
         }
         .onAppear {
             viewModel.setTabManager(tabManager)
+            setupKeyboardNotifications()
         }
+        .onDisappear {
+            removeKeyboardNotifications()
+        }
+    }
+    
+    private func setupKeyboardNotifications() {
+        NotificationCenter.default.addObserver(
+            forName: UIResponder.keyboardWillShowNotification,
+            object: nil,
+            queue: .main
+        ) { notification in
+            if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                withAnimation(.easeOut(duration: 0.25)) {
+                    keyboardHeight = keyboardFrame.height
+                }
+            }
+        }
+        
+        NotificationCenter.default.addObserver(
+            forName: UIResponder.keyboardWillHideNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            withAnimation(.easeOut(duration: 0.25)) {
+                keyboardHeight = 0
+            }
+        }
+    }
+    
+    private func removeKeyboardNotifications() {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
@@ -121,6 +169,9 @@ struct PostLinkView: View {
     @Binding var postLink: String
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     var pasteAction: () -> Void
+    @FocusState var isTextFieldFocused: Bool
+    @State private var textFieldText: String = ""
+    @State private var isFirstResponder: Bool = false
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -150,6 +201,15 @@ struct PostLinkView: View {
                     .accentColor(.white)
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
+                    .focused($isTextFieldFocused)
+                    .submitLabel(.done)
+                    .onSubmit {
+                        isTextFieldFocused = false
+                    }
+                    .onTapGesture {
+                        // Clear the text field when tapped
+                        postLink = ""
+                    }
             }
             
             // Paste Button
@@ -168,6 +228,12 @@ struct PostLinkView: View {
         .frame(height: isIpad ? 80 : 60)
         .background(Color.white.opacity(0.15))
         .cornerRadius(16)
+        .onChange(of: isTextFieldFocused) { focused in
+            if focused {
+                // When text field gains focus, clear the text
+                postLink = ""
+            }
+        }
     }
 }
 

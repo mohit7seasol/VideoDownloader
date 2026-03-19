@@ -55,15 +55,16 @@ struct HomeView: View {
     @State private var navigateToSomeView = false
 
     var body: some View {
+        GeometryReader { geometry in
             ZStack {
                 Image("app_bg_image")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea()
-
+                
                 VStack(spacing: 24) {
                     TopHomeView()
-
+                    
                     LazyVGrid(columns: columns, spacing: 18) {
                         ForEach(homeItems.indices, id: \.self) { index in
                             HomeViewCard(item: homeItems[index])
@@ -74,9 +75,10 @@ struct HomeView: View {
                     Spacer()
                 }
                 .padding(.top, UIApplication.shared.connectedScenes
-                            .compactMap { $0 as? UIWindowScene }
-                            .first?.windows
-                            .first?.safeAreaInsets.top ?? 0)
+                    .compactMap { $0 as? UIWindowScene }
+                    .first?.windows
+                    .first?.safeAreaInsets.top ?? 0)
+            }
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .hideNavigationbar() // ✅ Use your extension

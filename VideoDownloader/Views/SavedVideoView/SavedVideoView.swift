@@ -26,76 +26,78 @@ struct SavedVideoView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                // Background
-                Image("app_bg_image")
-                    .resizable()
-                    .ignoresSafeArea()
-                    .scaledToFill()
-                    .onTapGesture {
-                        UIApplication.shared.endEditing(true)
-                    }
-                
-                VStack(spacing: 20) {
-                    // 1️⃣ Top View (Reuse)
-                    TopHomeView()
-                    
-                    if viewModel.isLoading {
-                        Spacer()
-                        ProgressView()
-                            .tint(.white)
-                        Spacer()
-                    } else if viewModel.savedVideos.isEmpty {
-                        // Empty state
-                        Spacer()
-                        VStack(spacing: 20) {
-                            Image(systemName: "video.slash")
-                                .font(.system(size: 60))
-                                .foregroundColor(.white.opacity(0.3))
-                            
-                            Text("No Videos Yet".localized(self.language))
-                                .font(.custom("Urbanist-Bold", size: 20))
-                                .foregroundColor(.white)
-                            
-                            Text("Your downloaded or edited videos will appear here".localized(self.language))
-                                .font(.custom("Urbanist-Medium", size: 16))
-                                .foregroundColor(.white.opacity(0.6))
-                                .multilineTextAlignment(.center)
-                                .lineLimit(2)
+        GeometryReader { geometry in
+            NavigationStack {
+                ZStack {
+                    // Background
+                    Image("app_bg_image")
+                        .resizable()
+                        .ignoresSafeArea()
+                        .scaledToFill()
+                        .onTapGesture {
+                            UIApplication.shared.endEditing(true)
                         }
-                        .padding(.horizontal, 40)
-                        .offset(y: -40)
-                        Spacer()
-                    } else {
-                        // Video Grid
-                        ScrollView(showsIndicators: false) {
-                            LazyVGrid(columns: columns, spacing: 16) {
-                                ForEach(viewModel.savedVideos) { video in
-                                    SavedVideoCardView(video: video) {
-                                        viewModel.confirmDelete(video)
-                                    }
-                                    .onTapGesture {
-                                        selectedVideo = video
-                                        showFullVideoView = true
+                    
+                    VStack(spacing: 20) {
+                        // 1️⃣ Top View (Reuse)
+                        TopHomeView()
+                        
+                        if viewModel.isLoading {
+                            Spacer()
+                            ProgressView()
+                                .tint(.white)
+                            Spacer()
+                        } else if viewModel.savedVideos.isEmpty {
+                            // Empty state
+                            Spacer()
+                            VStack(spacing: 20) {
+                                Image(systemName: "video.slash")
+                                    .font(.system(size: 60))
+                                    .foregroundColor(.white.opacity(0.3))
+                                
+                                Text("No Videos Yet".localized(self.language))
+                                    .font(.custom("Urbanist-Bold", size: 20))
+                                    .foregroundColor(.white)
+                                
+                                Text("Your downloaded or edited videos will appear here".localized(self.language))
+                                    .font(.custom("Urbanist-Medium", size: 16))
+                                    .foregroundColor(.white.opacity(0.6))
+                                    .multilineTextAlignment(.center)
+                                    .lineLimit(2)
+                            }
+                            .padding(.horizontal, 40)
+                            .offset(y: -40)
+                            Spacer()
+                        } else {
+                            // Video Grid
+                            ScrollView(showsIndicators: false) {
+                                LazyVGrid(columns: columns, spacing: 16) {
+                                    ForEach(viewModel.savedVideos) { video in
+                                        SavedVideoCardView(video: video) {
+                                            viewModel.confirmDelete(video)
+                                        }
+                                        .onTapGesture {
+                                            selectedVideo = video
+                                            showFullVideoView = true
+                                        }
                                     }
                                 }
+                                .padding(.horizontal, 24)
+                                .padding(.top, 10)
+                                .padding(.bottom, 30)
                             }
-                            .padding(.horizontal, 24)
-                            .padding(.top, 10)
-                            .padding(.bottom, 30)
                         }
                     }
+                    .padding(.top, UIApplication.shared.connectedScenes
+                        .compactMap { $0 as? UIWindowScene }
+                        .first?.windows
+                        .first?.safeAreaInsets.top ?? 0)
                 }
-                .padding(.top, UIApplication.shared.connectedScenes
-                    .compactMap { $0 as? UIWindowScene }
-                    .first?.windows
-                    .first?.safeAreaInsets.top ?? 0)
-            }
-            .navigationBarHidden(true)
-            .navigationDestination(isPresented: $showFullVideoView) {
-                if let video = selectedVideo {
-                    FullVideoView(video: video)
+                .navigationBarHidden(true)
+                .navigationDestination(isPresented: $showFullVideoView) {
+                    if let video = selectedVideo {
+                        FullVideoView(video: video)
+                    }
                 }
             }
         }
