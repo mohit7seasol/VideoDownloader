@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 
 class TabSelectionManager: ObservableObject {
-    @Published var selectedTab: Int = 1 // Default to LinkView (index 1)
+    @Published var selectedTab: Int = 0 // Changed default to HomeView (index 0)
     
     func navigateToHistory() {
         selectedTab = 2

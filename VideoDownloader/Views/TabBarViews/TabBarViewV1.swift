@@ -1,14 +1,14 @@
 //
-//  TabBarView.swift
+//  TabBarViewV1.swift
 //  VideoDownloader
 //
-//  Created by DREAMWORLD on 10/03/26.
+//  Created by DREAMWORLD on 19/03/26.
 //
 
 import SwiftUI
 import Lottie
 
-struct TabBarView: View {
+struct TabBarView1: View {
     
     @StateObject private var tabManager = TabSelectionManager()
     
@@ -19,10 +19,10 @@ struct TabBarView: View {
             Group {
                 switch tabManager.selectedTab {
                 case 0:
-                    HomeView()
+                    LinkView()
                         .environmentObject(tabManager)
                 case 1:
-                    LinkView()
+                    HomeView()
                         .environmentObject(tabManager)
                 case 2:
                     SavedVideoView()
@@ -35,7 +35,7 @@ struct TabBarView: View {
             
             VStack {
                 Spacer()
-                CustomTabBar(selectedIndex: $tabManager.selectedTab)
+                CustomTabBar1(selectedIndex: $tabManager.selectedTab)
             }
         }
         .ignoresSafeArea()
@@ -44,7 +44,7 @@ struct TabBarView: View {
 
 
 // MARK: - Custom Tabbar
-struct CustomTabBar: View {
+struct CustomTabBar1: View {
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     @Binding var selectedIndex: Int
     
@@ -53,7 +53,7 @@ struct CustomTabBar: View {
         ZStack {
             
             // Background
-            TabBarCurve()
+            TabBarCurve1()
                 .fill(
                     LinearGradient(
                         colors: [
@@ -70,18 +70,18 @@ struct CustomTabBar: View {
             // Left + Right Tabs
             HStack {
                 
-                // Home
+                // Link
                 Button {
                     selectedIndex = 0
                 } label: {
                     VStack(spacing: 4) {
                         
-                        Image(selectedIndex == 0 ? "home_selected" : "home_unselected")
+                        Image(selectedIndex == 0 ? "link_selected" : "link_unselected")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 22,height: 22)
                         
-                        Text("Home".localized(self.language))
+                        Text("Link".localized(self.language))
                             .font(.caption2)
                             .foregroundColor(
                                 selectedIndex == 0
@@ -132,8 +132,10 @@ struct CustomTabBar: View {
                         .clipShape(Circle())
                         .shadow(radius: 6)
                     
-                    LottieView(name: "Link")
-                        .frame(width: 40, height: 40)
+                    Image(selectedIndex == 1 ? "home-V1" : "home-V1")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 22,height: 22)
                 }
             }
             .offset(y: -42)
@@ -141,7 +143,7 @@ struct CustomTabBar: View {
     }
 }
 
-struct TabBarCurve: Shape {
+struct TabBarCurve1: Shape {
     
     func path(in rect: CGRect) -> Path {
         
@@ -172,35 +174,6 @@ struct TabBarCurve: Shape {
     }
 }
 
-// MARK: - Lottie View
-struct LottieView: UIViewRepresentable {
-    
-    var name: String
-    
-    func makeUIView(context: Context) -> UIView {
-        
-        let view = UIView(frame: .zero)
-        
-        let animationView = LottieAnimationView(name: name)
-        animationView.loopMode = .loop
-        animationView.play()
-        animationView.contentMode = .scaleAspectFit
-        
-        animationView.translatesAutoresizingMaskIntoConstraints = false
-        
-        view.addSubview(animationView)
-        
-        NSLayoutConstraint.activate([
-            animationView.widthAnchor.constraint(equalTo: view.widthAnchor),
-            animationView.heightAnchor.constraint(equalTo: view.heightAnchor)
-        ])
-        
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {}
-}
-
 #Preview {
-    TabBarView()
+    TabBarView1()
 }
