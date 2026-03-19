@@ -264,11 +264,12 @@ struct VideoChooseView: View {
 struct LimitAccessView: View {
     let appName: String
     @State private var showManageOptions = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Cast Video")
+                Text("Cast Video".localized(self.language))
                     .font(.custom("Urbanist-Medium", size: 14))
                     .foregroundColor(.white.opacity(0.8))
                 
@@ -277,7 +278,7 @@ struct LimitAccessView: View {
                 Button {
                     showManageOptions = true
                 } label: {
-                    Text("Manage")
+                    Text("Manage".localized(self.language))
                         .font(.custom("Urbanist-Medium", size: 14))
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
@@ -287,7 +288,7 @@ struct LimitAccessView: View {
                 }
             }
             
-            Text("You've given \(appName) limited access to select number of videos")
+            Text("\("You've given".localized(self.language)) \(appName) \("limited access to select number of videos".localized(self.language))")
                 .font(.custom("Urbanist-Medium", size: 13))
                 .foregroundColor(.white.opacity(0.7))
                 .fixedSize(horizontal: false, vertical: true)
@@ -298,8 +299,8 @@ struct LimitAccessView: View {
         .cornerRadius(8)
         .padding(.horizontal, 16)
         .padding(.top, 10)
-        .alert("Manage", isPresented: $showManageOptions) {
-            Button("Select More Videos") {
+        .alert("Manage".localized(self.language), isPresented: $showManageOptions) {
+            Button("Select More Videos".localized(self.language)) {
                 // Handle select more videos
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootViewController = windowScene.windows.first?.rootViewController {
@@ -308,15 +309,15 @@ struct LimitAccessView: View {
                 }
             }
             
-            Button("Change Settings") {
+            Button("Change Settings".localized(self.language)) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
             
-            Button("Cancel", role: .cancel) { }
+            Button("Cancel".localized(self.language), role: .cancel) { }
         } message: {
-            Text("You've given \(appName) limited access to select number of videos")
+            Text("\("You've given".localized(self.language)) \(appName) \("limited access to select number of videos".localized(self.language))")
         }
     }
 }
