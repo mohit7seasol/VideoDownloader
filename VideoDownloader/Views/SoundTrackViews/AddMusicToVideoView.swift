@@ -288,7 +288,7 @@ extension AddMusicToVideoView {
                 // Trigger full screen navigation
                 navigateToPreview = true
             } label: {
-                Image("video_full_screen_ic")
+                Image("")// "video_full_screen_ic"
                     .resizable()
                     .frame(width: 18, height: 18)
                     .foregroundColor(.white)
