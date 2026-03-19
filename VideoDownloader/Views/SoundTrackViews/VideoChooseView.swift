@@ -22,8 +22,11 @@ struct VideoChooseView: View {
     @State private var showManageOptions = false
     @State private var showPhotoPicker = false
     @State private var showLimitedAccessBottomSheet = false
+    @State private var selectedItems: [PhotosPickerItem] = []
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     @StateObject private var photoObserver = PhotoLibraryObserver()
+    
+//    let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "App"
     
     var body: some View {
         ZStack {
@@ -44,36 +47,20 @@ struct VideoChooseView: View {
                             .foregroundColor(.white)
                     }
                     
-                    Spacer()
-                    
                     Text("Select Video".localized(self.language))
                         .font(.custom("Poppins-Black", size: 20))
                         .foregroundColor(.white)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading, 10)
                     
                     Spacer()
-                    
-                    // Manage Button - Only show for limited access
-                    if PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
-                        Button {
-                            showManageOptions = true
-                        } label: {
-                            Text("Manage".localized(self.language))
-                                .font(.custom("Urbanist-Medium", size: 16))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .cornerRadius(15)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .stroke(Color.white, lineWidth: 1)
-                                )
-                        }
-                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 60)
+                
+                // Limited Access Message - Only show when limited access
+                if PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
+                    LimitAccessView(appName: appName)
+                }
                 
                 if isLoading {
                     Spacer()
@@ -120,7 +107,7 @@ struct VideoChooseView: View {
                     }
                     .padding(.bottom, 40)
                 } else {
-                    // Video Grid - Matching uploaded image
+                    // Video Grid
                     ScrollView {
                         LazyVGrid(columns: [
                             GridItem(.flexible()),
@@ -136,7 +123,7 @@ struct VideoChooseView: View {
                             }
                         }
                         .padding(.horizontal, 16)
-                        .padding(.top, 20)
+                        .padding(.top, 10)
                         .padding(.bottom, 30)
                     }
                 }
@@ -145,7 +132,7 @@ struct VideoChooseView: View {
         .navigationBarHidden(true)
         .onAppear {
             photoObserver.onChange = {
-                loadVideos()   // ✅ reload when user adds more videos
+                loadVideos()
             }
             checkPermissionAndLoadVideos()
         }
@@ -159,45 +146,66 @@ struct VideoChooseView: View {
         } message: {
             Text("Please grant photo library access to select videos".localized(self.language))
         }
-        // Manage Options Action Sheet
-        .confirmationDialog(
-            "Manage Photos Access".localized(self.language),
-            isPresented: $showManageOptions,
-            titleVisibility: .visible
-        ) {
-            Button("Select More Photos".localized(self.language)) {
+        // Manage Options Alert - Matches uploaded image style
+        .alert("Manage", isPresented: $showManageOptions) {
+            Button("Select More Videos") {
                 showPhotoPicker = true
             }
             
-            Button("Change Settings".localized(self.language)) {
+            Button("Change Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
             
-            Button("Cancel".localized(self.language), role: .cancel) { }
+            Button("Cancel", role: .cancel) { }
         } message: {
-            Text("Choose an option to manage your photo library access".localized(self.language))
+            Text("You've given \(appName) limited access to select number of videos")
         }
         // PHPicker for selecting more media
         .photosPicker(
             isPresented: $showPhotoPicker,
-            selection: .constant([]),
-            matching: .any(of: [.videos, .images]),
+            selection: $selectedItems,
+            maxSelectionCount: nil,
+            matching: .videos,
             preferredItemEncoding: .automatic
         )
-        .onChange(of: showPhotoPicker) { newValue in
-            if !newValue {
-                // Reload videos after picker is dismissed
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    loadVideos()
-                }
+        .onChange(of: selectedItems) { newItems in
+            if !newItems.isEmpty {
+                handleSelectedPhotosPickerItems(newItems)
             }
         }
         .navigationDestination(isPresented: $navigateToAddMusic) {
             if let video = selectedVideo {
                 AddMusicToVideoView(videoAsset: video)
             }
+        }
+    }
+    
+    private func handleSelectedPhotosPickerItems(_ items: [PhotosPickerItem]) {
+        // Process and add new videos from picker
+        for item in items {
+            item.loadTransferable(type: Data.self) { result in
+                switch result {
+                case .success(let data):
+                    if let data = data {
+                        // Save video data if needed
+                        DispatchQueue.main.async {
+                            // Reload videos after a short delay to allow for processing
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                loadVideos()
+                            }
+                        }
+                    }
+                case .failure(let error):
+                    print("Error loading video: \(error)")
+                }
+            }
+        }
+        
+        // Clear selected items
+        DispatchQueue.main.async {
+            self.selectedItems = []
         }
     }
     
@@ -248,6 +256,67 @@ struct VideoChooseView: View {
         DispatchQueue.main.async {
             self.videos = videoAssets
             self.isLoading = false
+        }
+    }
+}
+
+// MARK: - LimitAccessView
+struct LimitAccessView: View {
+    let appName: String
+    @State private var showManageOptions = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Cast Video")
+                    .font(.custom("Urbanist-Medium", size: 14))
+                    .foregroundColor(.white.opacity(0.8))
+                
+                Spacer()
+                
+                Button {
+                    showManageOptions = true
+                } label: {
+                    Text("Manage")
+                        .font(.custom("Urbanist-Medium", size: 14))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(Color.blue.opacity(0.3))
+                        .cornerRadius(12)
+                }
+            }
+            
+            Text("You've given \(appName) limited access to select number of videos")
+                .font(.custom("Urbanist-Medium", size: 13))
+                .foregroundColor(.white.opacity(0.7))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 12)
+        .background(Color.black.opacity(0.3))
+        .cornerRadius(8)
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .alert("Manage", isPresented: $showManageOptions) {
+            Button("Select More Videos") {
+                // Handle select more videos
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootViewController = windowScene.windows.first?.rootViewController {
+                    
+                    PHPhotoLibrary.shared().presentLimitedLibraryPicker(from: rootViewController)
+                }
+            }
+            
+            Button("Change Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("You've given \(appName) limited access to select number of videos")
         }
     }
 }

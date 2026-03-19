@@ -6,6 +6,8 @@
 	<array>
 		<dict/>
 	</array>
+    <key>CFBundleName</key>
+    <string>Clipfusion</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Unlock-Regular.ttf</string>
