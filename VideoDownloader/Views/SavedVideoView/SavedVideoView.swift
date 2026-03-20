@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AVFoundation
+import Photos
 
 struct SavedVideoView: View {
     @Environment(\.dismiss) var dismiss
@@ -285,11 +286,14 @@ struct FolderContentView: View {
     @State private var isLoading = false
     @State private var loadTask: DispatchWorkItem?
     
+    // ✅ App Name for LimitAccessView
+    let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "App"
+    
     // Delete video states
     @State private var showDeleteVideoAlert = false
     @State private var videoToDelete: SavedVideo?
     
-    // Responsive columns: 2 columns for device videos on iPhone, 3 for iPad
+    // Responsive columns
     private let columns: [GridItem] = {
         let isIPad = UIDevice.current.userInterfaceIdiom == .pad
         let count = isIPad ? 3 : 2
@@ -304,7 +308,8 @@ struct FolderContentView: View {
                 .scaledToFill()
             
             VStack {
-                // Custom header
+                
+                // MARK: - HEADER (UNCHANGED)
                 HStack {
                     Button(action: {
                         cancelLoadTask()
@@ -326,7 +331,6 @@ struct FolderContentView: View {
                     
                     Spacer()
                     
-                    // Refresh button for Downloads folder
                     if folder.isDeviceVideos && !deviceVideos.isEmpty {
                         Button(action: {
                             refreshDeviceVideos()
@@ -346,6 +350,16 @@ struct FolderContentView: View {
                     .first?.windows
                     .first?.safeAreaInsets.top ?? 0)
                 
+                // ✅ LIMITED ACCESS VIEW (NEW - SAFE)
+                if folder.isDeviceVideos &&
+                    PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
+                    
+                    LimitAccessView(appName: appName)
+                        .padding(.top, 10)
+                }
+                
+                // MARK: - STATES
+                
                 // Loading State
                 if folderManager.isScanningVideos && folder.isDeviceVideos {
                     Spacer()
@@ -353,13 +367,15 @@ struct FolderContentView: View {
                         ProgressView()
                             .tint(.white)
                             .scaleEffect(1.5)
+                        
                         Text("Loading videos...".localized(language))
                             .font(.custom("Urbanist-Medium", size: 16))
                             .foregroundColor(.white.opacity(0.6))
                     }
                     Spacer()
                 }
-                // Permission Denied State
+                
+                // Permission Denied
                 else if folder.isDeviceVideos && VideoScanner.shared.permissionDenied {
                     Spacer()
                     VStack(spacing: 20) {
@@ -395,7 +411,8 @@ struct FolderContentView: View {
                     .padding(.bottom, 40)
                     Spacer()
                 }
-                // Empty State for Device Videos
+                
+                // Empty Device Videos
                 else if folder.isDeviceVideos && deviceVideos.isEmpty {
                     Spacer()
                     VStack(spacing: 20) {
@@ -407,16 +424,21 @@ struct FolderContentView: View {
                             .font(.custom("Urbanist-Bold", size: 20))
                             .foregroundColor(.white)
                         
-                        Text("No videos found in your device gallery".localized(language))
-                            .font(.custom("Urbanist-Medium", size: 16))
-                            .foregroundColor(.white.opacity(0.6))
-                            .multilineTextAlignment(.center)
+                        Text(
+                            PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited
+                            ? "Only selected videos are visible. You can manage access.".localized(language)
+                            : "No videos found in your device gallery".localized(language)
+                        )
+                        .font(.custom("Urbanist-Medium", size: 16))
+                        .foregroundColor(.white.opacity(0.6))
+                        .multilineTextAlignment(.center)
                     }
                     .padding(.horizontal, 40)
                     .padding(.bottom, 40)
                     Spacer()
                 }
-                // Empty State for User Folders
+                
+                // Empty Folder
                 else if !folder.isDeviceVideos && videos.isEmpty {
                     Spacer()
                     VStack(spacing: 20) {
@@ -437,12 +459,13 @@ struct FolderContentView: View {
                     .padding(.bottom, 40)
                     Spacer()
                 }
-                // Videos Grid
+                
+                // MARK: - GRID
                 else {
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 16) {
+                            
                             if folder.isDeviceVideos {
-                                // Show device videos in 2x2 grid
                                 ForEach(deviceVideos) { deviceVideo in
                                     DeviceVideoCardView(video: deviceVideo) {
                                         selectedDeviceVideo = deviceVideo
@@ -450,7 +473,6 @@ struct FolderContentView: View {
                                     }
                                 }
                             } else {
-                                // Show app videos
                                 ForEach(videos) { video in
                                     SavedVideoCardView(
                                         video: video,
@@ -479,16 +501,20 @@ struct FolderContentView: View {
             }
         }
         .navigationBarHidden(true)
+        
+        // MARK: - Navigation
         .navigationDestination(isPresented: $showFullVideoView) {
             if let video = selectedVideo {
                 FullVideoView(video: video)
             }
         }
+        
         .sheet(isPresented: $showDeviceVideoView) {
             if let deviceVideo = selectedDeviceVideo {
                 DeviceVideoPlayerView(video: deviceVideo)
             }
         }
+        
         .alert("Delete Video".localized(language), isPresented: $showDeleteVideoAlert) {
             Button("Cancel".localized(language), role: .cancel) {
                 videoToDelete = nil
@@ -502,26 +528,26 @@ struct FolderContentView: View {
             if let video = videoToDelete {
                 let videoName = video.musicName ?? "this video".localized(language)
                 Text("\("Are you sure you want to delete".localized(language)) \"\(videoName)\"?")
-                    .font(.custom("Urbanist-Medium", size: 16))
             } else {
                 Text("Are you sure you want to delete this video?".localized(language))
             }
         }
+        
         .onAppear {
             loadContent()
         }
+        
         .onDisappear {
             cancelLoadTask()
         }
     }
     
+    // MARK: - Logic
     private func loadContent() {
         if folder.isDeviceVideos {
-            // First show cached data if available
             folderManager.quickLoadDeviceVideos()
             deviceVideos = folderManager.deviceVideos
             
-            // Then refresh in background
             if deviceVideos.isEmpty {
                 folderManager.loadDeviceVideos(forceRefresh: true) {
                     DispatchQueue.main.async {
@@ -529,16 +555,13 @@ struct FolderContentView: View {
                     }
                 }
             } else {
-                // Refresh in background without blocking UI
                 folderManager.loadDeviceVideos(forceRefresh: false)
-                // Update after a short delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     deviceVideos = folderManager.deviceVideos
                 }
             }
         } else {
             videos = folderManager.getVideosForFolder(folderId: folder.id)
-            print("📁 Folder '\(folder.name)' loaded \(videos.count) videos")
         }
     }
     
@@ -569,19 +592,13 @@ struct FolderContentView: View {
     }
     
     private func deleteVideo(_ video: SavedVideo) {
-        // Remove from folder
         if let index = folderManager.folders.firstIndex(where: { $0.id == folder.id }) {
             folderManager.folders[index].videoIds.removeAll { $0 == video.id }
             folderManager.saveFolders()
         }
         
-        // Delete from SavedVideosManager
         SavedVideosManager.shared.deleteVideo(video)
-        
-        // Reload videos
         loadContent()
-        
-        // Clear selection
         videoToDelete = nil
     }
 }

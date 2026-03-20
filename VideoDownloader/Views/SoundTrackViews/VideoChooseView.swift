@@ -269,7 +269,7 @@ struct LimitAccessView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Cast Video".localized(self.language))
+                Text("Select Video".localized(self.language))
                     .font(.custom("Urbanist-Medium", size: 14))
                     .foregroundColor(.white.opacity(0.8))
                 
