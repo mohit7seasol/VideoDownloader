@@ -131,9 +131,9 @@ struct FolderSelectionView: View {
                 }
             }
         }
+        .interactiveDismissDisabled(true) // This prevents swipe down dismissal
     }
 }
-
 
 struct FolderSelectionCard: View {
     let folder: VideoFolder

@@ -155,10 +155,9 @@ struct LinkView: View {
                     folderSelectionManager.saveToSelectedFolder(folderId: folder.id)
                 },
                 onCreateNewFolder: {
-                    folderSelectionManager.showFolderSelection = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        showCreateFolderAlert = true
-                    }
+                    // Don't dismiss the folder selection view
+                    // Just show the alert
+                    showCreateFolderAlert = true
                 },
                 onCancel: {
                     folderSelectionManager.cancelFolderSelection()
