@@ -49,15 +49,34 @@ class FolderSelectionManager: ObservableObject {
             self.linkViewModel?.isSaving = false
             self.linkViewModel?.postLink = ""
             
-            // Get the language from AppStorage
-            let language = UserDefaults.standard.string(forKey: SessionKeys.language) ?? "en"
-            let appLanguage = Language(rawValue: language) ?? .English
+            // Fix for localized string - use the language from linkViewModel
+            if let language = self.linkViewModel?.language {
+                self.linkViewModel?.alertMessage = "Video downloaded and saved to folder!".localized(language)
+            } else {
+                // Fallback
+                self.linkViewModel?.alertMessage = "Video downloaded and saved to folder!"
+            }
             
-            self.linkViewModel?.alertMessage = "Video downloaded and saved to folder!".localized(appLanguage)
             self.linkViewModel?.didDownloadSuccessfully = true
             self.linkViewModel?.showAlert = true
             
             // Clear pending
+            self.pendingVideo = nil
+            self.showFolderSelection = false
+        }
+    }
+    
+    func cancelFolderSelection() {
+        // User cancelled - reset loading state and clear text field
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.linkViewModel?.isLoading = false
+            self.linkViewModel?.isSaving = false
+            self.linkViewModel?.postLink = ""
+            self.linkViewModel?.alertMessage = ""
+            
+            // Clear pending video
             self.pendingVideo = nil
             self.showFolderSelection = false
         }

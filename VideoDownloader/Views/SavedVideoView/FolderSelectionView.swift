@@ -11,6 +11,7 @@ struct FolderSelectionView: View {
     @ObservedObject var folderManager: FolderManager
     var onFolderSelected: (VideoFolder) -> Void
     var onCreateNewFolder: () -> Void
+    var onCancel: () -> Void // Add cancel handler
     @Environment(\.dismiss) var dismiss
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
@@ -23,8 +24,16 @@ struct FolderSelectionView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background
-                Color(hex: "#0A0F1E").ignoresSafeArea()
+                // Background - Linear Gradient top to bottom #471428, #111637
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(hex: "#471428"),
+                        Color(hex: "#111637")
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
                 
                 VStack {
                     if folderManager.folders.isEmpty {
@@ -115,6 +124,7 @@ struct FolderSelectionView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel".localized(language)) {
+                        onCancel() // Call cancel handler
                         dismiss()
                     }
                     .foregroundColor(.white)
@@ -123,6 +133,7 @@ struct FolderSelectionView: View {
         }
     }
 }
+
 
 struct FolderSelectionCard: View {
     let folder: VideoFolder
