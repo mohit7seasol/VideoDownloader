@@ -58,15 +58,23 @@ struct SavedVideoView: View {
                         
                         Spacer()
                         
-                        // Create Folder Button
-                        Button(action: {
-                            showRenameFolderAlert = true
-                            newFolderName = ""
-                            folderToRename = nil
-                        }) {
-                            Image(systemName: "plus")
-                                .foregroundColor(.white)
-                                .font(.system(size: 18, weight: .medium))
+                        // Create Folder Button - Only show when folders exist
+                        if !folderManager.folders.isEmpty {
+                            Button(action: {
+                                showRenameFolderAlert = true
+                                newFolderName = ""
+                                folderToRename = nil
+                            }) {
+                                Image(systemName: "plus")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 18, weight: .medium))
+                                    .frame(width: 44, height: 44) // Increased tap area
+                                    .contentShape(Rectangle())
+                            }
+                        } else {
+                            // Empty view for balance when no folders
+                            Color.clear
+                                .frame(width: 44, height: 44)
                         }
                     }
                     .padding(.horizontal, 24)
@@ -243,6 +251,8 @@ struct FolderContentView: View {
                             Text("Back".localized(language))
                         }
                         .foregroundColor(.white)
+                        .frame(height: 44)
+                        .contentShape(Rectangle())
                     }
                     
                     Spacer()

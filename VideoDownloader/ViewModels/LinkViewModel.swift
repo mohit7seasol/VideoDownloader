@@ -721,7 +721,7 @@ extension LinkViewModel {
     // Add this method to show folder selection before saving
     func showFolderSelectionForDownload(videoURL: URL, thumbnailURL: URL?, sourceURL: String) {
         DispatchQueue.main.async {
-            // This will be called from the view to show folder selection
+            // Don't update isLoading here - keep it true until folder selection completes
             NotificationCenter.default.post(
                 name: .showFolderSelection,
                 object: nil,

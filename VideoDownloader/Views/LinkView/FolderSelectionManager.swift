@@ -14,6 +14,9 @@ class FolderSelectionManager: ObservableObject {
     var folderManager = FolderManager.shared
     private var cancellables = Set<AnyCancellable>()
     
+    // Reference to LinkViewModel to update its state
+    weak var linkViewModel: LinkViewModel?
+    
     func handleDownloadedVideo(videoURL: URL, thumbnailURL: URL?, sourceURL: String) {
         pendingVideo = (videoURL, thumbnailURL, sourceURL)
         showFolderSelection = true
@@ -30,14 +33,34 @@ class FolderSelectionManager: ObservableObject {
             musicEndTime: 0
         )
         
+        // Save video
         SavedVideosManager.shared.saveVideo(savedVideo)
+        
+        // Add to folder
         folderManager.addVideoToFolder(videoId: savedVideo.id, folderId: folderId)
         
         print("✅ Video saved to folder with ID: \(folderId)")
         
-        // Clear pending
-        pendingVideo = nil
-        showFolderSelection = false
+        // Update LinkViewModel state
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.linkViewModel?.isLoading = false
+            self.linkViewModel?.isSaving = false
+            self.linkViewModel?.postLink = ""
+            
+            // Get the language from AppStorage
+            let language = UserDefaults.standard.string(forKey: SessionKeys.language) ?? "en"
+            let appLanguage = Language(rawValue: language) ?? .English
+            
+            self.linkViewModel?.alertMessage = "Video downloaded and saved to folder!".localized(appLanguage)
+            self.linkViewModel?.didDownloadSuccessfully = true
+            self.linkViewModel?.showAlert = true
+            
+            // Clear pending
+            self.pendingVideo = nil
+            self.showFolderSelection = false
+        }
     }
     
     func createNewFolder(name: String) {

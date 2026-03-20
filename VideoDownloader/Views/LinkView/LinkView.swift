@@ -123,7 +123,6 @@ struct LinkView: View {
                     .padding(.bottom, UIApplication.shared.safeAreaBottom + 20)
                     .opacity(1)
                 }
-//                .offset(y: isTextFieldFocused ? -keyboardHeight * 0.15 : 0)
             }
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
@@ -143,6 +142,8 @@ struct LinkView: View {
         .onAppear {
             viewModel.setTabManager(tabManager)
             setupKeyboardNotifications()
+            // Set the linkViewModel reference in folderSelectionManager
+            folderSelectionManager.linkViewModel = viewModel
         }
         .onDisappear {
             removeKeyboardNotifications()

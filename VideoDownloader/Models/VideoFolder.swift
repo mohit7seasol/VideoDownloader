@@ -33,7 +33,7 @@ class FolderManager: ObservableObject {
     private let foldersKey = "videoFolders"
     private let fileManager = FileManager.default
     
-    @Published var folders: [VideoFolder] = []
+    @Published var  folders: [VideoFolder] = []
     
     private init() {
         loadFolders()
