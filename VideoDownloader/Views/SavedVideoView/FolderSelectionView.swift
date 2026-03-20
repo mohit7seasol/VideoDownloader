@@ -130,6 +130,7 @@ struct FolderSelectionView: View {
                     .foregroundColor(.white)
                 }
             }
+            .toolbarColorScheme(.dark, for: .navigationBar)
         }
         .interactiveDismissDisabled(true) // This prevents swipe down dismissal
     }

@@ -48,18 +48,27 @@ struct SavedVideoView: View {
                 VStack(spacing: 20) {
                     // Top View with Back Button and Title
                     HStack {
-                        Image("app_logo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(
-                                width: isIpad ? 140 : 120,
-                                height: isIpad ? 42 : 32
-                            )
-                        
-                        Spacer()
+//                        Image("app_logo")
+//                            .resizable()
+//                            .scaledToFit()
+//                            .frame(
+//                                width: isIpad ? 140 : 120,
+//                                height: isIpad ? 42 : 32
+//                            )
+//                        
+//                        Spacer()
                         
                         // Create Folder Button - Only show when folders exist
                         if !folderManager.folders.isEmpty {
+                            Image("app_logo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(
+                                    width: isIpad ? 140 : 120,
+                                    height: isIpad ? 42 : 32
+                                )
+                            Spacer()
+                            
                             Button(action: {
                                 showRenameFolderAlert = true
                                 newFolderName = ""
@@ -72,9 +81,32 @@ struct SavedVideoView: View {
                                     .contentShape(Rectangle())
                             }
                         } else {
+                            
+                            Image("app_logo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(
+                                    width: isIpad ? 140 : 120,
+                                    height: isIpad ? 42 : 32
+                                )
+                                .padding(.bottom, 12)
+                            Spacer()
+                            
                             // Empty view for balance when no folders
                             Color.clear
                                 .frame(width: 44, height: 44)
+                            
+                            NavigationLink(destination: SettingView()) {
+                                Image("setting_ic")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(
+                                        width: isIpad ? 36 : 26,
+                                        height: isIpad ? 36 : 26
+                                    )
+                                    .padding(.trailing, 5)
+                                    .padding(.top, -12)
+                            }
                         }
                     }
                     .padding(.horizontal, 20)
