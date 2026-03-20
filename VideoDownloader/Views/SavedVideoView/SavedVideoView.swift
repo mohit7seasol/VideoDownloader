@@ -68,7 +68,7 @@ struct SavedVideoView: View {
                                 Image(systemName: "plus")
                                     .foregroundColor(.white)
                                     .font(.system(size: 18, weight: .medium))
-                                    .frame(width: 44, height: 44) // Increased tap area
+                                    .frame(width: 26, height: 26) // Increased tap area
                                     .contentShape(Rectangle())
                             }
                         } else {
@@ -77,7 +77,7 @@ struct SavedVideoView: View {
                                 .frame(width: 44, height: 44)
                         }
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 20)
                     .padding(.top, UIApplication.shared.connectedScenes
                         .compactMap { $0 as? UIWindowScene }
                         .first?.windows
@@ -127,6 +127,7 @@ struct SavedVideoView: View {
                                 .cornerRadius(25)
                             }
                         }
+                        .padding(.bottom, 100)
                         Spacer()
                     } else {
                         ScrollView(showsIndicators: false) {
