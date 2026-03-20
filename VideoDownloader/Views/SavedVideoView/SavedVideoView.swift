@@ -186,10 +186,10 @@ struct SavedVideoView: View {
             }
         } message: {
             if let folder = folderToDelete {
-                Text("Are you sure you want to delete folder \"\(folder.name)\"? Videos inside will not be deleted.")
+                Text("\("Are you sure you want to delete folder".localized(language)) \"\(folder.name)\"? \("Videos inside will not be deleted.".localized(language))")
                     .font(.custom("Urbanist-Medium", size: 16))
             } else {
-                Text("Are you sure you want to delete this folder?")
+                Text("Are you sure you want to delete this folder?".localized(language))
             }
         }
         .alert(folderToRename == nil ? "Create New Folder".localized(language) : "Rename Folder".localized(language),

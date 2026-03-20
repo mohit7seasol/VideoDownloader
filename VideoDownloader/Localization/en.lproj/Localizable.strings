@@ -124,3 +124,25 @@
 "You've given" = "You've given";
 "limited access to select number of videos" = "limited access to select number of videos";
 "Select More Videos" = "Select More Videos";
+
+"Create New Folder" = "Create New Folder";
+"Folder Name" = "Folder Name";
+"Create" = "Create";
+"Enter a name for your new folder" = "Enter a name for your new folder";
+"No Folders Yet" = "No Folders Yet";
+"Create a folder to organize your videos" = "Create a folder to organize your videos";
+"New Folder" = "New Folder";
+"Select Folder" = "Select Folder";
+"Rename" = "Rename";
+"Create your first folder to organize videos" = "Create your first folder to organize videos";
+"Create Folder" = "Create Folder";
+"Delete Folder" = "Delete Folder";
+"Are you sure you want to delete folder" = "Are you sure you want to delete folder";
+"Videos inside will not be deleted." = "Videos inside will not be deleted.";
+"Are you sure you want to delete this folder?" = "Are you sure you want to delete this folder?";
+"Rename Folder" = "Rename Folder";
+"Enter new name for the folder" = "Enter new name for the folder";
+"No Videos in this Folder" = "No Videos in this Folder";
+"Download videos and save them to this folder" = "Download videos and save them to this folder";
+
+"Video downloaded and saved to folder!" = "Video downloaded and saved to folder!";
