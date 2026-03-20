@@ -236,6 +236,10 @@ struct FolderContentView: View {
     @Environment(\.dismiss) var dismiss
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
+    // Delete video states
+    @State private var showDeleteVideoAlert = false
+    @State private var videoToDelete: SavedVideo?
+    
     private let columns: [GridItem] = {
         let isIPad = UIDevice.current.userInterfaceIdiom == .pad
         let count = isIPad ? 4 : 2
@@ -302,15 +306,9 @@ struct FolderContentView: View {
                         LazyVGrid(columns: columns, spacing: 16) {
                             ForEach(videos) { video in
                                 SavedVideoCardView(video: video) {
-                                    // Delete video from folder
-                                    if let index = folderManager.folders.firstIndex(where: { $0.id == folder.id }) {
-                                        folderManager.folders[index].videoIds.removeAll { $0 == video.id }
-                                        folderManager.saveFolders()
-                                        loadVideos()
-                                        
-                                        // Also delete from SavedVideosManager if needed
-                                        SavedVideosManager.shared.deleteVideo(video)
-                                    }
+                                    // Show delete confirmation alert
+                                    videoToDelete = video
+                                    showDeleteVideoAlert = true
                                 }
                                 .onTapGesture {
                                     selectedVideo = video
@@ -331,6 +329,25 @@ struct FolderContentView: View {
                 FullVideoView(video: video)
             }
         }
+        // Delete Video Alert
+        .alert("Delete Video".localized(language), isPresented: $showDeleteVideoAlert) {
+            Button("Cancel".localized(language), role: .cancel) {
+                videoToDelete = nil
+            }
+            Button("Delete".localized(language), role: .destructive) {
+                if let video = videoToDelete {
+                    deleteVideo(video)
+                }
+            }
+        } message: {
+            if let video = videoToDelete {
+                let videoName = video.musicName ?? "this video".localized(language)
+                Text("\("Are you sure you want to delete".localized(language)) \"\(videoName)\"?")
+                    .font(.custom("Urbanist-Medium", size: 16))
+            } else {
+                Text("Are you sure you want to delete this video?".localized(language))
+            }
+        }
         .onAppear {
             loadVideos()
         }
@@ -338,5 +355,22 @@ struct FolderContentView: View {
     
     private func loadVideos() {
         videos = folderManager.getVideosForFolder(folderId: folder.id)
+    }
+    
+    private func deleteVideo(_ video: SavedVideo) {
+        // Remove from folder
+        if let index = folderManager.folders.firstIndex(where: { $0.id == folder.id }) {
+            folderManager.folders[index].videoIds.removeAll { $0 == video.id }
+            folderManager.saveFolders()
+        }
+        
+        // Delete from SavedVideosManager
+        SavedVideosManager.shared.deleteVideo(video)
+        
+        // Reload videos
+        loadVideos()
+        
+        // Clear selection
+        videoToDelete = nil
     }
 }
