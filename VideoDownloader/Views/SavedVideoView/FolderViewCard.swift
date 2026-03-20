@@ -100,7 +100,7 @@ struct FolderViewCard: View {
                 }
             } else {
                 // For Downloads folder, show a special indicator
-                Text("Device Videos")
+                Text("Device Videos".localized(language))
                     .font(.custom("Urbanist-Medium", size: 10))
                     .foregroundColor(.white.opacity(0.5))
                     .padding(.top, 4)

@@ -144,5 +144,7 @@
 "Enter new name for the folder" = "Enter new name for the folder";
 "No Videos in this Folder" = "No Videos in this Folder";
 "Download videos and save them to this folder" = "Download videos and save them to this folder";
-
 "Video downloaded and saved to folder!" = "Video downloaded and saved to folder!";
+"Device Videos" = "Device Videos";
+"Link" = "Link";
+"Loading videos..." = "Loading videos...";
