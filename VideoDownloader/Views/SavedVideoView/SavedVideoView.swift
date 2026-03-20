@@ -126,6 +126,12 @@ struct SavedVideoView: View {
                                 )
                                 .cornerRadius(25)
                             }
+                            .shadow(
+                                color: Color(hex: "#1973E8").opacity(0.3),
+                                radius: 10,
+                                x: 0,
+                                y: 6
+                            )
                         }
                         .padding(.bottom, 100)
                         Spacer()
