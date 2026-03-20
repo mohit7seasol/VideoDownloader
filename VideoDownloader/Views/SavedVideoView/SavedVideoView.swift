@@ -253,13 +253,10 @@ struct FolderContentView: View {
                 // Custom header
                 HStack {
                     Button(action: { dismiss() }) {
-                        HStack {
-                            Image(systemName: "chevron.left")
-                            Text("Back".localized(language))
-                        }
-                        .foregroundColor(.white)
-                        .frame(height: 44)
-                        .contentShape(Rectangle())
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .font(.system(size: 18, weight: .medium))
+                            .padding(.leading, 4)
                     }
                     
                     Spacer()
@@ -267,6 +264,8 @@ struct FolderContentView: View {
                     Text(folder.name)
                         .font(.custom("Urbanist-Bold", size: 20))
                         .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 10)
                     
                     Spacer()
                     
@@ -296,6 +295,7 @@ struct FolderContentView: View {
                             .multilineTextAlignment(.center)
                     }
                     .padding(.horizontal, 40)
+                    .padding(.bottom, 40)
                     Spacer()
                 } else {
                     ScrollView {
