@@ -23,7 +23,10 @@ struct FolderViewCard: View {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(
                         LinearGradient(
-                            colors: [
+                            colors: folder.isSystemFolder ? [
+                                Color(hex: "#471428"),
+                                Color(hex: "#111637")
+                            ] : [
                                 Color(hex: "#1973E8").opacity(0.2),
                                 Color(hex: "#0E4082").opacity(0.2)
                             ],
@@ -36,13 +39,21 @@ struct FolderViewCard: View {
                             .stroke(Color.white.opacity(0.2), lineWidth: 1)
                     )
                 
-                Image("folder_ic")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 60, height: 60)
-                    .foregroundColor(.white)
+                if folder.isSystemFolder {
+                    Image(systemName: "arrow.down.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 60, height: 60)
+                        .foregroundColor(.white)
+                } else {
+                    Image("folder_ic")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 60, height: 60)
+                        .foregroundColor(.white)
+                }
             }
-            .frame(height: 120)
+            .frame(height: 120) // Same height for all folders
             .overlay(
                 // Video count badge
                 VStack {
@@ -69,22 +80,30 @@ struct FolderViewCard: View {
                 .lineLimit(1)
                 .frame(maxWidth: .infinity)
             
-            // Context Menu Button (3 dots)
-            Menu {
-                Button(action: onRename) {
-                    Label("Rename".localized(language), systemImage: "pencil")
+            // Context Menu Button (3 dots) - Hide for Downloads folder
+            if !folder.isSystemFolder {
+                Menu {
+                    Button(action: onRename) {
+                        Label("Rename".localized(language), systemImage: "pencil")
+                    }
+                    
+                    Button(role: .destructive, action: onDelete) {
+                        Label("Delete".localized(language), systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 5)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(8)
                 }
-                
-                Button(role: .destructive, action: onDelete) {
-                    Label("Delete".localized(language), systemImage: "trash")
-                }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .foregroundColor(.white.opacity(0.7))
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 5)
-                    .background(Color.white.opacity(0.1))
-                    .cornerRadius(8)
+            } else {
+                // For Downloads folder, show a special indicator
+                Text("Device Videos")
+                    .font(.custom("Urbanist-Medium", size: 10))
+                    .foregroundColor(.white.opacity(0.5))
+                    .padding(.top, 4)
             }
         }
         .padding(8)

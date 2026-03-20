@@ -10,6 +10,7 @@ import AVFoundation
 
 struct SavedVideoCardView: View {
     let video: SavedVideo
+    let showDeleteButton: Bool // New parameter to control delete button visibility
     let onDelete: () -> Void
     
     @State private var thumbnailImage: UIImage?
@@ -70,22 +71,24 @@ struct SavedVideoCardView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             
-            // Delete Button (bottom right)
-            VStack {
-                Spacer()
-                HStack {
+            // Delete Button (bottom right) - Only show if allowed
+            if showDeleteButton {
+                VStack {
                     Spacer()
-                    Button(action: onDelete) {
-                        Image("delete_ic")
-                            .resizable()
-                            .frame(width: isIPad ? 32 : 18, height: isIPad ? 32 : 20)
-                            .foregroundColor(.white)
-                            .padding(2)
-                            .clipShape(Circle())
-                            .padding(.trailing, 0)
-                            .padding(.bottom, 68)
+                    HStack {
+                        Spacer()
+                        Button(action: onDelete) {
+                            Image("delete_ic")
+                                .resizable()
+                                .frame(width: isIPad ? 32 : 18, height: isIPad ? 32 : 20)
+                                .foregroundColor(.white)
+                                .padding(2)
+                                .clipShape(Circle())
+                                .padding(.trailing, 0)
+                                .padding(.bottom, 68)
+                        }
+                        .padding(12)
                     }
-                    .padding(12)
                 }
             }
         }

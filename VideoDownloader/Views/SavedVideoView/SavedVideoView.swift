@@ -194,6 +194,12 @@ struct SavedVideoView: View {
                             .padding(.top, 10)
                             .padding(.bottom, 30)
                         }
+                        .refreshable {
+                            // Refresh downloads folder data
+                            if let downloadsFolder = folderManager.folders.first(where: { $0.isSystemFolder && $0.name == "Downloads" }) {
+                                folderManager.loadDeviceVideos(forceRefresh: true)
+                            }
+                        }
                     }
                 }
             }
@@ -254,6 +260,12 @@ struct SavedVideoView: View {
         }
         .onAppear {
             folderManager.loadFolders()
+            // Ensure Downloads folder is at the top
+            if let downloadsIndex = folderManager.folders.firstIndex(where: { $0.isSystemFolder && $0.name == "Downloads" }), downloadsIndex != 0 {
+                let downloadsFolder = folderManager.folders.remove(at: downloadsIndex)
+                folderManager.folders.insert(downloadsFolder, at: 0)
+                folderManager.saveFolders()
+            }
         }
     }
 }
@@ -263,18 +275,24 @@ struct FolderContentView: View {
     let folder: VideoFolder
     @StateObject private var folderManager = FolderManager.shared
     @State private var videos: [SavedVideo] = []
+    @State private var deviceVideos: [DeviceVideo] = []
     @State private var selectedVideo: SavedVideo?
+    @State private var selectedDeviceVideo: DeviceVideo?
     @State private var showFullVideoView = false
+    @State private var showDeviceVideoView = false
     @Environment(\.dismiss) var dismiss
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
+    @State private var isLoading = false
+    @State private var loadTask: DispatchWorkItem?
     
     // Delete video states
     @State private var showDeleteVideoAlert = false
     @State private var videoToDelete: SavedVideo?
     
+    // Responsive columns: 2 columns for device videos on iPhone, 3 for iPad
     private let columns: [GridItem] = {
         let isIPad = UIDevice.current.userInterfaceIdiom == .pad
-        let count = isIPad ? 4 : 2
+        let count = isIPad ? 3 : 2
         return Array(repeating: GridItem(.flexible(), spacing: 16), count: count)
     }()
     
@@ -288,7 +306,10 @@ struct FolderContentView: View {
             VStack {
                 // Custom header
                 HStack {
-                    Button(action: { dismiss() }) {
+                    Button(action: {
+                        cancelLoadTask()
+                        dismiss()
+                    }) {
                         Image(systemName: "chevron.left")
                             .foregroundColor(.white)
                             .font(.system(size: 18, weight: .medium))
@@ -305,8 +326,19 @@ struct FolderContentView: View {
                     
                     Spacer()
                     
-                    // Empty view for balance
-                    Color.clear.frame(width: 60, height: 20)
+                    // Refresh button for Downloads folder
+                    if folder.isDeviceVideos && !deviceVideos.isEmpty {
+                        Button(action: {
+                            refreshDeviceVideos()
+                        }) {
+                            Image(systemName: "arrow.clockwise")
+                                .foregroundColor(.white)
+                                .font(.system(size: 16, weight: .medium))
+                                .frame(width: 30, height: 30)
+                        }
+                    } else {
+                        Color.clear.frame(width: 60, height: 20)
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, UIApplication.shared.connectedScenes
@@ -314,7 +346,78 @@ struct FolderContentView: View {
                     .first?.windows
                     .first?.safeAreaInsets.top ?? 0)
                 
-                if videos.isEmpty {
+                // Loading State
+                if folderManager.isScanningVideos && folder.isDeviceVideos {
+                    Spacer()
+                    VStack(spacing: 20) {
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(1.5)
+                        Text("Loading videos...".localized(language))
+                            .font(.custom("Urbanist-Medium", size: 16))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    Spacer()
+                }
+                // Permission Denied State
+                else if folder.isDeviceVideos && VideoScanner.shared.permissionDenied {
+                    Spacer()
+                    VStack(spacing: 20) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.system(size: 60))
+                            .foregroundColor(.white.opacity(0.3))
+                        
+                        Text("Permission Denied".localized(language))
+                            .font(.custom("Urbanist-Bold", size: 20))
+                            .foregroundColor(.white)
+                        
+                        Text("Please allow access to your photos and videos in Settings".localized(language))
+                            .font(.custom("Urbanist-Medium", size: 16))
+                            .foregroundColor(.white.opacity(0.6))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                        
+                        Button(action: {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }) {
+                            Text("Open Settings".localized(language))
+                                .font(.custom("Urbanist-Bold", size: 16))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 30)
+                                .padding(.vertical, 15)
+                                .background(Color.blue)
+                                .cornerRadius(25)
+                        }
+                    }
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 40)
+                    Spacer()
+                }
+                // Empty State for Device Videos
+                else if folder.isDeviceVideos && deviceVideos.isEmpty {
+                    Spacer()
+                    VStack(spacing: 20) {
+                        Image(systemName: "video.slash")
+                            .font(.system(size: 60))
+                            .foregroundColor(.white.opacity(0.3))
+                        
+                        Text("No Videos Found".localized(language))
+                            .font(.custom("Urbanist-Bold", size: 20))
+                            .foregroundColor(.white)
+                        
+                        Text("No videos found in your device gallery".localized(language))
+                            .font(.custom("Urbanist-Medium", size: 16))
+                            .foregroundColor(.white.opacity(0.6))
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 40)
+                    Spacer()
+                }
+                // Empty State for User Folders
+                else if !folder.isDeviceVideos && videos.isEmpty {
                     Spacer()
                     VStack(spacing: 20) {
                         Image(systemName: "folder")
@@ -333,24 +436,44 @@ struct FolderContentView: View {
                     .padding(.horizontal, 40)
                     .padding(.bottom, 40)
                     Spacer()
-                } else {
+                }
+                // Videos Grid
+                else {
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 16) {
-                            ForEach(videos) { video in
-                                SavedVideoCardView(video: video) {
-                                    // Show delete confirmation alert
-                                    videoToDelete = video
-                                    showDeleteVideoAlert = true
+                            if folder.isDeviceVideos {
+                                // Show device videos in 2x2 grid
+                                ForEach(deviceVideos) { deviceVideo in
+                                    DeviceVideoCardView(video: deviceVideo) {
+                                        selectedDeviceVideo = deviceVideo
+                                        showDeviceVideoView = true
+                                    }
                                 }
-                                .onTapGesture {
-                                    selectedVideo = video
-                                    showFullVideoView = true
+                            } else {
+                                // Show app videos
+                                ForEach(videos) { video in
+                                    SavedVideoCardView(
+                                        video: video,
+                                        showDeleteButton: true
+                                    ) {
+                                        videoToDelete = video
+                                        showDeleteVideoAlert = true
+                                    }
+                                    .onTapGesture {
+                                        selectedVideo = video
+                                        showFullVideoView = true
+                                    }
                                 }
                             }
                         }
-                        .padding(.horizontal, 24)
+                        .padding(.horizontal, 16)
                         .padding(.top, 10)
                         .padding(.bottom, 30)
+                    }
+                    .refreshable {
+                        if folder.isDeviceVideos {
+                            await refreshDeviceVideosAsync()
+                        }
                     }
                 }
             }
@@ -361,7 +484,11 @@ struct FolderContentView: View {
                 FullVideoView(video: video)
             }
         }
-        // Delete Video Alert
+        .sheet(isPresented: $showDeviceVideoView) {
+            if let deviceVideo = selectedDeviceVideo {
+                DeviceVideoPlayerView(video: deviceVideo)
+            }
+        }
         .alert("Delete Video".localized(language), isPresented: $showDeleteVideoAlert) {
             Button("Cancel".localized(language), role: .cancel) {
                 videoToDelete = nil
@@ -381,12 +508,64 @@ struct FolderContentView: View {
             }
         }
         .onAppear {
-            loadVideos()
+            loadContent()
+        }
+        .onDisappear {
+            cancelLoadTask()
         }
     }
     
-    private func loadVideos() {
-        videos = folderManager.getVideosForFolder(folderId: folder.id)
+    private func loadContent() {
+        if folder.isDeviceVideos {
+            // First show cached data if available
+            folderManager.quickLoadDeviceVideos()
+            deviceVideos = folderManager.deviceVideos
+            
+            // Then refresh in background
+            if deviceVideos.isEmpty {
+                folderManager.loadDeviceVideos(forceRefresh: true) {
+                    DispatchQueue.main.async {
+                        deviceVideos = folderManager.deviceVideos
+                    }
+                }
+            } else {
+                // Refresh in background without blocking UI
+                folderManager.loadDeviceVideos(forceRefresh: false)
+                // Update after a short delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    deviceVideos = folderManager.deviceVideos
+                }
+            }
+        } else {
+            videos = folderManager.getVideosForFolder(folderId: folder.id)
+            print("📁 Folder '\(folder.name)' loaded \(videos.count) videos")
+        }
+    }
+    
+    private func refreshDeviceVideos() {
+        isLoading = true
+        folderManager.loadDeviceVideos(forceRefresh: true) {
+            DispatchQueue.main.async {
+                deviceVideos = folderManager.deviceVideos
+                isLoading = false
+            }
+        }
+    }
+    
+    private func refreshDeviceVideosAsync() async {
+        await withCheckedContinuation { continuation in
+            folderManager.loadDeviceVideos(forceRefresh: true) {
+                DispatchQueue.main.async {
+                    deviceVideos = folderManager.deviceVideos
+                    continuation.resume()
+                }
+            }
+        }
+    }
+    
+    private func cancelLoadTask() {
+        loadTask?.cancel()
+        loadTask = nil
     }
     
     private func deleteVideo(_ video: SavedVideo) {
@@ -400,9 +579,10 @@ struct FolderContentView: View {
         SavedVideosManager.shared.deleteVideo(video)
         
         // Reload videos
-        loadVideos()
+        loadContent()
         
         // Clear selection
         videoToDelete = nil
     }
 }
+
