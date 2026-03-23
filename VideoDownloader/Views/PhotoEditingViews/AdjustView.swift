@@ -23,14 +23,15 @@ struct AdjustView: View {
         ZStack {
             Color.black.ignoresSafeArea()
             
-            VStack {
-                // Top Bar
+            VStack(spacing: 0) {
+                // Top Bar - with padding top 0
                 HStack {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
                             .foregroundColor(.white)
+                            .font(.system(size: 20, weight: .semibold))
                     }
                     
                     Spacer()
@@ -42,31 +43,30 @@ struct AdjustView: View {
                     Spacer()
                     
                     Button {
-                        // Fix: adjustedImage ?? image returns non-optional UIImage
                         let finalImage = adjustedImage ?? image
                         onImageEdited(finalImage)
                         dismiss()
                     } label: {
                         Text("Save".localized(LocalizationService.shared.language))
+                            .font(.custom("Urbanist-Medium", size: 16))
                             .foregroundColor(.white)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 50)
+                .padding(.horizontal, 24)
+                .padding(.top, 0) // Set to 0
+                .padding(.bottom, 20)
                 
-                Spacer()
-                
-                // Preview Image
+                // Preview Image with left and right padding 15
                 if let adjusted = adjustedImage {
                     Image(uiImage: adjusted)
                         .resizable()
                         .scaledToFit()
-                        .frame(height: UIScreen.main.bounds.height - 350)
+                        .padding(.horizontal, 15) // Left and right padding 15
                 } else {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFit()
-                        .frame(height: UIScreen.main.bounds.height - 350)
+                        .padding(.horizontal, 15) // Left and right padding 15
                 }
                 
                 Spacer()
@@ -77,6 +77,7 @@ struct AdjustView: View {
                     VStack(alignment: .leading) {
                         Text("Brightness: \(Int(brightness * 100))%")
                             .foregroundColor(.white)
+                            .font(.custom("Urbanist-Medium", size: 14))
                         Slider(value: $brightness, in: -0.5...0.5, step: 0.01)
                             .tint(.white)
                     }
@@ -85,6 +86,7 @@ struct AdjustView: View {
                     VStack(alignment: .leading) {
                         Text("Contrast: \(Int(contrast * 100))%")
                             .foregroundColor(.white)
+                            .font(.custom("Urbanist-Medium", size: 14))
                         Slider(value: $contrast, in: 0...2, step: 0.01)
                             .tint(.white)
                     }
@@ -93,6 +95,7 @@ struct AdjustView: View {
                     VStack(alignment: .leading) {
                         Text("Saturation: \(Int(saturation * 100))%")
                             .foregroundColor(.white)
+                            .font(.custom("Urbanist-Medium", size: 14))
                         Slider(value: $saturation, in: 0...2, step: 0.01)
                             .tint(.white)
                     }

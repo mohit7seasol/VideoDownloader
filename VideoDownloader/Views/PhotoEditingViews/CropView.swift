@@ -20,14 +20,15 @@ struct CropView: View {
         ZStack {
             Color.black.ignoresSafeArea()
             
-            VStack {
-                // Top Bar
+            VStack(spacing: 0) {
+                // Top Bar - Fixed with padding top 0
                 HStack {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
                             .foregroundColor(.white)
+                            .font(.system(size: 20, weight: .semibold))
                     }
                     
                     Spacer()
@@ -45,13 +46,13 @@ struct CropView: View {
                         }
                     } label: {
                         Text("Save".localized(LocalizationService.shared.language))
+                            .font(.custom("Urbanist-Medium", size: 16))
                             .foregroundColor(.white)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 50)
-                
-                Spacer()
+                .padding(.horizontal, 24)
+                .padding(.top, 0) // Changed from 50 to 0
+                .padding(.bottom, 20)
                 
                 // Crop View
                 CropViewControllerWrapper(image: image, croppedImage: $croppedImage)

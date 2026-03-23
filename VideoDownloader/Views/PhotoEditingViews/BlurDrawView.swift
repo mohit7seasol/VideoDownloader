@@ -29,14 +29,15 @@ struct BlurDrawView: View {
         ZStack {
             Color.black.ignoresSafeArea()
             
-            VStack {
-                // Top Bar
+            VStack(spacing: 0) {
+                // Top Bar - with padding top 0
                 HStack {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
                             .foregroundColor(.white)
+                            .font(.system(size: 20, weight: .semibold))
                     }
                     
                     Spacer()
@@ -51,15 +52,15 @@ struct BlurDrawView: View {
                         saveBlurredImage()
                     } label: {
                         Text("Save".localized(LocalizationService.shared.language))
+                            .font(.custom("Urbanist-Medium", size: 16))
                             .foregroundColor(.white)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 50)
+                .padding(.horizontal, 24)
+                .padding(.top, 0) // Set to 0
+                .padding(.bottom, 20)
                 
-                Spacer()
-                
-                // Blur Canvas
+                // Blur Canvas with left and right padding 15
                 GeometryReader { geometry in
                     let size = geometry.size
                     ZStack {
@@ -71,13 +72,25 @@ struct BlurDrawView: View {
                                 imageViewSize = size
                             }
                         
-                        // Draw blur points
+                        // Draw blur points - show actual blur preview
                         ForEach(blurPoints) { blurPoint in
                             Circle()
-                                .fill(Color.white.opacity(0.5))
+                                .fill(Color.clear)
                                 .frame(width: blurPoint.radius * 2, height: blurPoint.radius * 2)
                                 .position(blurPoint.point)
-                                .blur(radius: blurPoint.radius / 2)
+                                .background(
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: size.width, height: size.height)
+                                        .position(x: size.width / 2, y: size.height / 2)
+                                        .mask(
+                                            Circle()
+                                                .frame(width: blurPoint.radius * 2, height: blurPoint.radius * 2)
+                                                .position(blurPoint.point)
+                                        )
+                                        .blur(radius: blurPoint.radius / 2)
+                                )
                         }
                     }
                     .frame(width: size.width, height: size.height)
@@ -89,6 +102,7 @@ struct BlurDrawView: View {
                             }
                     )
                 }
+                .padding(.horizontal, 15) // Left and right padding 15
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
                 Spacer()
@@ -99,6 +113,7 @@ struct BlurDrawView: View {
                     VStack(alignment: .leading) {
                         Text("Blur Radius: \(Int(blurRadius))")
                             .foregroundColor(.white)
+                            .font(.custom("Urbanist-Medium", size: 14))
                         Slider(value: $blurRadius, in: 10...50, step: 1)
                             .tint(.white)
                     }
