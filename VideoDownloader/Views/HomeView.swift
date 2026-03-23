@@ -31,19 +31,19 @@ let homeItems: [HomeItem] = [
         bgColor: "#6D41F5"
     ),
 
-//    HomeItem(
-//        title: "Save Insta",
-//        subtitle: "Get posts, reels, profile pictures, & highlights.",
-//        icon: "h3",
-//        bgColor: "#104AD5"
-//    ),
+    HomeItem(
+        title: "Soundtrack",
+        subtitle: "Enhance your video with music and audio.",
+        icon: "h4",
+        bgColor: "#088589"
+    ),
 
-//    HomeItem(
-//        title: "Soundtrack",
-//        subtitle: "Enhance your video with music and audio.",
-//        icon: "h4",
-//        bgColor: "#088589"
-//    )
+    HomeItem(
+        title: "Image Editor",
+        subtitle: "Edit photos with powerful and easy tools",
+        icon: "h5",
+        bgColor: "#104AD5"
+    )
 ]
 
 struct HomeView: View {
@@ -71,7 +71,7 @@ struct HomeView: View {
                         }
                     }
                     .padding(.horizontal, 20)
-                    ThirdCardView()
+//                    ThirdCardView()
                     Spacer()
                 }
                 .padding(.top, UIApplication.shared.connectedScenes
@@ -197,6 +197,7 @@ struct HomeViewCard: View {
             HashTagCategoriesView()
         case "Save Insta":
             Text("Save Insta View")
+            SoundTrackView()
         case "Soundtrack":
             Text("Soundtrack View")
             SoundTrackView()
