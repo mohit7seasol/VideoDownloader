@@ -18,12 +18,19 @@ struct DrawView: View {
     @State private var selectedColor = Color.red
     @State private var selectedWidth: CGFloat = 5
     @State private var isDrawing = true
+    @State private var imageViewSize = CGSize.zero
+    
+    // More colors
+    let colors: [Color] = [
+        .black, .white, .red, .orange, .yellow, .green, .blue, .purple,
+        .pink, .brown, .cyan, .indigo, .mint, .teal
+    ]
     
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
             
-            VStack {
+            VStack(spacing: 0) {
                 // Top Bar
                 HStack {
                     Button {
@@ -50,39 +57,55 @@ struct DrawView: View {
                             .foregroundColor(.white)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 50)
+                .padding(.horizontal, 24)
+                .padding(.top, 0)
+                .padding(.bottom, 20)
                 
                 // Drawing Canvas
-                ZStack {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                    
-                    DrawingCanvas(canvasView: $canvasView, image: image, isDrawing: $isDrawing)
-                        .frame(width: UIScreen.main.bounds.width - 40, height: UIScreen.main.bounds.width - 40)
+                GeometryReader { geometry in
+                    let size = geometry.size
+                    ZStack {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: size.width, height: size.height)
+                            .onAppear {
+                                imageViewSize = size
+                            }
+                        
+                        DrawingCanvas(canvasView: $canvasView, image: image, isDrawing: $isDrawing)
+                            .frame(width: size.width, height: size.height)
+                    }
+                    .frame(width: size.width, height: size.height)
                 }
-                .frame(height: UIScreen.main.bounds.width - 40)
+                .padding(.horizontal, 15)
+                .padding(.top, 15)
+                .padding(.bottom, 15)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
                 Spacer()
                 
                 // Drawing Tools
                 VStack(spacing: 20) {
-                    // Color Picker
-                    HStack(spacing: 15) {
-                        ForEach([Color.black, .white, .red, .yellow, .blue, .purple, .green, .orange], id: \.self) { color in
-                            Circle()
-                                .fill(color)
-                                .frame(width: 35, height: 35)
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.white, lineWidth: selectedColor == color ? 3 : 0)
-                                )
-                                .onTapGesture {
-                                    selectedColor = color
-                                    updateTool()
-                                }
+                    // Color Picker with more colors
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(colors, id: \.self) { color in
+                                Circle()
+                                    .fill(color)
+                                    .frame(width: 40, height: 40)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.white, lineWidth: selectedColor == color ? 3 : 1)
+                                    )
+                                    .shadow(radius: 2)
+                                    .onTapGesture {
+                                        selectedColor = color
+                                        updateTool()
+                                    }
+                            }
                         }
+                        .padding(.horizontal, 20)
                     }
                     
                     // Stroke Width Slider
@@ -94,16 +117,31 @@ struct DrawView: View {
                         Text("\(Int(selectedWidth))")
                             .foregroundColor(.white)
                             .font(.caption)
+                            .frame(width: 30)
                     }
                     .padding(.horizontal, 40)
                     
-                    // Clear Button
+                    // Clear Button - Attractive UI
                     Button {
                         canvasView.drawing = PKDrawing()
                     } label: {
-                        Text("Clear".localized(LocalizationService.shared.language))
-                            .foregroundColor(.red)
-                            .font(.custom("Urbanist-Medium", size: 14))
+                        HStack {
+                            Image(systemName: "trash")
+                                .font(.system(size: 14))
+                            Text("Clear All".localized(LocalizationService.shared.language))
+                                .font(.custom("Urbanist-Medium", size: 14))
+                        }
+                        .foregroundColor(.red)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.red.opacity(0.2))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color.red, lineWidth: 1)
+                                )
+                        )
                     }
                 }
                 .padding(.bottom, 40)
@@ -127,12 +165,19 @@ struct DrawView: View {
     }
     
     private func saveDrawing() {
-        // Combine image and drawing
+        // Calculate scale factors between display size and actual image size
+        let scaleX = image.size.width / imageViewSize.width
+        let scaleY = image.size.height / imageViewSize.height
+        
         let renderer = UIGraphicsImageRenderer(size: image.size)
         let combinedImage = renderer.image { ctx in
+            // Draw original image
             image.draw(in: CGRect(origin: .zero, size: image.size))
             
-            let drawingImage = canvasView.drawing.image(from: CGRect(origin: .zero, size: image.size), scale: 1.0)
+            // Get drawing image at actual image size
+            let drawingImage = canvasView.drawing.image(from: CGRect(origin: .zero, size: imageViewSize), scale: 1.0)
+            
+            // Scale and position the drawing correctly
             drawingImage.draw(in: CGRect(origin: .zero, size: image.size))
         }
         
