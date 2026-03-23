@@ -87,26 +87,25 @@ struct DrawView: View {
                 
                 // Drawing Tools
                 VStack(spacing: 20) {
-                    // Color Picker with more colors
+                    // Color Picker with proper spacing and no clipping
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
+                        HStack(spacing: 16) {
                             ForEach(colors, id: \.self) { color in
-                                Circle()
-                                    .fill(color)
-                                    .frame(width: 40, height: 40)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.white, lineWidth: selectedColor == color ? 3 : 1)
-                                    )
-                                    .shadow(radius: 2)
-                                    .onTapGesture {
-                                        selectedColor = color
-                                        updateTool()
-                                    }
+                                ColorCircleView(
+                                    color: color,
+                                    isSelected: selectedColor == color,
+                                    size: 36
+                                )
+                                .onTapGesture {
+                                    selectedColor = color
+                                    updateTool()
+                                }
                             }
                         }
                         .padding(.horizontal, 20)
+                        .padding(.vertical, 8)
                     }
+                    .frame(height: 52)
                     
                     // Stroke Width Slider
                     HStack {
@@ -114,6 +113,9 @@ struct DrawView: View {
                             .foregroundColor(.white)
                         Slider(value: $selectedWidth, in: 1...20, step: 1)
                             .tint(.white)
+                            .onChange(of: selectedWidth) { _ in
+                                updateTool() // Update tool when width changes
+                            }
                         Text("\(Int(selectedWidth))")
                             .foregroundColor(.white)
                             .font(.caption)
@@ -121,7 +123,7 @@ struct DrawView: View {
                     }
                     .padding(.horizontal, 40)
                     
-                    // Clear Button - Attractive UI
+                    // Clear Button
                     Button {
                         canvasView.drawing = PKDrawing()
                     } label: {
@@ -183,6 +185,35 @@ struct DrawView: View {
         
         onImageEdited(combinedImage)
         dismiss()
+    }
+}
+
+// MARK: - ColorCircleView
+struct ColorCircleView: View {
+    let color: Color
+    let isSelected: Bool
+    let size: CGFloat
+    
+    var body: some View {
+        ZStack {
+            // Outer ring for selected state
+            if isSelected {
+                Circle()
+                    .stroke(Color.white, lineWidth: 3)
+                    .frame(width: size + 8, height: size + 8)
+            }
+            
+            // Main color circle
+            Circle()
+                .fill(color)
+                .frame(width: size, height: size)
+                .overlay(
+                    Circle()
+                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.2), radius: 2, x: 0, y: 1)
+        }
+        .frame(width: size + (isSelected ? 12 : 0), height: size + (isSelected ? 12 : 0))
     }
 }
 
