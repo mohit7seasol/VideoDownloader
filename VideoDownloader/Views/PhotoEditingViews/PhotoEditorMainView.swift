@@ -38,7 +38,7 @@ struct PhotoEditorMainView: View {
                 .resizable()
                 .ignoresSafeArea()
             
-            VStack {
+            VStack(spacing: 0) {
                 // MARK: NAVBAR
                 HStack {
                     Button {
@@ -57,15 +57,16 @@ struct PhotoEditorMainView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 60)
+                .padding(.top, 0) // Set to 0 to match PhotoChooseView
                 
-                // MARK: IMAGE VIEW
+                // MARK: IMAGE VIEW with left and right padding 15
                 if let displayImage = editedImage ?? image {
                     Image(uiImage: displayImage)
                         .resizable()
                         .scaledToFit()
                         .cornerRadius(20)
-                        .padding()
+                        .padding(.horizontal, 15) // Left and right padding 15
+                        .padding(.top, 20)
                 } else {
                     Spacer()
                     ProgressView().tint(.white)

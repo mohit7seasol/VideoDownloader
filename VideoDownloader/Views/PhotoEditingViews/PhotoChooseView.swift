@@ -87,7 +87,7 @@ struct PhotoChooseView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // NAVBAR
+                // NAVBAR - Removed top padding to start from safe area top
                 HStack {
                     Button {
                         dismiss()
@@ -122,7 +122,7 @@ struct PhotoChooseView: View {
                     }
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 60)
+                .padding(.top, 0) // Set to 0 to remove extra space
                 
                 // Limited Access Message - Only show when limited access
                 if PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
