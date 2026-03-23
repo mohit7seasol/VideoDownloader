@@ -153,7 +153,7 @@ struct HomeViewCard: View {
                     .font(Font.custom("Urbanist-Bold", size: 16))
                     .foregroundColor(.white)
 
-                // Subtitle (3 lines FIXED)
+                // Subtitle
                 Text(item.subtitle.localized(self.language))
                     .font(Font.custom("Urbanist-Regular", size: 12))
                     .foregroundColor(.white.opacity(0.9))
@@ -182,10 +182,14 @@ struct HomeViewCard: View {
         }
         .frame(height: isIpad ? 270 : 220)
         .clipped(antialiased: false)
-        // ✅ Modern navigation using NavigationStack
-        .navigationDestination(isPresented: $navigateToDestination) {
-            destinationView
-        }
+        .background(
+            NavigationLink(
+                destination: destinationView,
+                isActive: $navigateToDestination,
+                label: { EmptyView() }
+            )
+            .hidden()
+        )
     }
 
     @ViewBuilder
@@ -195,12 +199,10 @@ struct HomeViewCard: View {
             CaptionBoxView()
         case "Hashtag Collection":
             HashTagCategoriesView()
-        case "Save Insta":
-            Text("Save Insta View")
-            SoundTrackView()
         case "Soundtrack":
-            Text("Soundtrack View")
             SoundTrackView()
+        case "Image Editor":
+            PhotoChooseView()
         default:
             EmptyView()
         }
@@ -224,6 +226,7 @@ struct HomeViewCard: View {
             )
     }
 }
+
 struct ThirdCardView: View {
     
     @State private var navigate = false

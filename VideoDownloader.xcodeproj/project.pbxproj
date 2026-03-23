@@ -10,6 +10,7 @@
 		60EA5139A7974BA3821DACE1 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = D7252642EE084C8DBB1DACE1 /* README.md */; };
 		BD018B822F65249600C3ACC4 /* DSWaveformImage in Frameworks */ = {isa = PBXBuildFile; productRef = BD018B812F65249600C3ACC4 /* DSWaveformImage */; };
 		BD018B842F65249600C3ACC4 /* DSWaveformImageViews in Frameworks */ = {isa = PBXBuildFile; productRef = BD018B832F65249600C3ACC4 /* DSWaveformImageViews */; };
+		BD1FBCAA2F713CAB0060A4CF /* CropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = BD1FBCA92F713CAB0060A4CF /* CropViewController */; };
 		BD63BC972F5ECD830096265B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC962F5ECD830096265B /* Alamofire */; };
 		BD63BC9A2F5ECD960096265B /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC992F5ECD960096265B /* Kingfisher */; };
 		BD63BC9D2F5ECDAA0096265B /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BC9C2F5ECDAA0096265B /* Lottie */; };
@@ -69,6 +70,7 @@
 				BD018B822F65249600C3ACC4 /* DSWaveformImage in Frameworks */,
 				BD63BCA02F5ECDBF0096265B /* SDWebImageSwiftUI in Frameworks */,
 				BD63BCA32F5ECDD30096265B /* Shimmer in Frameworks */,
+				BD1FBCAA2F713CAB0060A4CF /* CropViewController in Frameworks */,
 				BD63BC9A2F5ECD960096265B /* Kingfisher in Frameworks */,
 				BD63BC972F5ECD830096265B /* Alamofire in Frameworks */,
 				BD63BCA62F5ECDE40096265B /* Toasts in Frameworks */,
@@ -128,6 +130,7 @@
 				BD63BCA82F5ECDF70096265B /* WindowSceneReader */,
 				BD018B812F65249600C3ACC4 /* DSWaveformImage */,
 				BD018B832F65249600C3ACC4 /* DSWaveformImageViews */,
+				BD1FBCA92F713CAB0060A4CF /* CropViewController */,
 			);
 			productName = VideoDownloader;
 			productReference = BD63BC4E2F5EC99E0096265B /* VideoDownloader.app */;
@@ -177,6 +180,7 @@
 				BD63BCA42F5ECDE40096265B /* XCRemoteSwiftPackageReference "swiftui-toasts" */,
 				BD63BCA72F5ECDF70096265B /* XCRemoteSwiftPackageReference "WindowSceneReader" */,
 				BD018B802F65249600C3ACC4 /* XCRemoteSwiftPackageReference "DSWaveformImage" */,
+				BD1FBCA82F713CAB0060A4CF /* XCRemoteSwiftPackageReference "TOCropViewController" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BD63BC4F2F5EC99E0096265B /* Products */;
@@ -451,6 +455,14 @@
 				minimumVersion = 14.3.0;
 			};
 		};
+		BD1FBCA82F713CAB0060A4CF /* XCRemoteSwiftPackageReference "TOCropViewController" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/TimOliver/TOCropViewController";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.1;
+			};
+		};
 		BD63BC952F5ECD830096265B /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire";
@@ -519,6 +531,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BD018B802F65249600C3ACC4 /* XCRemoteSwiftPackageReference "DSWaveformImage" */;
 			productName = DSWaveformImageViews;
+		};
+		BD1FBCA92F713CAB0060A4CF /* CropViewController */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BD1FBCA82F713CAB0060A4CF /* XCRemoteSwiftPackageReference "TOCropViewController" */;
+			productName = CropViewController;
 		};
 		BD63BC962F5ECD830096265B /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
