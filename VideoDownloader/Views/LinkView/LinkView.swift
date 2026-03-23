@@ -45,7 +45,7 @@ struct LinkView: View {
                     
                     // Main content - Centered vertically
                     VStack(spacing: 20) {
-                        Text("Instant Video Download".localized(self.language))
+                        Text("Instant Bookmark Video".localized(self.language))
                             .font(Font.custom("Unlock-Regular", size: 22))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)

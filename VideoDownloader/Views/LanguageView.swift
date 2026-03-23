@@ -64,7 +64,7 @@ struct LanguageView: View {
                     // MARK: Header
                     VStack(alignment: .leading, spacing: 8) {
 
-                        Text("Instant Video Download".localized(self.language))
+                        Text("Instant Bookmark Video".localized(self.language))
                             .font(Font.custom("Unlock-Regular", size: 22))
                             .foregroundColor(.white)
 
