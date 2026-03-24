@@ -59,20 +59,6 @@ struct CropView: View {
                     .frame(height: UIScreen.main.bounds.height - 200)
                 
                 Spacer()
-                
-                // Aspect Ratio Buttons
-                HStack(spacing: 20) {
-                    Button("Free") {
-                        // Free form crop
-                    }
-                    Button("Square") {
-                        // Square crop
-                    }
-                    Button("16:9") {
-                        // 16:9 crop
-                    }
-                }
-                .padding(.bottom, 40)
             }
         }
     }

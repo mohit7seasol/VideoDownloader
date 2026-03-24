@@ -269,12 +269,12 @@ struct TextInputSheet: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Text")) {
-                    TextField("Enter text", text: $text)
+                Section(header: Text("Text".localized(LocalizationService.shared.language))) {
+                    TextField("Enter text".localized(LocalizationService.shared.language), text: $text)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
-                Section(header: Text("Font Size")) {
+                Section(header: Text("Font Size".localized(LocalizationService.shared.language))) {
                     HStack {
                         Slider(value: $fontSize, in: 12...72, step: 1)
                         Text("\(Int(fontSize))")
@@ -282,7 +282,7 @@ struct TextInputSheet: View {
                     }
                 }
                 
-                Section(header: Text("Font")) {
+                Section(header: Text("Font".localized(LocalizationService.shared.language))) {
                     Picker("Font", selection: $font) {
                         ForEach(fonts, id: \.self) { fontName in
                             Text(fontName)
@@ -294,16 +294,16 @@ struct TextInputSheet: View {
                     .frame(height: 150)
                 }
                 
-                Section(header: Text("Color")) {
-                    ColorPicker("Text Color", selection: $color)
+                Section(header: Text("Color".localized(LocalizationService.shared.language))) {
+                    ColorPicker("Text Color".localized(LocalizationService.shared.language), selection: $color)
                 }
             }
-            .navigationTitle("Add Text")
+            .navigationTitle("Add Text".localized(LocalizationService.shared.language))
             .navigationBarItems(
-                leading: Button("Cancel") {
+                leading: Button("Cancel".localized(LocalizationService.shared.language)) {
                     dismiss()
                 },
-                trailing: Button("Add") {
+                trailing: Button("Add".localized(LocalizationService.shared.language)) {
                     if !text.isEmpty {
                         onSave()
                     }
