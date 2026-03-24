@@ -465,101 +465,98 @@ struct MusicWaveView: View {
     @Binding var isDraggingEnd: Bool
     
     @State private var samples: [Float] = []
-    @State private var waveformWidth: CGFloat = 0
     
-    // Minimum range duration (1 second)
     private let minRangeDuration: Double = 1.0
     
     var body: some View {
         GeometryReader { geometry in
+            
+            let width = geometry.size.width
+            let safeDuration = max(duration, 0.1)
+            
+            let startX = width * CGFloat(startTime / safeDuration)
+            let endX   = width * CGFloat(endTime / safeDuration)
+            
             ZStack(alignment: .leading) {
-                // Background waveform (gray)
-                waveformView
-                    .foregroundColor(Color.white.opacity(0.3))
-                    .padding(.top, 4)
-                    .padding(.bottom, 10)
                 
-                // Selected range waveform (blue)
+                // ✅ ONLY ONE WAVEFORM (NO BLUE RANGE)
                 waveformView
-                    .foregroundColor(Color(hex: "1973E8"))
-                    .padding(.top, 4)
-                    .padding(.bottom, 10)
-                    .mask(
-                        Rectangle()
-                            .frame(width: max(0, geometry.size.width * CGFloat((endTime - startTime) / max(duration, 1))))
-                            .offset(x: geometry.size.width * CGFloat(startTime / max(duration, 1)))
-                    )
+                    .foregroundColor(Color.white.opacity(0.4))
                 
-                // Start handle
+                // MARK: START HANDLE
                 RangeHandle(
-                    position: geometry.size.width * CGFloat(startTime / max(duration, 1)),
+                    position: startX,
                     isLeft: true,
                     isDragging: $isDraggingStart,
                     totalHeight: 80
                 )
                 .gesture(
-                    DragGesture(coordinateSpace: .local)
+                    DragGesture()
                         .onChanged { value in
                             isDraggingStart = true
+                            
                             let newX = min(
-                                geometry.size.width * CGFloat((endTime - minRangeDuration) / max(duration, 1)),
+                                endX - (CGFloat(minRangeDuration / safeDuration) * width),
                                 max(0, value.location.x)
                             )
-                            startTime = Double(newX / geometry.size.width) * duration
+                            
+                            startTime = Double(newX / width) * safeDuration
                         }
                         .onEnded { _ in
                             isDraggingStart = false
                         }
                 )
                 
-                // End handle
+                // MARK: END HANDLE
                 RangeHandle(
-                    position: geometry.size.width * CGFloat(endTime / max(duration, 1)),
+                    position: endX,
                     isLeft: false,
                     isDragging: $isDraggingEnd,
                     totalHeight: 80
                 )
                 .gesture(
-                    DragGesture(coordinateSpace: .local)
+                    DragGesture()
                         .onChanged { value in
                             isDraggingEnd = true
+                            
                             let newX = max(
-                                geometry.size.width * CGFloat((startTime + minRangeDuration) / max(duration, 1)),
-                                min(geometry.size.width, value.location.x)
+                                startX + (CGFloat(minRangeDuration / safeDuration) * width),
+                                min(width, value.location.x)
                             )
-                            endTime = Double(newX / geometry.size.width) * duration
+                            
+                            endTime = Double(newX / width) * safeDuration
                         }
                         .onEnded { _ in
                             isDraggingEnd = false
                         }
                 )
                 
-                // Time labels
+                // MARK: TIME LABELS
                 VStack {
                     Spacer()
                     HStack {
                         Text(formatTime(startTime))
                             .font(.custom("Urbanist-Medium", size: 10))
                             .foregroundColor(.white)
-                            .offset(x: geometry.size.width * CGFloat(startTime / max(duration, 1)) - 20)
+                            .offset(x: startX - 20)
                         
                         Spacer()
                         
                         Text(formatTime(endTime))
                             .font(.custom("Urbanist-Medium", size: 10))
                             .foregroundColor(.white)
-                            .offset(x: geometry.size.width * CGFloat(endTime / max(duration, 1)) - 20)
+                            .offset(x: endX - 20)
                     }
-                    .padding(.bottom, 0)
                 }
             }
             .onAppear {
-                waveformWidth = geometry.size.width
                 generateWaveformSamples()
             }
         }
+        .frame(height: 50)
     }
     
+    // MARK: WAVEFORM VIEW
     private var waveformView: some View {
         HStack(spacing: 2) {
             ForEach(0..<min(samples.count, 100), id: \.self) { index in
@@ -570,11 +567,10 @@ struct MusicWaveView: View {
                     .frame(width: 3, height: height)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
+    // MARK: SAMPLE DATA
     private func generateWaveformSamples() {
-        // Generate sample waveform data
         samples = (0..<100).map { _ in
             Float.random(in: 0.3...1.0)
         }
