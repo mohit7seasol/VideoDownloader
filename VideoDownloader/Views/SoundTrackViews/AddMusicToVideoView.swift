@@ -152,11 +152,17 @@ struct AddMusicToVideoView: View {
         .onChange(of: selectedMusic) { newValue in
             withAnimation(.easeInOut(duration: 0.3)) {
                 showWaveform = newValue != nil
+                
                 if let music = newValue {
-                    // Get music duration
                     let asset = AVAsset(url: music.url)
                     musicDuration = asset.duration.seconds
-                    musicEndTime = min(30, musicDuration) // Default to 30 seconds or full duration if shorter
+                    
+                    // ✅ FIX: set range based on VIDEO duration
+                    let videoDuration = duration
+                    let defaultRange = min(videoDuration, musicDuration)
+                    
+                    musicStartTime = 0
+                    musicEndTime = defaultRange
                 }
             }
         }
@@ -477,9 +483,12 @@ struct MusicWaveView: View {
             let startX = width * CGFloat(startTime / safeDuration)
             let endX   = width * CGFloat(endTime / safeDuration)
             
+            // ✅ Dynamic minimum range (IMPORTANT FIX)
+            let minAllowedRange = max(minRangeDuration, safeDuration * 0.2)
+            
             ZStack(alignment: .leading) {
                 
-                // ✅ ONLY ONE WAVEFORM (NO BLUE RANGE)
+                // Waveform
                 waveformView
                     .foregroundColor(Color.white.opacity(0.4))
                 
@@ -496,11 +505,19 @@ struct MusicWaveView: View {
                             isDraggingStart = true
                             
                             let newX = min(
-                                endX - (CGFloat(minRangeDuration / safeDuration) * width),
+                                endX - (CGFloat(minAllowedRange / safeDuration) * width),
                                 max(0, value.location.x)
                             )
                             
-                            startTime = Double(newX / width) * safeDuration
+                            var newStart = Double(newX / width) * safeDuration
+                            
+                            // ✅ Enforce minimum range
+                            if (endTime - newStart) < minAllowedRange {
+                                newStart = endTime - minAllowedRange
+                                newStart = max(0, newStart)
+                            }
+                            
+                            startTime = newStart
                         }
                         .onEnded { _ in
                             isDraggingStart = false
@@ -520,11 +537,19 @@ struct MusicWaveView: View {
                             isDraggingEnd = true
                             
                             let newX = max(
-                                startX + (CGFloat(minRangeDuration / safeDuration) * width),
+                                startX + (CGFloat(minAllowedRange / safeDuration) * width),
                                 min(width, value.location.x)
                             )
                             
-                            endTime = Double(newX / width) * safeDuration
+                            var newEnd = Double(newX / width) * safeDuration
+                            
+                            // ✅ Enforce minimum range
+                            if (newEnd - startTime) < minAllowedRange {
+                                newEnd = startTime + minAllowedRange
+                                newEnd = min(safeDuration, newEnd)
+                            }
+                            
+                            endTime = newEnd
                         }
                         .onEnded { _ in
                             isDraggingEnd = false
@@ -556,7 +581,6 @@ struct MusicWaveView: View {
         .frame(height: 50)
     }
     
-    // MARK: WAVEFORM VIEW
     private var waveformView: some View {
         HStack(spacing: 2) {
             ForEach(0..<min(samples.count, 100), id: \.self) { index in
@@ -569,7 +593,6 @@ struct MusicWaveView: View {
         }
     }
     
-    // MARK: SAMPLE DATA
     private func generateWaveformSamples() {
         samples = (0..<100).map { _ in
             Float.random(in: 0.3...1.0)
