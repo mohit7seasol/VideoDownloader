@@ -111,7 +111,7 @@ struct PhotoEditorMainView: View {
             featureView(feature)
         }
         .alert("Success".localized(LocalizationService.shared.language), isPresented: $showDoneAlert) {
-            Button("OK", role: .cancel) {
+            Button("OK".localized(LocalizationService.shared.language), role: .cancel) {
                 dismiss()
             }
         } message: {

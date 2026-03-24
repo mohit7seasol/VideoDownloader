@@ -257,6 +257,7 @@ struct DraggableTextItem: View {
     }
 }
 struct TextInputSheet: View {
+    
     @Binding var text: String
     @Binding var fontSize: CGFloat
     @Binding var font: String
@@ -265,52 +266,160 @@ struct TextInputSheet: View {
     let onSave: () -> Void
     
     @Environment(\.dismiss) var dismiss
+    @FocusState private var isFocused: Bool
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Text".localized(LocalizationService.shared.language))) {
-                    TextField("Enter text".localized(LocalizationService.shared.language), text: $text)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                }
+            
+            ZStack {
                 
-                Section(header: Text("Font Size".localized(LocalizationService.shared.language))) {
-                    HStack {
-                        Slider(value: $fontSize, in: 12...72, step: 1)
-                        Text("\(Int(fontSize))")
-                            .frame(width: 40)
-                    }
-                }
+                // BACKGROUND
+                Image("app_bg_image")
+                    .resizable()
+                    .ignoresSafeArea()
                 
-                Section(header: Text("Font".localized(LocalizationService.shared.language))) {
-                    Picker("Font", selection: $font) {
-                        ForEach(fonts, id: \.self) { fontName in
-                            Text(fontName)
-                                .font(.custom(fontName, size: 16))
-                                .tag(fontName)
+                ScrollView {
+                    VStack(spacing: 20) {
+                        
+                        // MARK: TEXT INPUT
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Text")
+                                .foregroundColor(.white)
+                                .font(.headline)
+                            
+                            TextField("Enter text", text: $text)
+                                .padding()
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                                )
+                                .focused($isFocused)
                         }
+                        
+                        // MARK: FONT SIZE
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Font Size")
+                                .foregroundColor(.white)
+                                .font(.headline)
+                            
+                            HStack {
+                                Slider(value: $fontSize, in: 12...72)
+                                Text("\(Int(fontSize))")
+                                    .foregroundColor(.white)
+                                    .frame(width: 40)
+                            }
+                        }
+                        
+                        // MARK: FONT PICKER
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Font")
+                                .foregroundColor(.white)
+                                .font(.headline)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack {
+                                    ForEach(fonts, id: \.self) { fontName in
+                                        Text(fontName)
+                                            .font(.custom(fontName, size: 16))
+                                            .foregroundColor(.white)
+                                            .padding(10)
+                                            .background(
+                                                font == fontName
+                                                ? Color.blue
+                                                : Color.white.opacity(0.2)
+                                            )
+                                            .cornerRadius(8)
+                                            .onTapGesture {
+                                                font = fontName
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // MARK: COLOR PICKER (ATTRACTIVE UI)
+                        VStack(alignment: .leading, spacing: 12) {
+                            
+                            Text("Color")
+                                .foregroundColor(.white)
+                                .font(.headline)
+                            
+                            HStack(spacing: 12) {
+                                
+                                // ✅ LIVE COLOR PREVIEW
+                                Circle()
+                                    .fill(color)
+                                    .frame(width: 40, height: 40)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.white, lineWidth: 2)
+                                    )
+                                
+                                // ✅ SYSTEM COLOR PICKER (CLEAN STYLE)
+                                ColorPicker(
+                                    "Choose Color",
+                                    selection: $color,
+                                    supportsOpacity: true
+                                )
+                                .labelsHidden()
+                                .scaleEffect(1.2)
+                            }
+                            .padding()
+                            .background(Color.white.opacity(0.1))
+                            .cornerRadius(14)
+                        }
+                        
+                        Spacer(minLength: 50)
                     }
-                    .pickerStyle(.wheel)
-                    .frame(height: 150)
+                    .padding(20)
                 }
                 
-                Section(header: Text("Color".localized(LocalizationService.shared.language))) {
-                    ColorPicker("Text Color".localized(LocalizationService.shared.language), selection: $color)
+                // ✅ HIDE KEYBOARD ON SCROLL / DRAG
+                .gesture(
+                    DragGesture().onChanged { _ in
+                        isFocused = false
+                    }
+                )
+                
+                // ✅ TAP OUTSIDE
+                .onTapGesture {
+                    isFocused = false
                 }
             }
-            .navigationTitle("Add Text".localized(LocalizationService.shared.language))
-            .navigationBarItems(
-                leading: Button("Cancel".localized(LocalizationService.shared.language)) {
-                    dismiss()
-                },
-                trailing: Button("Add".localized(LocalizationService.shared.language)) {
-                    if !text.isEmpty {
-                        onSave()
+            
+            // NAVBAR
+            .navigationTitle("Add Text")
+            .navigationBarTitleDisplayMode(.inline)
+            
+            .toolbar {
+                
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        isFocused = false
+                        dismiss()
                     }
-                    dismiss()
                 }
-            )
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Add") {
+                        if !text.isEmpty {
+                            onSave()
+                        }
+                        isFocused = false
+                        dismiss()
+                    }
+                }
+            }
         }
         .presentationDetents([.medium])
+        
+        // AUTO FOCUS
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                isFocused = true
+            }
+        }
     }
 }
