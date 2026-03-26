@@ -50,7 +50,7 @@ struct LinkView: View {
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                         
-                        Text("Paste the link and enjoy fast, hassle-free video downloads".localized(self.language))
+                        Text("Paste the link and enjoy fast, hassle-free video BookMark".localized(self.language))
                             .font(Font.custom("Urbanist-Medium", size: 16))
                             .foregroundColor(.white.opacity(0.9))
                             .multilineTextAlignment(.center)
@@ -83,11 +83,16 @@ struct LinkView: View {
                                     .padding(.horizontal, 50)
                                     .padding(.vertical, 14)
                             } else {
-                                Text("Download".localized(language))
-                                    .font(Font.custom("Urbanist-Bold", size: 16))
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 50)
-                                    .padding(.vertical, 14)
+                                HStack(spacing: 8) {
+                                    Image(systemName: "magnifyingglass")
+                                        .foregroundColor(.white)
+                                    
+                                    Text("Search".localized(language))
+                                        .font(Font.custom("Urbanist-Bold", size: 16))
+                                        .foregroundColor(.white)
+                                }
+                                .padding(.horizontal, 50)
+                                .padding(.vertical, 14)
                             }
                         }
                         .background(
@@ -234,7 +239,7 @@ struct PostLinkView: View {
             // TextField with placeholder
             ZStack(alignment: .leading) {
                 if postLink.isEmpty {
-                    Text("Enter Insta post link".localized(self.language))
+                    Text("Enter link url...".localized(self.language))
                         .foregroundColor(.white.opacity(0.6))
                         .font(.system(size: 15))
                 }
