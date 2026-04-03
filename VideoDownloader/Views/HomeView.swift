@@ -101,8 +101,8 @@ struct TopHomeView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(
-                    width: isIpad ? 140 : 120,
-                    height: isIpad ? 42 : 32
+                    width: isIpad ? 240 : 120,
+                    height: isIpad ? 52 : 32
                 )
             
             Spacer()
@@ -146,16 +146,16 @@ struct HomeViewCard: View {
                 )
 
             VStack(spacing: 10) {
-                Spacer().frame(height: 14)
+                Spacer().frame(height: Device.isIpad ? 22 : 14)
 
                 // Title
                 Text(item.title.localized(self.language))
-                    .font(Font.custom("Urbanist-Bold", size: 16))
+                    .font(Font.custom("Urbanist-Bold", size: Device.isIpad ? 24 : 16))
                     .foregroundColor(.white)
 
                 // Subtitle
                 Text(item.subtitle.localized(self.language))
-                    .font(Font.custom("Urbanist-Regular", size: 12))
+                    .font(Font.custom("Urbanist-Regular", size: Device.isIpad ? 20 : 12))
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 20)
@@ -176,11 +176,11 @@ struct HomeViewCard: View {
             Image(item.icon)
                 .resizable()
                 .scaledToFit()
-                .frame(height: isIpad ? 100 : 86)
+                .frame(height: isIpad ? 120 : 86)
                 .padding(.horizontal, 30)
                 .offset(y: 18)
         }
-        .frame(height: isIpad ? 270 : 220)
+        .frame(height: isIpad ? 350 : 220)
         .clipped(antialiased: false)
         .background(
             NavigationLink(
@@ -210,11 +210,11 @@ struct HomeViewCard: View {
 
     private var buttonLabel: some View {
         Text("View More".localized(self.language))
-            .font(Font.custom("Urbanist-Bold", size: 12))
+            .font(Font.custom("Urbanist-Bold", size: Device.isIpad ? 20 : 12))
             .foregroundColor(Color(hex: "#0D1426"))
             .frame(
-                width: isIpad ? 110 : 90,
-                height: isIpad ? 42 : 30
+                width: isIpad ? 150 : 90,
+                height: isIpad ? 62 : 30
             )
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 12))

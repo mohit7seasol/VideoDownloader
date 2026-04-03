@@ -30,10 +30,10 @@ var myMail              = "kishanlakkad999@gmail.com"
 
 
 //MARK: - live json
-let getJSON : String = "https://7seasol-application.s3.amazonaws.com/admin_prod/pbz-pyvc-shfvba.json"
+//let getJSON : String = "https://7seasol-application.s3.amazonaws.com/admin_prod/pbz-pyvc-shfvba.json"
 
 //MARK: - test json
-//let getJSON : String = "https://7seasol-application.s3.amazonaws.com/admin_prod/grfg.json"
+let getJSON : String = "https://7seasol-application.s3.amazonaws.com/admin_prod/grfg.json"
 
 
 public let ACCESS = "AKIA2FCATE7MLGSZBHML"
