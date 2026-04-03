@@ -15,5 +15,7 @@
 		<string>Poppins-Black.ttf</string>
 		<string>Roboto-Regular.ttf</string>
 	</array>
+    <key>NSUserTrackingUsageDescription</key>
+    <string>This helps us provide you with better video downloading experience and personalized content</string>
 </dict>
 </plist>
