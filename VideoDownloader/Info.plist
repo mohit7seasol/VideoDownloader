@@ -6,8 +6,6 @@
 	<array>
 		<dict/>
 	</array>
-    <key>CFBundleName</key>
-    <string>Clipfusion</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Unlock-Regular.ttf</string>
@@ -17,7 +15,5 @@
 		<string>Poppins-Black.ttf</string>
 		<string>Roboto-Regular.ttf</string>
 	</array>
-    <key>NSUserTrackingUsageDescription</key>
-    <string>This identifier will be used to deliver personalized ads to you.</string>
 </dict>
 </plist>
