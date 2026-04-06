@@ -27,58 +27,21 @@ struct HashTagCategoriesView: View {
     }
     
     var body: some View {
-        
-        ZStack(alignment: .top) {
-            
-            // Background
-            Image("app_bg_image")
-                .resizable()
-                .scaledToFill()
-                .edgesIgnoringSafeArea(.all)
-            
-            // Custom Navigation Bar
-            HStack {
-                
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.white)
-                        .font(.system(size: 18, weight: .medium))
-                        .padding(.leading, 16)
-                }
-                
-                Spacer()
-                
-                Text("Hashtag Collection".localized(self.language))
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 10)
-                
-                Spacer()
-                
-                Color.clear
-                    .frame(width: 40, height: 40)
-            }
-            .padding(.top, UIApplication.shared.safeAreaTop)
-            .padding(.bottom, 10)
-            .zIndex(1)
-    
-            VStack(spacing: 0) {
-                
-                Color.clear
-                    .frame(height: UIApplication.shared.safeAreaTop + 44)
-                
-                ScrollView(showsIndicators: false) {
+        if Device.isIpad {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    // Custom nav bar spacer
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: UIApplication.shared.safeAreaTop + 44)
                     
                     VStack(spacing: 20) {
+                        // Uncomment when HashTagBannerView is ready
+                        // NavigationLink(destination: AddHashTagView()) {
+                        //     HashTagBannerView()
+                        // }
                         
-                        /* NavigationLink(destination: AddHashTagView()) {
-                            HashTagBannerView()
-                        } */
-                        
-                        LazyVGrid(columns: columns, spacing: 8) {
+                        LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(category, id: \.self) { item in
                                 NavigationLink(destination: HashTagCollectionView(category: item)) {
                                     HashTagCategoryCard(name: item)
@@ -86,15 +49,123 @@ struct HashTagCategoriesView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 15)
+                    .padding(.horizontal, 16)
                     .padding(.top, 10)
-                    .padding(.bottom, 20)
+                    
+                    // ✅ Critical bottom padding to ensure last item is visible
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: UIApplication.shared.safeAreaBottom + 80)
                 }
-                .padding(.bottom, 25)
             }
+            .background(
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+            )
+            .overlay(alignment: .top) {
+                // Custom Navigation Bar as overlay
+                HStack {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .font(.system(size: 22, weight: .medium))
+                            .padding(.leading, 16)
+                    }
+                    
+                    Spacer()
+                    
+                    Text("Hashtag Collection".localized(self.language))
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 10)
+                    
+                    Spacer()
+                    
+                    Color.clear
+                        .frame(width: 40, height: 40)
+                }
+                .padding(.top, UIApplication.shared.safeAreaTop)
+                .padding(.bottom, 10)
+                .background(Color.clear)
+            }
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .tabBar)
+        } else {
+            
+            ZStack(alignment: .top) {
+                
+                // Background
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .edgesIgnoringSafeArea(.all)
+                
+                // Custom Navigation Bar
+                HStack {
+                    
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .font(.system(size: 18, weight: .medium))
+                            .padding(.leading, 16)
+                    }
+                    
+                    Spacer()
+                    
+                    Text("Hashtag Collection".localized(self.language))
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 10)
+                    
+                    Spacer()
+                    
+                    Color.clear
+                        .frame(width: 40, height: 40)
+                }
+                .padding(.top, UIApplication.shared.safeAreaTop)
+                .padding(.bottom, 10)
+                .zIndex(1)
+        
+                VStack(spacing: 0) {
+                    
+                    Color.clear
+                        .frame(height: UIApplication.shared.safeAreaTop + 44)
+                    
+                    ScrollView(showsIndicators: false) {
+                        
+                        VStack(spacing: 20) {
+                            
+                            /* NavigationLink(destination: AddHashTagView()) {
+                                HashTagBannerView()
+                            } */
+                            
+                            LazyVGrid(columns: columns, spacing: 8) {
+                                ForEach(category, id: \.self) { item in
+                                    NavigationLink(destination: HashTagCollectionView(category: item)) {
+                                        HashTagCategoryCard(name: item)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 15)
+                        .padding(.top, 10)
+                        .padding(.bottom, 20)
+                    }
+                    .padding(.bottom, 25)
+                }
+            }
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
         }
-        .navigationBarHidden(true)
-        .navigationBarBackButtonHidden(true)
     }
 }
 struct HashTagBannerView: View {
