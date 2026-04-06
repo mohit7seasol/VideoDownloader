@@ -73,101 +73,203 @@ struct AddMusicToVideoView: View {
     }
     
     var body: some View {
-        ZStack {
-            // Background Image
-            Image("app_bg_image")
-                .resizable()
-                .ignoresSafeArea()
-                .scaledToFill()
-            
-            VStack(spacing: 0) {
-                // Navigation Bar - Fixed at top
-                navigationBar
-                    .padding(.bottom, 10)
-                
-                // Video Preview with fixed calculated height
-                videoPreview
-                    .frame(height: videoPreviewHeight)
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 10)
-                
-                // Timeline Slider
-                timelineSlider
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 10)
-                
-                // Play Controls
-                playControl
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 15)
-                
-                // Video Frame Row
-                videoFrameRow
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 15)
-                
-                // Music Row - Fixed at bottom with waveform
-                musicRow
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 10)
-            }
-            .frame(maxHeight: .infinity, alignment: .top)
-        }
-        .navigationBarHidden(true)
-        .sheet(isPresented: $showMusicLibrary) {
-            MusicLibraryView(selectedMusic: $selectedMusic)
-        }
-        .navigationDestination(isPresented: $navigateToWatch) {
-            if let url = exportURL {
-                WatchVideoView(videoURL: url, musicTrack: selectedMusic,
-                              musicStartTime: musicStartTime,
-                              musicEndTime: musicEndTime)
-            }
-        }
-        .overlay {
-            if isExporting {
+        if Device.isIpad {
+            GeometryReader { geometry in
                 ZStack {
-                    Color.black.opacity(0.7)
+                    // Background Image
+                    Image("app_bg_image")
+                        .resizable()
                         .ignoresSafeArea()
+                        .scaledToFill()
                     
-                    VStack(spacing: 20) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(.white)
+                    VStack(spacing: 0) {
+                        // Navigation Bar - Fixed at top
+                        navigationBar
+                            .padding(.bottom, 10)
                         
-                        Text("Exporting video...".localized(self.language))
-                            .font(.custom("Urbanist-Medium", size: 16))
-                            .foregroundColor(.white)
+                        // Video Preview with fixed calculated height
+                        videoPreview
+                            .frame(height: videoPreviewHeight)
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 10)
+                        
+                        // Timeline Slider
+                        timelineSlider
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 10)
+                        
+                        // Play Controls
+                        playControl
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 15)
+                        
+                        // Video Frame Row
+                        videoFrameRow
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 15)
+                        
+                        // Music Row - Fixed at bottom with waveform
+                        musicRow
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 10)
+                    }
+                    .frame(maxHeight: .infinity, alignment: .top)
+                }
+                .navigationBarHidden(true)
+                .sheet(isPresented: $showMusicLibrary) {
+                    MusicLibraryView(selectedMusic: $selectedMusic)
+                }
+                .navigationDestination(isPresented: $navigateToWatch) {
+                    if let url = exportURL {
+                        WatchVideoView(videoURL: url, musicTrack: selectedMusic,
+                                      musicStartTime: musicStartTime,
+                                      musicEndTime: musicEndTime)
+                    }
+                }
+                .overlay {
+                    if isExporting {
+                        ZStack {
+                            Color.black.opacity(0.7)
+                                .ignoresSafeArea()
+                            
+                            VStack(spacing: 20) {
+                                ProgressView()
+                                    .scaleEffect(1.5)
+                                    .tint(.white)
+                                
+                                Text("Exporting video...".localized(self.language))
+                                    .font(.custom("Urbanist-Medium", size: 16))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                    }
+                }
+                .onAppear {
+                    setupPlayer()
+                    generateThumbnails()
+                }
+                .onDisappear {
+                    cleanupPlayer()
+                }
+                .onChange(of: selectedMusic) { newValue in
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showWaveform = newValue != nil
+                        
+                        if let music = newValue {
+                            let asset = AVAsset(url: music.url)
+                            musicDuration = asset.duration.seconds
+                            
+                            // ✅ FIX: set range based on VIDEO duration
+                            let videoDuration = duration
+                            let defaultRange = min(videoDuration, musicDuration)
+                            
+                            musicStartTime = 0
+                            musicEndTime = defaultRange
+                        }
+                    }
+                }
+                .onChange(of: isMuted) { newValue in
+                    player?.isMuted = newValue
+                }
+            }
+            .ignoresSafeArea()
+        } else {
+            ZStack {
+                // Background Image
+                Image("app_bg_image")
+                    .resizable()
+                    .ignoresSafeArea()
+                    .scaledToFill()
+                
+                VStack(spacing: 0) {
+                    // Navigation Bar - Fixed at top
+                    navigationBar
+                        .padding(.bottom, 10)
+                    
+                    // Video Preview with fixed calculated height
+                    videoPreview
+                        .frame(height: videoPreviewHeight)
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 10)
+                    
+                    // Timeline Slider
+                    timelineSlider
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 10)
+                    
+                    // Play Controls
+                    playControl
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 15)
+                    
+                    // Video Frame Row
+                    videoFrameRow
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 15)
+                    
+                    // Music Row - Fixed at bottom with waveform
+                    musicRow
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 10)
+                }
+                .frame(maxHeight: .infinity, alignment: .top)
+            }
+            .navigationBarHidden(true)
+            .sheet(isPresented: $showMusicLibrary) {
+                MusicLibraryView(selectedMusic: $selectedMusic)
+            }
+            .navigationDestination(isPresented: $navigateToWatch) {
+                if let url = exportURL {
+                    WatchVideoView(videoURL: url, musicTrack: selectedMusic,
+                                  musicStartTime: musicStartTime,
+                                  musicEndTime: musicEndTime)
+                }
+            }
+            .overlay {
+                if isExporting {
+                    ZStack {
+                        Color.black.opacity(0.7)
+                            .ignoresSafeArea()
+                        
+                        VStack(spacing: 20) {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .tint(.white)
+                            
+                            Text("Exporting video...".localized(self.language))
+                                .font(.custom("Urbanist-Medium", size: 16))
+                                .foregroundColor(.white)
+                        }
                     }
                 }
             }
-        }
-        .onAppear {
-            setupPlayer()
-            generateThumbnails()
-        }
-        .onDisappear {
-            cleanupPlayer()
-        }
-        .onChange(of: selectedMusic) { newValue in
-            withAnimation(.easeInOut(duration: 0.3)) {
-                showWaveform = newValue != nil
-                
-                if let music = newValue {
-                    let asset = AVAsset(url: music.url)
-                    musicDuration = asset.duration.seconds
+            .onAppear {
+                setupPlayer()
+                generateThumbnails()
+            }
+            .onDisappear {
+                cleanupPlayer()
+            }
+            .onChange(of: selectedMusic) { newValue in
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showWaveform = newValue != nil
                     
-                    // ✅ FIX: set range based on VIDEO duration
-                    let videoDuration = duration
-                    let defaultRange = min(videoDuration, musicDuration)
-                    
-                    musicStartTime = 0
-                    musicEndTime = defaultRange
+                    if let music = newValue {
+                        let asset = AVAsset(url: music.url)
+                        musicDuration = asset.duration.seconds
+                        
+                        // ✅ FIX: set range based on VIDEO duration
+                        let videoDuration = duration
+                        let defaultRange = min(videoDuration, musicDuration)
+                        
+                        musicStartTime = 0
+                        musicEndTime = defaultRange
+                    }
                 }
             }
-        }
-        .onChange(of: isMuted) { newValue in
-            player?.isMuted = newValue
+            .onChange(of: isMuted) { newValue in
+                player?.isMuted = newValue
+            }
         }
     }
 }
