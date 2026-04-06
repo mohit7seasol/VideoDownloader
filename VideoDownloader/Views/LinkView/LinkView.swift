@@ -22,165 +22,332 @@ struct LinkView: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                Image("app_bg_image")
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        UIApplication.shared.endEditing(true)
-                        isTextFieldFocused = false
+        if Device.isIpad {
+            GeometryReader { geometry in
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // Top View (Reuse) - Fixed at top
+                        TopHomeView()
+                            .padding(.top, UIApplication.shared.safeAreaTop)
+                        
+                        // Main content - Centered vertically with proper spacing
+                        VStack(spacing: Device.isIpad ? 30 : 20) {
+                            Text("Instant Bookmark Video".localized(self.language))
+                                .font(Font.custom("Unlock-Regular", size: Device.isIpad ? 32 : 22))
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, Device.isIpad ? 40 : 0)
+                            
+                            Text("Paste the link and enjoy fast, hassle-free video BookMark".localized(self.language))
+                                .font(Font.custom("Urbanist-Medium", size: Device.isIpad ? 20 : 16))
+                                .foregroundColor(.white.opacity(0.9))
+                                .multilineTextAlignment(.center)
+                                .lineLimit(3)
+                                .padding(.horizontal, Device.isIpad ? 80 : 40)
+                            
+                            // Post Link View
+                            PostLinkView(
+                                postLink: $viewModel.postLink,
+                                pasteAction: viewModel.handlePaste,
+                                isTextFieldFocused: _isTextFieldFocused
+                            )
+                            .frame(height: Device.isIpad ? 90 : 60)
+                            .padding(.horizontal, Device.isIpad ? 40 : 30)
+                            
+                            // Download Button
+                            Button {
+                                // Hide keyboard when download button is pressed
+                                UIApplication.shared.endEditing(true)
+                                isTextFieldFocused = false
+                                
+                                // Small delay to ensure keyboard is dismissed before download starts
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    viewModel.downloadVideo()
+                                }
+                            } label: {
+                                if viewModel.isLoading {
+                                    ProgressView()
+                                        .tint(.white)
+                                        .padding(.horizontal, Device.isIpad ? 70 : 50)
+                                        .padding(.vertical, Device.isIpad ? 18 : 14)
+                                } else {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "magnifyingglass")
+                                            .foregroundColor(.white)
+                                            .font(.system(size: Device.isIpad ? 20 : 16))
+                                        
+                                        Text("Search".localized(language))
+                                            .font(Font.custom("Urbanist-Bold", size: Device.isIpad ? 20 : 16))
+                                            .foregroundColor(.white)
+                                    }
+                                    .padding(.horizontal, Device.isIpad ? 70 : 50)
+                                    .padding(.vertical, Device.isIpad ? 18 : 14)
+                                }
+                            }
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        Color(hex: "#1973E8"),
+                                        Color(hex: "#0E4082")
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .clipShape(Capsule())
+                            .shadow(
+                                color: Color(hex: "#1973E8").opacity(0.3),
+                                radius: 10,
+                                x: 0,
+                                y: 6
+                            )
+                            .disabled(viewModel.isLoading)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Device.isIpad ? 80 : 0)
+                        
+                        // Bottom Image
+                        VStack {
+                            Image("link_bottom_ic")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: geometry.size.width - (Device.isIpad ? 80 : 40))
+                                .padding(.horizontal, Device.isIpad ? 40 : 20)
+                        }
+                        .padding(.bottom, UIApplication.shared.safeAreaBottom + (Device.isIpad ? 40 : 20))
+                        
+                        // ✅ Critical bottom padding to ensure last item is visible
+                        Rectangle()
+                            .fill(Color.clear)
+                            .frame(height: UIApplication.shared.safeAreaBottom + 20)
                     }
-                
-                VStack(spacing: 0) {
-                    // Top View (Reuse) - Fixed at top
-                    TopHomeView()
-                        .padding(.top, UIApplication.shared.connectedScenes
-                            .compactMap { $0 as? UIWindowScene }
-                            .first?.windows
-                            .first?.safeAreaInsets.top ?? 0)
-                    
-                    Spacer(minLength: 0)
-                    
-                    // Main content - Centered vertically
-                    VStack(spacing: 20) {
-                        Text("Instant Bookmark Video".localized(self.language))
-                            .font(Font.custom("Unlock-Regular", size: 22))
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
-                        
-                        Text("Paste the link and enjoy fast, hassle-free video BookMark".localized(self.language))
-                            .font(Font.custom("Urbanist-Medium", size: 16))
-                            .foregroundColor(.white.opacity(0.9))
-                            .multilineTextAlignment(.center)
-                            .lineLimit(3)
-                            .padding(.horizontal, 40)
-                        
-                        // Post Link View
-                        PostLinkView(
-                            postLink: $viewModel.postLink,
-                            pasteAction: viewModel.handlePaste,
-                            isTextFieldFocused: _isTextFieldFocused
-                        )
-                        .frame(height: isIpad ? 80 : 60)
-                        .padding(.horizontal, 30)
-                        
-                        // Download Button
-                        Button {
-                            // Hide keyboard when download button is pressed
+                    .frame(minHeight: geometry.size.height)
+                }
+                .background(
+                    Image("app_bg_image")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
+                )
+                .onTapGesture {
+                    UIApplication.shared.endEditing(true)
+                    isTextFieldFocused = false
+                }
+            }
+            .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
+                Button("OK".localized(language), role: .cancel) {
+                    if viewModel.didDownloadSuccessfully {
+                        tabManager.navigateToHistory()
+                        viewModel.didDownloadSuccessfully = false
+                    } else {
+                        // Clear the text field when alert is dismissed after failure
+                        DispatchQueue.main.async {
+                            viewModel.postLink = ""
+                            isTextFieldFocused = false
+                        }
+                    }
+                }
+            }
+            .onAppear {
+                viewModel.setTabManager(tabManager)
+                setupKeyboardNotifications()
+                // Set the linkViewModel reference in folderSelectionManager
+                folderSelectionManager.linkViewModel = viewModel
+            }
+            .onDisappear {
+                removeKeyboardNotifications()
+            }
+            .sheet(isPresented: $folderSelectionManager.showFolderSelection) {
+                FolderSelectionView(
+                    folderManager: folderSelectionManager.folderManager,
+                    onFolderSelected: { folder in
+                        folderSelectionManager.saveToSelectedFolder(folderId: folder.id)
+                    },
+                    onCreateNewFolder: {
+                        // Don't dismiss the folder selection view
+                        // Just show the alert
+                        showCreateFolderAlert = true
+                    },
+                    onCancel: {
+                        folderSelectionManager.cancelFolderSelection()
+                    }
+                )
+            }
+            .createFolderAlert(isPresented: $showCreateFolderAlert) { folderName in
+                folderSelectionManager.createNewFolder(name: folderName)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .showFolderSelection)) { notification in
+                if let videoURL = notification.userInfo?["videoURL"] as? URL,
+                   let sourceURL = notification.userInfo?["sourceURL"] as? String {
+                    let thumbnailURL = notification.userInfo?["thumbnailURL"] as? URL
+                    folderSelectionManager.handleDownloadedVideo(
+                        videoURL: videoURL,
+                        thumbnailURL: thumbnailURL,
+                        sourceURL: sourceURL
+                    )
+                }
+            }
+        } else {
+            GeometryReader { geometry in
+                ZStack {
+                    Image("app_bg_image")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
+                        .onTapGesture {
                             UIApplication.shared.endEditing(true)
                             isTextFieldFocused = false
+                        }
+                    
+                    VStack(spacing: 0) {
+                        // Top View (Reuse) - Fixed at top
+                        TopHomeView()
+                            .padding(.top, UIApplication.shared.connectedScenes
+                                .compactMap { $0 as? UIWindowScene }
+                                .first?.windows
+                                .first?.safeAreaInsets.top ?? 0)
+                        
+                        Spacer(minLength: 0)
+                        
+                        // Main content - Centered vertically
+                        VStack(spacing: 20) {
+                            Text("Instant Bookmark Video".localized(self.language))
+                                .font(Font.custom("Unlock-Regular", size: 22))
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
                             
-                            // Small delay to ensure keyboard is dismissed before download starts
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                viewModel.downloadVideo()
-                            }
-                        } label: {
-                            if viewModel.isLoading {
-                                ProgressView()
-                                    .tint(.white)
+                            Text("Paste the link and enjoy fast, hassle-free video BookMark".localized(self.language))
+                                .font(Font.custom("Urbanist-Medium", size: 16))
+                                .foregroundColor(.white.opacity(0.9))
+                                .multilineTextAlignment(.center)
+                                .lineLimit(3)
+                                .padding(.horizontal, 40)
+                            
+                            // Post Link View
+                            PostLinkView(
+                                postLink: $viewModel.postLink,
+                                pasteAction: viewModel.handlePaste,
+                                isTextFieldFocused: _isTextFieldFocused
+                            )
+                            .frame(height: isIpad ? 80 : 60)
+                            .padding(.horizontal, 30)
+                            
+                            // Download Button
+                            Button {
+                                // Hide keyboard when download button is pressed
+                                UIApplication.shared.endEditing(true)
+                                isTextFieldFocused = false
+                                
+                                // Small delay to ensure keyboard is dismissed before download starts
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    viewModel.downloadVideo()
+                                }
+                            } label: {
+                                if viewModel.isLoading {
+                                    ProgressView()
+                                        .tint(.white)
+                                        .padding(.horizontal, 50)
+                                        .padding(.vertical, 14)
+                                } else {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "magnifyingglass")
+                                            .foregroundColor(.white)
+                                        
+                                        Text("Search".localized(language))
+                                            .font(Font.custom("Urbanist-Bold", size: 16))
+                                            .foregroundColor(.white)
+                                    }
                                     .padding(.horizontal, 50)
                                     .padding(.vertical, 14)
-                            } else {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "magnifyingglass")
-                                        .foregroundColor(.white)
-                                    
-                                    Text("Search".localized(language))
-                                        .font(Font.custom("Urbanist-Bold", size: 16))
-                                        .foregroundColor(.white)
                                 }
-                                .padding(.horizontal, 50)
-                                .padding(.vertical, 14)
                             }
-                        }
-                        .background(
-                            LinearGradient(
-                                colors: [
-                                    Color(hex: "#1973E8"),
-                                    Color(hex: "#0E4082")
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        Color(hex: "#1973E8"),
+                                        Color(hex: "#0E4082")
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
                             )
-                        )
-                        .clipShape(Capsule())
-                        .shadow(
-                            color: Color(hex: "#1973E8").opacity(0.3),
-                            radius: 10,
-                            x: 0,
-                            y: 6
-                        )
-                        .disabled(viewModel.isLoading)
-                    }
-                    
-                    Spacer(minLength: 0)
-                    
-                    // Bottom Image - Fixed at bottom with proper spacing
-                    VStack {
-                        Image("link_bottom_ic")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxWidth: geometry.size.width - 40)
-                            .padding(.horizontal, 20)
-                    }
-                    .padding(.bottom, UIApplication.shared.safeAreaBottom + 20)
-                    .opacity(1)
-                }
-            }
-        }
-        .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
-            Button("OK".localized(language), role: .cancel) {
-                if viewModel.didDownloadSuccessfully {
-                    tabManager.navigateToHistory()
-                    viewModel.didDownloadSuccessfully = false
-                } else {
-                    // Clear the text field when alert is dismissed after failure
-                    DispatchQueue.main.async {
-                        viewModel.postLink = ""
-                        isTextFieldFocused = false
+                            .clipShape(Capsule())
+                            .shadow(
+                                color: Color(hex: "#1973E8").opacity(0.3),
+                                radius: 10,
+                                x: 0,
+                                y: 6
+                            )
+                            .disabled(viewModel.isLoading)
+                        }
+                        
+                        Spacer(minLength: 0)
+                        
+                        // Bottom Image - Fixed at bottom with proper spacing
+                        VStack {
+                            Image("link_bottom_ic")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: geometry.size.width - 40)
+                                .padding(.horizontal, 20)
+                        }
+                        .padding(.bottom, UIApplication.shared.safeAreaBottom + 20)
+                        .opacity(1)
                     }
                 }
             }
-        }
-        .onAppear {
-            viewModel.setTabManager(tabManager)
-            setupKeyboardNotifications()
-            // Set the linkViewModel reference in folderSelectionManager
-            folderSelectionManager.linkViewModel = viewModel
-        }
-        .onDisappear {
-            removeKeyboardNotifications()
-        }
-        .sheet(isPresented: $folderSelectionManager.showFolderSelection) {
-            FolderSelectionView(
-                folderManager: folderSelectionManager.folderManager,
-                onFolderSelected: { folder in
-                    folderSelectionManager.saveToSelectedFolder(folderId: folder.id)
-                },
-                onCreateNewFolder: {
-                    // Don't dismiss the folder selection view
-                    // Just show the alert
-                    showCreateFolderAlert = true
-                },
-                onCancel: {
-                    folderSelectionManager.cancelFolderSelection()
+            .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
+                Button("OK".localized(language), role: .cancel) {
+                    if viewModel.didDownloadSuccessfully {
+                        tabManager.navigateToHistory()
+                        viewModel.didDownloadSuccessfully = false
+                    } else {
+                        // Clear the text field when alert is dismissed after failure
+                        DispatchQueue.main.async {
+                            viewModel.postLink = ""
+                            isTextFieldFocused = false
+                        }
+                    }
                 }
-            )
-        }
-        .createFolderAlert(isPresented: $showCreateFolderAlert) { folderName in
-            folderSelectionManager.createNewFolder(name: folderName)
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showFolderSelection)) { notification in
-            if let videoURL = notification.userInfo?["videoURL"] as? URL,
-               let sourceURL = notification.userInfo?["sourceURL"] as? String {
-                let thumbnailURL = notification.userInfo?["thumbnailURL"] as? URL
-                folderSelectionManager.handleDownloadedVideo(
-                    videoURL: videoURL,
-                    thumbnailURL: thumbnailURL,
-                    sourceURL: sourceURL
+            }
+            .onAppear {
+                viewModel.setTabManager(tabManager)
+                setupKeyboardNotifications()
+                // Set the linkViewModel reference in folderSelectionManager
+                folderSelectionManager.linkViewModel = viewModel
+            }
+            .onDisappear {
+                removeKeyboardNotifications()
+            }
+            .sheet(isPresented: $folderSelectionManager.showFolderSelection) {
+                FolderSelectionView(
+                    folderManager: folderSelectionManager.folderManager,
+                    onFolderSelected: { folder in
+                        folderSelectionManager.saveToSelectedFolder(folderId: folder.id)
+                    },
+                    onCreateNewFolder: {
+                        // Don't dismiss the folder selection view
+                        // Just show the alert
+                        showCreateFolderAlert = true
+                    },
+                    onCancel: {
+                        folderSelectionManager.cancelFolderSelection()
+                    }
                 )
+            }
+            .createFolderAlert(isPresented: $showCreateFolderAlert) { folderName in
+                folderSelectionManager.createNewFolder(name: folderName)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .showFolderSelection)) { notification in
+                if let videoURL = notification.userInfo?["videoURL"] as? URL,
+                   let sourceURL = notification.userInfo?["sourceURL"] as? String {
+                    let thumbnailURL = notification.userInfo?["thumbnailURL"] as? URL
+                    folderSelectionManager.handleDownloadedVideo(
+                        videoURL: videoURL,
+                        thumbnailURL: thumbnailURL,
+                        sourceURL: sourceURL
+                    )
+                }
             }
         }
     }

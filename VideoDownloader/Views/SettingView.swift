@@ -13,74 +13,147 @@ struct SettingView: View {
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
-        ZStack(alignment: .top) {
-            // Background Image
-            Image("app_bg_image")
-                .resizable()
-                .scaledToFill()
-                .edgesIgnoringSafeArea(.all)
-            
-            // Custom Navigation Bar (exactly like AddHashTagView)
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.white)
-                        .font(.system(size: 18, weight: .medium))
-                        .padding(.leading, 16)
-                }
-                
-                Text("Settings".localized(self.language))
-                    .font(.custom("Urbanist-Medium", size: 20))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 10)
-            }
-            .padding(.top, UIApplication.shared.safeAreaTop)
-            .padding(.bottom, 10)
-            .background(Color.clear)
-            .zIndex(1)
-            
-            // Main Content
-            VStack(spacing: 0) {
-                Color.clear
-                    .frame(height: UIApplication.shared.safeAreaTop + 44)
-                
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
-                        // Premium Top View
-                        /* PremiumTopView() */ // Hide for first version
+        if Device.isIpad {
+            GeometryReader { geometry in
+                ZStack(alignment: .top) {
+                    // Background Image
+                    Image("app_bg_image")
+                        .resizable()
+                        .scaledToFill()
+                        .edgesIgnoringSafeArea(.all)
+                    
+                    // Custom Navigation Bar (exactly like AddHashTagView)
+                    HStack {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.white)
+                                .font(.system(size: 22, weight: .medium))
+                                .padding(.leading, 16)
+                        }
                         
-                        // Bottom Setting Card
-                        BottomSettingCard(
-                            isShowingLanguageView: $isShowingLanguageView,
-                            privacyPolicy: privacyPolicy,
-                            termsOfUse: termsOfUse,
-                            eula: eula,
-                            reviewLink: REVIEW_LINK,
-                            shareApp: shareApp,
-                            appID: APP_ID
-                        )
+                        Text("Settings".localized(self.language))
+                            .font(.custom("Urbanist-Medium", size: 20))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 10)
                     }
-                    .padding(.horizontal, 15)
+                    .padding(.top, UIApplication.shared.safeAreaTop)
+                    .padding(.bottom, 10)
+                    .background(Color.clear)
+                    .zIndex(1)
+                    
+                    // Main Content
+                    VStack(spacing: 0) {
+                        Color.clear
+                            .frame(height: UIApplication.shared.safeAreaTop + 44)
+                        
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 20) {
+                                // Premium Top View
+                                /* PremiumTopView() */ // Hide for first version
+                                
+                                // Bottom Setting Card
+                                BottomSettingCard(
+                                    isShowingLanguageView: $isShowingLanguageView,
+                                    privacyPolicy: privacyPolicy,
+                                    termsOfUse: termsOfUse,
+                                    eula: eula,
+                                    reviewLink: REVIEW_LINK,
+                                    shareApp: shareApp,
+                                    appID: APP_ID
+                                )
+                            }
+                            .padding(.horizontal, 15)
+                        }
+                    }
+                }
+                .navigationBarHidden(true)
+                .navigationBarBackButtonHidden(true)
+                .toolbar(.hidden, for: .tabBar)
+                .ignoresSafeArea(.all, edges: .top)
+                .background(
+                    NavigationLink(
+                        destination: LanguageView(isOpenFromSetting: true)
+                            .navigationBarHidden(true)
+                            .navigationBarBackButtonHidden(true),
+                        isActive: $isShowingLanguageView
+                    ) {
+                        EmptyView()
+                    }
+                )
+            }
+        } else {
+            ZStack(alignment: .top) {
+                // Background Image
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .edgesIgnoringSafeArea(.all)
+                
+                // Custom Navigation Bar (exactly like AddHashTagView)
+                HStack {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .font(.system(size: 18, weight: .medium))
+                            .padding(.leading, 16)
+                    }
+                    
+                    Text("Settings".localized(self.language))
+                        .font(.custom("Urbanist-Medium", size: 20))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 10)
+                }
+                .padding(.top, UIApplication.shared.safeAreaTop)
+                .padding(.bottom, 10)
+                .background(Color.clear)
+                .zIndex(1)
+                
+                // Main Content
+                VStack(spacing: 0) {
+                    Color.clear
+                        .frame(height: UIApplication.shared.safeAreaTop + 44)
+                    
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 20) {
+                            // Premium Top View
+                            /* PremiumTopView() */ // Hide for first version
+                            
+                            // Bottom Setting Card
+                            BottomSettingCard(
+                                isShowingLanguageView: $isShowingLanguageView,
+                                privacyPolicy: privacyPolicy,
+                                termsOfUse: termsOfUse,
+                                eula: eula,
+                                reviewLink: REVIEW_LINK,
+                                shareApp: shareApp,
+                                appID: APP_ID
+                            )
+                        }
+                        .padding(.horizontal, 15)
+                    }
                 }
             }
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .tabBar)
+            .ignoresSafeArea(.all, edges: .top)
+            .background(
+                NavigationLink(
+                    destination: LanguageView(isOpenFromSetting: true)
+                        .navigationBarHidden(true)
+                        .navigationBarBackButtonHidden(true),
+                    isActive: $isShowingLanguageView
+                ) {
+                    EmptyView()
+                }
+            )
         }
-        .navigationBarHidden(true)
-        .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .tabBar)
-        .ignoresSafeArea(.all, edges: .top)
-        .background(
-            NavigationLink(
-                destination: LanguageView(isOpenFromSetting: true)
-                    .navigationBarHidden(true) 
-                    .navigationBarBackButtonHidden(true),
-                isActive: $isShowingLanguageView
-            ) {
-                EmptyView()
-            }
-        )
     }
 }
 
