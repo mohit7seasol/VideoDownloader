@@ -28,86 +28,177 @@ struct CaptionContentView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .top) {
-            // Background
-            Image("app_bg_image")
-                .resizable()
-                .scaledToFill()
-                .edgesIgnoringSafeArea(.all)
-            
-            // Custom Navigation Bar
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.white)
-                        .font(.system(size: 18, weight: .medium))
-                        .padding(.leading, 16)
-                }
-                
-                Spacer()
-                
-                Text(categoryTitle)
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 10)
-                Spacer()
-                
-                // Empty view for balance
-                Color.clear
-                    .frame(width: 40, height: 40)
-            }
-            .padding(.top, UIApplication.shared.safeAreaTop)
-            .padding(.bottom, 10)
-            .background(Color.clear)
-            .zIndex(1)
-            
-            // Content starts from top (below custom nav bar)
-            VStack(spacing: 0) {
-                // Spacer for custom nav bar height
-                Color.clear
-                    .frame(height: UIApplication.shared.safeAreaTop + 44)
-                
-                if isLoading {
-                    Spacer()
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    Spacer()
-                } else if captionContents.isEmpty {
-                    VStack(spacing: 20) {
-                        Spacer()
-                        Image(systemName: "text.quote")
-                            .font(.system(size: 50))
-                            .foregroundColor(.white.opacity(0.5))
-                        Text("No captions available".localized(self.language))
-                            .foregroundColor(.white.opacity(0.7))
-                            .font(.custom("Urbanist-Regular", size: 18))
-                        Spacer()
-                    }
-                } else {
-                    ScrollView {
+        if Device.isIpad {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    // Custom nav bar spacer
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: UIApplication.shared.safeAreaTop + 44)
+                    
+                    if isLoading {
+                        VStack(spacing: 20) {
+                            Spacer()
+                                .frame(height: 200)
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .scaleEffect(1.5)
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity)
+                    } else if captionContents.isEmpty {
+                        VStack(spacing: 20) {
+                            Spacer()
+                                .frame(height: 200)
+                            Image(systemName: "text.quote")
+                                .font(.system(size: 50))
+                                .foregroundColor(.white.opacity(0.5))
+                            Text("No captions available".localized(self.language))
+                                .foregroundColor(.white.opacity(0.7))
+                                .font(.custom("Urbanist-Regular", size: 18))
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity)
+                    } else {
                         LazyVStack(spacing: 12) {
                             ForEach(captionContents, id: \.id) { content in
                                 CaptionContentCardView(content: content.content)
-                                    .padding(.horizontal, UIDevice.current.userInterfaceIdiom == .pad ? 15 : 15)
+                                    .padding(.horizontal, 16)
                             }
                         }
                         .padding(.top, 8)
-                        .padding(.bottom, 20)
                     }
-                    .scrollIndicators(.hidden)
+                    
+                    // ✅ Critical bottom padding to ensure last item is visible
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: UIApplication.shared.safeAreaBottom + 80)
                 }
             }
-        }
-        .navigationBarHidden(true)
-        .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .tabBar)
-        .ignoresSafeArea(.all, edges: .top)
-        .onAppear {
-            loadCaptionContents()
-            hideTabBar()
+            .background(
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+            )
+            .overlay(alignment: .top) {
+                // Custom Navigation Bar as overlay
+                HStack {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .font(.system(size: 22, weight: .medium))
+                            .padding(.leading, 16)
+                    }
+                    
+                    Spacer()
+                    
+                    Text(categoryTitle)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 10)
+                    
+                    Spacer()
+                    
+                    Color.clear
+                        .frame(width: 40, height: 40)
+                }
+                .padding(.top, UIApplication.shared.safeAreaTop)
+                .padding(.bottom, 10)
+                .background(Color.clear)
+            }
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .tabBar)
+            .onAppear {
+                loadCaptionContents()
+                hideTabBar()
+            }
+        } else {
+            ZStack(alignment: .top) {
+                // Background
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .edgesIgnoringSafeArea(.all)
+                
+                // Custom Navigation Bar
+                HStack {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .font(.system(size: 18, weight: .medium))
+                            .padding(.leading, 16)
+                    }
+                    
+                    Spacer()
+                    
+                    Text(categoryTitle)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 10)
+                    Spacer()
+                    
+                    // Empty view for balance
+                    Color.clear
+                        .frame(width: 40, height: 40)
+                }
+                .padding(.top, UIApplication.shared.safeAreaTop)
+                .padding(.bottom, 10)
+                .background(Color.clear)
+                .zIndex(1)
+                
+                // Content starts from top (below custom nav bar)
+                VStack(spacing: 0) {
+                    // Spacer for custom nav bar height
+                    Color.clear
+                        .frame(height: UIApplication.shared.safeAreaTop + 44)
+                    
+                    if isLoading {
+                        Spacer()
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        Spacer()
+                    } else if captionContents.isEmpty {
+                        VStack(spacing: 20) {
+                            Spacer()
+                            Image(systemName: "text.quote")
+                                .font(.system(size: 50))
+                                .foregroundColor(.white.opacity(0.5))
+                            Text("No captions available".localized(self.language))
+                                .foregroundColor(.white.opacity(0.7))
+                                .font(.custom("Urbanist-Regular", size: 18))
+                            Spacer()
+                        }
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: 12) {
+                                ForEach(captionContents, id: \.id) { content in
+                                    CaptionContentCardView(content: content.content)
+                                        .padding(.horizontal, UIDevice.current.userInterfaceIdiom == .pad ? 15 : 15)
+                                }
+                            }
+                            .padding(.top, 8)
+                            .padding(.bottom, 20)
+                        }
+                        .scrollIndicators(.hidden)
+                    }
+                }
+            }
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .tabBar)
+            .ignoresSafeArea(.all, edges: .top)
+            .onAppear {
+                loadCaptionContents()
+                hideTabBar()
+            }
         }
     }
     
