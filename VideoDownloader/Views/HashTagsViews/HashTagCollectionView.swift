@@ -19,84 +19,50 @@ struct HashTagCollectionView: View {
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
-        ZStack(alignment: .top) {
-            // Background Image - Fixed
-            Image("app_bg_image")
-                .resizable()
-                .scaledToFill()
-                .edgesIgnoringSafeArea(.all)
-            
-            // Custom Navigation Bar
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.white)
-                        .font(.system(size: 18, weight: .medium))
-                        .padding(.leading, 16)
-                }
-                
-                Spacer()
-                
-                Text(category.localized(self.language))
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 10)
-                
-                Spacer()
-                
-                Color.clear
-                    .frame(width: 40, height: 40)
-            }
-            .padding(.top, UIApplication.shared.safeAreaTop)
-            .padding(.bottom, 10)
-            .background(Color.clear) // Clear background
-            .zIndex(1)
-            
-            VStack(spacing: 0) {
-                Color.clear
-                    .frame(height: UIApplication.shared.safeAreaTop + 44)
-                
-                if viewModel.isLoading {
-                    // Shimmer Loading Cards
-                    ScrollView(showsIndicators: false) {
-                        LazyVStack(spacing: 16) {
+        if Device.isIpad {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    // Custom nav bar spacer
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: UIApplication.shared.safeAreaTop + 44)
+                    
+                    if viewModel.isLoading {
+                        // Shimmer Loading Cards
+                        VStack(spacing: 16) {
                             ForEach(0..<5, id: \.self) { _ in
                                 HashTagCollectionCardShimmer()
                                     .padding(.horizontal, 16)
                             }
                         }
                         .padding(.top, 8)
-                        .padding(.bottom, 20)
-                    }
-                } else if let error = viewModel.errorMessage {
-                    Spacer()
-                    VStack(spacing: 16) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.system(size: 50))
-                            .foregroundColor(.orange)
-                        Text("Error loading hashtags")
-                            .font(.custom("Urbanist-Bold", size: 18))
+                    } else if let error = viewModel.errorMessage {
+                        VStack(spacing: 16) {
+                            Spacer()
+                                .frame(height: 100)
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.system(size: 50))
+                                .foregroundColor(.orange)
+                            Text("Error loading hashtags")
+                                .font(.custom("Urbanist-Bold", size: Device.isIpad ? 22 : 18))
+                                .foregroundColor(.white)
+                            Text(error)
+                                .font(.custom("Urbanist-Regular", size: Device.isIpad ? 16 : 14))
+                                .foregroundColor(.white.opacity(0.7))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                            Button("Try Again") {
+                                viewModel.fetchHashtags(for: mappedTitle)
+                            }
                             .foregroundColor(.white)
-                        Text(error)
-                            .font(.custom("Urbanist-Regular", size: 14))
-                            .foregroundColor(.white.opacity(0.7))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                        Button("Try Again") {
-                            viewModel.fetchHashtags(for: category)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 12)
+                            .background(Color.blue.opacity(0.3))
+                            .cornerRadius(8)
+                            Spacer()
                         }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(Color.blue.opacity(0.3))
-                        .cornerRadius(8)
-                    }
-                    Spacer()
-                } else {
-                    ScrollView(showsIndicators: false) {
+                        .frame(maxWidth: .infinity)
+                    } else {
                         LazyVStack(spacing: 16) {
                             ForEach(viewModel.getHashtagsForCategory(mappedTitle), id: \.id) { hashtag in
                                 HashTagCollectionCard(
@@ -110,26 +76,176 @@ struct HashTagCollectionView: View {
                             }
                         }
                         .padding(.top, 8)
-                        .padding(.bottom, 20)
+                    }
+                    
+                    // ✅ Critical bottom padding to ensure last item is visible
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: UIApplication.shared.safeAreaBottom + 80)
+                }
+            }
+            .background(
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+            )
+            .overlay(alignment: .top) {
+                // Custom Navigation Bar as overlay
+                HStack {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .font(.system(size: 22, weight: .medium))
+                            .padding(.leading, 16)
+                    }
+                    
+                    Spacer()
+                    
+                    Text(category.localized(self.language))
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 10)
+                    
+                    Spacer()
+                    
+                    Color.clear
+                        .frame(width: 40, height: 40)
+                }
+                .padding(.top, UIApplication.shared.safeAreaTop)
+                .padding(.bottom, 10)
+                .background(Color.clear)
+            }
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .tabBar)
+            .onAppear {
+                mappedTitle = mapCategoryTitle(category)
+                viewModel.fetchHashtags(for: mappedTitle)
+            }
+            .alert(isPresented: $showCopyAlert) {
+                Alert(
+                    title: Text("Copied!".localized(self.language)),
+                    message: Text("Hashtags copied to clipboard".localized(self.language)),
+                    dismissButton: .default(Text("OK".localized(self.language)))
+                )
+            }
+        } else {
+            ZStack(alignment: .top) {
+                // Background Image - Fixed
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .edgesIgnoringSafeArea(.all)
+                
+                // Custom Navigation Bar
+                HStack {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .font(.system(size: 18, weight: .medium))
+                            .padding(.leading, 16)
+                    }
+                    
+                    Spacer()
+                    
+                    Text(category.localized(self.language))
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 10)
+                    
+                    Spacer()
+                    
+                    Color.clear
+                        .frame(width: 40, height: 40)
+                }
+                .padding(.top, UIApplication.shared.safeAreaTop)
+                .padding(.bottom, 10)
+                .background(Color.clear) // Clear background
+                .zIndex(1)
+                
+                VStack(spacing: 0) {
+                    Color.clear
+                        .frame(height: UIApplication.shared.safeAreaTop + 44)
+                    
+                    if viewModel.isLoading {
+                        // Shimmer Loading Cards
+                        ScrollView(showsIndicators: false) {
+                            LazyVStack(spacing: 16) {
+                                ForEach(0..<5, id: \.self) { _ in
+                                    HashTagCollectionCardShimmer()
+                                        .padding(.horizontal, 16)
+                                }
+                            }
+                            .padding(.top, 8)
+                            .padding(.bottom, 20)
+                        }
+                    } else if let error = viewModel.errorMessage {
+                        Spacer()
+                        VStack(spacing: 16) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.system(size: 50))
+                                .foregroundColor(.orange)
+                            Text("Error loading hashtags")
+                                .font(.custom("Urbanist-Bold", size: 18))
+                                .foregroundColor(.white)
+                            Text(error)
+                                .font(.custom("Urbanist-Regular", size: 14))
+                                .foregroundColor(.white.opacity(0.7))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                            Button("Try Again") {
+                                viewModel.fetchHashtags(for: category)
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 12)
+                            .background(Color.blue.opacity(0.3))
+                            .cornerRadius(8)
+                        }
+                        Spacer()
+                    } else {
+                        ScrollView(showsIndicators: false) {
+                            LazyVStack(spacing: 16) {
+                                ForEach(viewModel.getHashtagsForCategory(mappedTitle), id: \.id) { hashtag in
+                                    HashTagCollectionCard(
+                                        hashtag: hashtag,
+                                        onCopy: { text in
+                                            copiedText = text
+                                            showCopyAlert = true
+                                        }
+                                    )
+                                    .padding(.horizontal, 16)
+                                }
+                            }
+                            .padding(.top, 8)
+                            .padding(.bottom, 20)
+                        }
                     }
                 }
             }
-        }
-        .navigationBarHidden(true)
-        .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .tabBar)
-        .ignoresSafeArea(.all, edges: .top)
-        .background(Color.clear) // Ensure clear background
-        .onAppear {
-            mappedTitle = mapCategoryTitle(category)
-            viewModel.fetchHashtags(for: mappedTitle)
-        }
-        .alert(isPresented: $showCopyAlert) {
-            Alert(
-                title: Text("Copied!".localized(self.language)),
-                message: Text("Hashtags copied to clipboard".localized(self.language)),
-                dismissButton: .default(Text("OK".localized(self.language)))
-            )
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .tabBar)
+            .ignoresSafeArea(.all, edges: .top)
+            .background(Color.clear) // Ensure clear background
+            .onAppear {
+                mappedTitle = mapCategoryTitle(category)
+                viewModel.fetchHashtags(for: mappedTitle)
+            }
+            .alert(isPresented: $showCopyAlert) {
+                Alert(
+                    title: Text("Copied!".localized(self.language)),
+                    message: Text("Hashtags copied to clipboard".localized(self.language)),
+                    dismissButton: .default(Text("OK".localized(self.language)))
+                )
+            }
         }
     }
     func mapCategoryTitle(_ category: String) -> String {
