@@ -101,8 +101,8 @@ struct TopHomeView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(
-                    width: isIpad ? 240 : 120,
-                    height: isIpad ? 52 : 32
+                    width: isIpad ? 200 : 120,
+                    height: isIpad ? 42 : 32
                 )
             
             Spacer()
@@ -112,8 +112,8 @@ struct TopHomeView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(
-                        width: isIpad ? 36 : 26,
-                        height: isIpad ? 36 : 26
+                        width: isIpad ? 30 : 26,
+                        height: isIpad ? 30 : 26
                     )
                     .padding(.trailing, 5)
             }

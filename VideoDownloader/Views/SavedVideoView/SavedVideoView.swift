@@ -35,104 +35,33 @@ struct SavedVideoView: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // Background
-                Image("app_bg_image")
-                    .resizable()
-                    .ignoresSafeArea()
-                    .scaledToFill()
-                    .onTapGesture {
-                        UIApplication.shared.endEditing(true)
-                    }
-                
-                VStack(spacing: 20) {
-                    // Top View with Back Button and Title
-                    HStack {
-//                        Image("app_logo")
-//                            .resizable()
-//                            .scaledToFit()
-//                            .frame(
-//                                width: isIpad ? 140 : 120,
-//                                height: isIpad ? 42 : 32
-//                            )
-//                        
-//                        Spacer()
-                        
-                        // Create Folder Button - Only show when folders exist
-                        if !folderManager.folders.isEmpty {
-                            Image("app_logo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(
-                                    width: isIpad ? 140 : 120,
-                                    height: isIpad ? 42 : 32
-                                )
-                            Spacer()
-                            
-                            Button(action: {
-                                showRenameFolderAlert = true
-                                newFolderName = ""
-                                folderToRename = nil
-                            }) {
-                                Image(systemName: "plus")
-                                    .foregroundColor(.white)
-                                    .font(.system(size: 18, weight: .medium))
-                                    .frame(width: 26, height: 26) // Increased tap area
-                                    .contentShape(Rectangle())
-                            }
-                        } else {
-                            
-                            Image("app_logo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(
-                                    width: isIpad ? 140 : 120,
-                                    height: isIpad ? 42 : 32
-                                )
-                                .padding(.bottom, 12)
-                            Spacer()
-                            
-                            // Empty view for balance when no folders
-                            Color.clear
-                                .frame(width: 44, height: 44)
-                            
-                            NavigationLink(destination: SettingView()) {
-                                Image("setting_ic")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(
-                                        width: isIpad ? 36 : 26,
-                                        height: isIpad ? 36 : 26
-                                    )
-                                    .padding(.trailing, 5)
-                                    .padding(.top, -12)
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, UIApplication.shared.connectedScenes
-                        .compactMap { $0 as? UIWindowScene }
-                        .first?.windows
-                        .first?.safeAreaInsets.top ?? 0)
+        if Device.isIpad {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    // Custom nav bar spacer
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: UIApplication.shared.safeAreaTop + 44)
                     
                     // Folders Grid or Empty State
                     if folderManager.folders.isEmpty {
-                        Spacer()
-                        VStack(spacing: 20) {
+                        VStack(spacing: 30) {
+                            Spacer()
+                                .frame(height: 60)
+                            
                             Image(systemName: "folder")
-                                .font(.system(size: 70))
+                                .font(.system(size: 100))
                                 .foregroundColor(.white.opacity(0.3))
                             
                             Text("No Folders Yet".localized(language))
-                                .font(.custom("Urbanist-Bold", size: 22))
+                                .font(.custom("Urbanist-Bold", size: 28))
                                 .foregroundColor(.white)
                             
                             Text("Create your first folder to organize videos".localized(language))
-                                .font(.custom("Urbanist-Medium", size: 16))
+                                .font(.custom("Urbanist-Medium", size: 18))
                                 .foregroundColor(.white.opacity(0.6))
                                 .multilineTextAlignment(.center)
-                                .padding(.horizontal, 40)
+                                .padding(.horizontal, 80)
                             
                             Button(action: {
                                 showRenameFolderAlert = true
@@ -141,12 +70,13 @@ struct SavedVideoView: View {
                             }) {
                                 HStack {
                                     Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 20))
                                     Text("Create Folder".localized(language))
-                                        .font(.custom("Urbanist-Bold", size: 16))
+                                        .font(.custom("Urbanist-Bold", size: 18))
                                 }
                                 .foregroundColor(.white)
-                                .padding(.horizontal, 30)
-                                .padding(.vertical, 15)
+                                .padding(.horizontal, 40)
+                                .padding(.vertical, 18)
                                 .background(
                                     LinearGradient(
                                         colors: [
@@ -157,7 +87,7 @@ struct SavedVideoView: View {
                                         endPoint: .bottom
                                     )
                                 )
-                                .cornerRadius(25)
+                                .cornerRadius(30)
                             }
                             .shadow(
                                 color: Color(hex: "#1973E8").opacity(0.3),
@@ -166,106 +96,390 @@ struct SavedVideoView: View {
                                 y: 6
                             )
                         }
-                        .padding(.bottom, 100)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 10)
+                    } else {
+                        LazyVGrid(columns: columns, spacing: 20) {
+                            ForEach(folderManager.folders) { folder in
+                                FolderViewCard(
+                                    folder: folder,
+                                    videoCount: folderManager.getVideosForFolder(folderId: folder.id).count,
+                                    onTap: {
+                                        selectedFolder = folder
+                                        showFolderContent = true
+                                    },
+                                    onDelete: {
+                                        folderToDelete = folder
+                                        showDeleteFolderAlert = true
+                                    },
+                                    onRename: {
+                                        folderToRename = folder
+                                        newFolderName = folder.name
+                                        showRenameFolderAlert = true
+                                    }
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.top, 10)
+                    }
+                    
+                    // ✅ Critical bottom padding to ensure last item is visible (SAME as reference code)
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: UIApplication.shared.safeAreaBottom + 100)
+                }
+            }
+            .background(
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+            )
+            .overlay(alignment: .top) {
+                // Header with Logo and Plus Button
+                HStack {
+                    if !folderManager.folders.isEmpty {
+                        Image("app_logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(
+                                width: isIpad ? 200 : 120,
+                                height: isIpad ? 42 : 32
+                            )
                         Spacer()
-                    } else {
-                        ScrollView(showsIndicators: false) {
-                            LazyVGrid(columns: columns, spacing: 16) {
-                                ForEach(folderManager.folders) { folder in
-                                    FolderViewCard(
-                                        folder: folder,
-                                        videoCount: folderManager.getVideosForFolder(folderId: folder.id).count,
-                                        onTap: {
-                                            selectedFolder = folder
-                                            showFolderContent = true
-                                        },
-                                        onDelete: {
-                                            folderToDelete = folder
-                                            showDeleteFolderAlert = true
-                                        },
-                                        onRename: {
-                                            folderToRename = folder
-                                            newFolderName = folder.name
-                                            showRenameFolderAlert = true
-                                        }
-                                    )
-                                }
-                            }
-                            .padding(.horizontal, 24)
-                            .padding(.top, 10)
-                            .padding(.bottom, 30)
+                        
+                        Button(action: {
+                            showRenameFolderAlert = true
+                            newFolderName = ""
+                            folderToRename = nil
+                        }) {
+                            Image(systemName: "plus")
+                                .foregroundColor(.white)
+                                .font(.system(size: 22, weight: .medium))
+                                .frame(width: 40, height: 40)
+                                .contentShape(Rectangle())
                         }
-                        .refreshable {
-                            // Refresh downloads folder data
-                            if let downloadsFolder = folderManager.folders.first(where: { $0.isSystemFolder && $0.name == "Downloads" }) {
-                                folderManager.loadDeviceVideos(forceRefresh: true)
-                            }
+                    } else {
+                        Image("app_logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(
+                                width: isIpad ? 200 : 120,
+                                height: isIpad ? 42 : 32
+                            )
+                        Spacer()
+                        
+                        NavigationLink(destination: SettingView()) {
+                            Image("setting_ic")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 42, height: 42)
                         }
                     }
                 }
+                .padding(.top, UIApplication.shared.safeAreaTop)
+                .padding(.bottom, 10)
+                .padding(.horizontal, Device.isIpad ? 20 : 16)
+                .background(Color.clear)
             }
-        }
-        .navigationBarHidden(true)
-        .navigationDestination(isPresented: $showFolderContent) {
-            if let folder = selectedFolder {
-                FolderContentView(folder: folder)
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .tabBar)
+            .navigationDestination(isPresented: $showFolderContent) {
+                if let folder = selectedFolder {
+                    FolderContentView(folder: folder)
+                }
             }
-        }
-        .navigationDestination(isPresented: $showFullVideoView) {
-            if let video = selectedVideo {
-                FullVideoView(video: video)
+            .navigationDestination(isPresented: $showFullVideoView) {
+                if let video = selectedVideo {
+                    FullVideoView(video: video)
+                }
             }
-        }
-        .alert("Delete Folder".localized(language), isPresented: $showDeleteFolderAlert) {
-            Button("Cancel".localized(language), role: .cancel) { }
-            Button("Delete".localized(language), role: .destructive) {
+            .alert("Delete Folder".localized(language), isPresented: $showDeleteFolderAlert) {
+                Button("Cancel".localized(language), role: .cancel) { }
+                Button("Delete".localized(language), role: .destructive) {
+                    if let folder = folderToDelete {
+                        folderManager.deleteFolder(folderId: folder.id)
+                    }
+                }
+            } message: {
                 if let folder = folderToDelete {
-                    folderManager.deleteFolder(folderId: folder.id)
+                    Text("\("Are you sure you want to delete folder".localized(language)) \"\(folder.name)\"? \("Videos inside will not be deleted.".localized(language))")
+                } else {
+                    Text("Are you sure you want to delete this folder?".localized(language))
                 }
             }
-        } message: {
-            if let folder = folderToDelete {
-                Text("\("Are you sure you want to delete folder".localized(language)) \"\(folder.name)\"? \("Videos inside will not be deleted.".localized(language))")
-                    .font(.custom("Urbanist-Medium", size: 16))
-            } else {
-                Text("Are you sure you want to delete this folder?".localized(language))
-            }
-        }
-        .alert(folderToRename == nil ? "Create New Folder".localized(language) : "Rename Folder".localized(language),
-               isPresented: $showRenameFolderAlert) {
-            TextField("Folder Name".localized(language), text: $newFolderName)
-                .textInputAutocapitalization(.words)
-            
-            Button("Cancel".localized(language), role: .cancel) {
-                newFolderName = ""
-                folderToRename = nil
-            }
-            
-            Button(folderToRename == nil ? "Create".localized(language) : "Rename".localized(language)) {
-                if !newFolderName.isEmpty {
-                    if let folder = folderToRename {
-                        folderManager.renameFolder(folderId: folder.id, newName: newFolderName)
-                    } else {
-                        folderManager.createFolder(name: newFolderName)
-                    }
+            .alert(folderToRename == nil ? "Create New Folder".localized(language) : "Rename Folder".localized(language),
+                   isPresented: $showRenameFolderAlert) {
+                TextField("Folder Name".localized(language), text: $newFolderName)
+                    .textInputAutocapitalization(.words)
+                
+                Button("Cancel".localized(language), role: .cancel) {
                     newFolderName = ""
                     folderToRename = nil
                 }
+                
+                Button(folderToRename == nil ? "Create".localized(language) : "Rename".localized(language)) {
+                    if !newFolderName.isEmpty {
+                        if let folder = folderToRename {
+                            folderManager.renameFolder(folderId: folder.id, newName: newFolderName)
+                        } else {
+                            folderManager.createFolder(name: newFolderName)
+                        }
+                        newFolderName = ""
+                        folderToRename = nil
+                    }
+                }
+            } message: {
+                if folderToRename == nil {
+                    Text("Enter a name for your new folder".localized(language))
+                } else {
+                    Text("Enter new name for the folder".localized(language))
+                }
             }
-        } message: {
-            if folderToRename == nil {
-                Text("Enter a name for your new folder".localized(language))
-            } else {
-                Text("Enter new name for the folder".localized(language))
+            .onAppear {
+                folderManager.loadFolders()
+                if let downloadsIndex = folderManager.folders.firstIndex(where: { $0.isSystemFolder && $0.name == "Downloads" }), downloadsIndex != 0 {
+                    let downloadsFolder = folderManager.folders.remove(at: downloadsIndex)
+                    folderManager.folders.insert(downloadsFolder, at: 0)
+                    folderManager.saveFolders()
+                }
             }
-        }
-        .onAppear {
-            folderManager.loadFolders()
-            // Ensure Downloads folder is at the top
-            if let downloadsIndex = folderManager.folders.firstIndex(where: { $0.isSystemFolder && $0.name == "Downloads" }), downloadsIndex != 0 {
-                let downloadsFolder = folderManager.folders.remove(at: downloadsIndex)
-                folderManager.folders.insert(downloadsFolder, at: 0)
-                folderManager.saveFolders()
+        } else {
+            GeometryReader { geometry in
+                ZStack {
+                    // Background
+                    Image("app_bg_image")
+                        .resizable()
+                        .ignoresSafeArea()
+                        .scaledToFill()
+                        .onTapGesture {
+                            UIApplication.shared.endEditing(true)
+                        }
+                    
+                    VStack(spacing: 20) {
+                        // Top View with Back Button and Title
+                        HStack {
+    //                        Image("app_logo")
+    //                            .resizable()
+    //                            .scaledToFit()
+    //                            .frame(
+    //                                width: isIpad ? 140 : 120,
+    //                                height: isIpad ? 42 : 32
+    //                            )
+    //
+    //                        Spacer()
+                            
+                            // Create Folder Button - Only show when folders exist
+                            if !folderManager.folders.isEmpty {
+                                Image("app_logo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(
+                                        width: isIpad ? 140 : 120,
+                                        height: isIpad ? 42 : 32
+                                    )
+                                Spacer()
+                                
+                                Button(action: {
+                                    showRenameFolderAlert = true
+                                    newFolderName = ""
+                                    folderToRename = nil
+                                }) {
+                                    Image(systemName: "plus")
+                                        .foregroundColor(.white)
+                                        .font(.system(size: 18, weight: .medium))
+                                        .frame(width: 26, height: 26) // Increased tap area
+                                        .contentShape(Rectangle())
+                                }
+                            } else {
+                                
+                                Image("app_logo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(
+                                        width: isIpad ? 140 : 120,
+                                        height: isIpad ? 42 : 32
+                                    )
+                                    .padding(.bottom, 12)
+                                Spacer()
+                                
+                                // Empty view for balance when no folders
+                                Color.clear
+                                    .frame(width: 44, height: 44)
+                                
+                                NavigationLink(destination: SettingView()) {
+                                    Image("setting_ic")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(
+                                            width: isIpad ? 36 : 26,
+                                            height: isIpad ? 36 : 26
+                                        )
+                                        .padding(.trailing, 5)
+                                        .padding(.top, -12)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, UIApplication.shared.connectedScenes
+                            .compactMap { $0 as? UIWindowScene }
+                            .first?.windows
+                            .first?.safeAreaInsets.top ?? 0)
+                        
+                        // Folders Grid or Empty State
+                        if folderManager.folders.isEmpty {
+                            Spacer()
+                            VStack(spacing: 20) {
+                                Image(systemName: "folder")
+                                    .font(.system(size: 70))
+                                    .foregroundColor(.white.opacity(0.3))
+                                
+                                Text("No Folders Yet".localized(language))
+                                    .font(.custom("Urbanist-Bold", size: 22))
+                                    .foregroundColor(.white)
+                                
+                                Text("Create your first folder to organize videos".localized(language))
+                                    .font(.custom("Urbanist-Medium", size: 16))
+                                    .foregroundColor(.white.opacity(0.6))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 40)
+                                
+                                Button(action: {
+                                    showRenameFolderAlert = true
+                                    newFolderName = ""
+                                    folderToRename = nil
+                                }) {
+                                    HStack {
+                                        Image(systemName: "plus.circle.fill")
+                                        Text("Create Folder".localized(language))
+                                            .font(.custom("Urbanist-Bold", size: 16))
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 30)
+                                    .padding(.vertical, 15)
+                                    .background(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(hex: "#1973E8"),
+                                                Color(hex: "#0E4082")
+                                            ],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                                    .cornerRadius(25)
+                                }
+                                .shadow(
+                                    color: Color(hex: "#1973E8").opacity(0.3),
+                                    radius: 10,
+                                    x: 0,
+                                    y: 6
+                                )
+                            }
+                            .padding(.bottom, 100)
+                            Spacer()
+                        } else {
+                            ScrollView(showsIndicators: false) {
+                                LazyVGrid(columns: columns, spacing: 16) {
+                                    ForEach(folderManager.folders) { folder in
+                                        FolderViewCard(
+                                            folder: folder,
+                                            videoCount: folderManager.getVideosForFolder(folderId: folder.id).count,
+                                            onTap: {
+                                                selectedFolder = folder
+                                                showFolderContent = true
+                                            },
+                                            onDelete: {
+                                                folderToDelete = folder
+                                                showDeleteFolderAlert = true
+                                            },
+                                            onRename: {
+                                                folderToRename = folder
+                                                newFolderName = folder.name
+                                                showRenameFolderAlert = true
+                                            }
+                                        )
+                                    }
+                                }
+                                .padding(.horizontal, 24)
+                                .padding(.top, 10)
+                                .padding(.bottom, 30)
+                            }
+                            .refreshable {
+                                // Refresh downloads folder data
+                                if let downloadsFolder = folderManager.folders.first(where: { $0.isSystemFolder && $0.name == "Downloads" }) {
+                                    folderManager.loadDeviceVideos(forceRefresh: true)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .ignoresSafeArea()
+            .navigationBarHidden(true)
+            .navigationDestination(isPresented: $showFolderContent) {
+                if let folder = selectedFolder {
+                    FolderContentView(folder: folder)
+                }
+            }
+            .navigationDestination(isPresented: $showFullVideoView) {
+                if let video = selectedVideo {
+                    FullVideoView(video: video)
+                }
+            }
+            .alert("Delete Folder".localized(language), isPresented: $showDeleteFolderAlert) {
+                Button("Cancel".localized(language), role: .cancel) { }
+                Button("Delete".localized(language), role: .destructive) {
+                    if let folder = folderToDelete {
+                        folderManager.deleteFolder(folderId: folder.id)
+                    }
+                }
+            } message: {
+                if let folder = folderToDelete {
+                    Text("\("Are you sure you want to delete folder".localized(language)) \"\(folder.name)\"? \("Videos inside will not be deleted.".localized(language))")
+                        .font(.custom("Urbanist-Medium", size: 16))
+                } else {
+                    Text("Are you sure you want to delete this folder?".localized(language))
+                }
+            }
+            .alert(folderToRename == nil ? "Create New Folder".localized(language) : "Rename Folder".localized(language),
+                   isPresented: $showRenameFolderAlert) {
+                TextField("Folder Name".localized(language), text: $newFolderName)
+                    .textInputAutocapitalization(.words)
+                
+                Button("Cancel".localized(language), role: .cancel) {
+                    newFolderName = ""
+                    folderToRename = nil
+                }
+                
+                Button(folderToRename == nil ? "Create".localized(language) : "Rename".localized(language)) {
+                    if !newFolderName.isEmpty {
+                        if let folder = folderToRename {
+                            folderManager.renameFolder(folderId: folder.id, newName: newFolderName)
+                        } else {
+                            folderManager.createFolder(name: newFolderName)
+                        }
+                        newFolderName = ""
+                        folderToRename = nil
+                    }
+                }
+            } message: {
+                if folderToRename == nil {
+                    Text("Enter a name for your new folder".localized(language))
+                } else {
+                    Text("Enter new name for the folder".localized(language))
+                }
+            }
+            .onAppear {
+                folderManager.loadFolders()
+                // Ensure Downloads folder is at the top
+                if let downloadsIndex = folderManager.folders.firstIndex(where: { $0.isSystemFolder && $0.name == "Downloads" }), downloadsIndex != 0 {
+                    let downloadsFolder = folderManager.folders.remove(at: downloadsIndex)
+                    folderManager.folders.insert(downloadsFolder, at: 0)
+                    folderManager.saveFolders()
+                }
             }
         }
     }
