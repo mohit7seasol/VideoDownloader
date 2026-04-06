@@ -29,155 +29,312 @@ struct VideoChooseView: View {
 //    let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "App"
     
     var body: some View {
-        ZStack {
-            // Background Image
-            Image("app_bg_image")
-                .resizable()
-                .ignoresSafeArea()
-                .scaledToFill()
-            
-            VStack(spacing: 0) {
-                // Navigation Bar
-                HStack {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white)
-                    }
+        if Device.isIpad {
+            GeometryReader { geometry in
+                ZStack {
+                    // Background Image
+                    Image("app_bg_image")
+                        .resizable()
+                        .ignoresSafeArea()
+                        .scaledToFill()
                     
-                    Text("Select Video".localized(self.language))
-                        .font(.custom("Poppins-Black", size: 20))
-                        .foregroundColor(.white)
-                        .padding(.leading, 10)
-                    
-                    Spacer()
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 60)
-                
-                // Limited Access Message - Only show when limited access
-                if PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
-                    LimitAccessView(appName: appName)
-                }
-                
-                if isLoading {
-                    Spacer()
-                    ProgressView()
-                        .tint(.white)
-                    Spacer()
-                } else if videos.isEmpty {
-                    Spacer()
-                    VStack(spacing: 16) {
-                        Image(systemName: "video.slash")
-                            .font(.system(size: 50))
-                            .foregroundColor(.white.opacity(0.5))
+                    VStack(spacing: 0) {
+                        // Navigation Bar
+                        HStack {
+                            Button {
+                                dismiss()
+                            } label: {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(.white)
+                            }
+                            
+                            Text("Select Video".localized(self.language))
+                                .font(.custom("Poppins-Black", size: 20))
+                                .foregroundColor(.white)
+                                .padding(.leading, 10)
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.top, 60)
                         
-                        Text("No Videos Found".localized(self.language))
-                            .font(.custom("Poppins-Black", size: 18))
-                            .foregroundColor(.white)
+                        // Limited Access Message - Only show when limited access
+                        if PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
+                            LimitAccessView(appName: appName)
+                        }
                         
-                        Text("Tap below to access your videos".localized(self.language))
-                            .font(.custom("Urbanist-Medium", size: 14))
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                    Spacer()
-                    
-                    // Access Videos Button
-                    Button {
-                        checkPermissionAndLoadVideos()
-                    } label: {
-                        Text("Access Videos".localized(self.language))
-                            .font(.custom("Urbanist-Bold", size: 16))
-                            .foregroundColor(.white)
-                            .frame(width: 150)
-                            .frame(height: 50)
-                            .background(
-                                LinearGradient(
-                                    colors: [
-                                        Color(hex: "1973E8"),
-                                        Color(hex: "0E4082")
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .cornerRadius(25)
-                    }
-                    .padding(.bottom, 40)
-                } else {
-                    // Video Grid
-                    ScrollView {
-                        LazyVGrid(columns: [
-                            GridItem(.flexible()),
-                            GridItem(.flexible()),
-                            GridItem(.flexible())
-                        ], spacing: 10) {
-                            ForEach(videos) { video in
-                                VideoThumbnailView(video: video)
-                                    .onTapGesture {
-                                        selectedVideo = video
-                                        navigateToAddMusic = true
+                        if isLoading {
+                            Spacer()
+                            ProgressView()
+                                .tint(.white)
+                            Spacer()
+                        } else if videos.isEmpty {
+                            Spacer()
+                            VStack(spacing: 16) {
+                                Image(systemName: "video.slash")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.white.opacity(0.5))
+                                
+                                Text("No Videos Found".localized(self.language))
+                                    .font(.custom("Poppins-Black", size: 18))
+                                    .foregroundColor(.white)
+                                
+                                Text("Tap below to access your videos".localized(self.language))
+                                    .font(.custom("Urbanist-Medium", size: 14))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                            Spacer()
+                            
+                            // Access Videos Button
+                            Button {
+                                checkPermissionAndLoadVideos()
+                            } label: {
+                                Text("Access Videos".localized(self.language))
+                                    .font(.custom("Urbanist-Bold", size: 16))
+                                    .foregroundColor(.white)
+                                    .frame(width: 150)
+                                    .frame(height: 50)
+                                    .background(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(hex: "1973E8"),
+                                                Color(hex: "0E4082")
+                                            ],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                                    .cornerRadius(25)
+                            }
+                            .padding(.bottom, 40)
+                        } else {
+                            // Video Grid
+                            ScrollView {
+                                LazyVGrid(columns: [
+                                    GridItem(.flexible()),
+                                    GridItem(.flexible()),
+                                    GridItem(.flexible())
+                                ], spacing: 10) {
+                                    ForEach(videos) { video in
+                                        VideoThumbnailView(video: video)
+                                            .onTapGesture {
+                                                selectedVideo = video
+                                                navigateToAddMusic = true
+                                            }
                                     }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.top, 10)
+                                .padding(.bottom, 30)
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 10)
-                        .padding(.bottom, 30)
+                    }
+                }
+                .navigationBarHidden(true)
+                .onAppear {
+                    photoObserver.onChange = {
+                        loadVideos()
+                    }
+                    checkPermissionAndLoadVideos()
+                }
+                .alert("Permission Required".localized(self.language), isPresented: $showPermissionAlert) {
+                    Button("Cancel".localized(self.language), role: .cancel) { }
+                    Button("Settings".localized(self.language)) {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                } message: {
+                    Text("Please grant photo library access to select videos".localized(self.language))
+                }
+                // Manage Options Alert - Matches uploaded image style
+                .alert("Manage", isPresented: $showManageOptions) {
+                    Button("Select More Videos") {
+                        showPhotoPicker = true
+                    }
+                    
+                    Button("Change Settings") {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                    
+                    Button("Cancel", role: .cancel) { }
+                } message: {
+                    Text("You've given \(appName) limited access to select number of videos")
+                }
+                // PHPicker for selecting more media
+                .photosPicker(
+                    isPresented: $showPhotoPicker,
+                    selection: $selectedItems,
+                    maxSelectionCount: nil,
+                    matching: .videos,
+                    preferredItemEncoding: .automatic
+                )
+                .onChange(of: selectedItems) { newItems in
+                    if !newItems.isEmpty {
+                        handleSelectedPhotosPickerItems(newItems)
+                    }
+                }
+                .navigationDestination(isPresented: $navigateToAddMusic) {
+                    if let video = selectedVideo {
+                        AddMusicToVideoView(videoAsset: video)
                     }
                 }
             }
-        }
-        .navigationBarHidden(true)
-        .onAppear {
-            photoObserver.onChange = {
-                loadVideos()
-            }
-            checkPermissionAndLoadVideos()
-        }
-        .alert("Permission Required".localized(self.language), isPresented: $showPermissionAlert) {
-            Button("Cancel".localized(self.language), role: .cancel) { }
-            Button("Settings".localized(self.language)) {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
+            .ignoresSafeArea()
+        } else {
+            ZStack {
+                // Background Image
+                Image("app_bg_image")
+                    .resizable()
+                    .ignoresSafeArea()
+                    .scaledToFill()
+                
+                VStack(spacing: 0) {
+                    // Navigation Bar
+                    HStack {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                        
+                        Text("Select Video".localized(self.language))
+                            .font(.custom("Poppins-Black", size: 20))
+                            .foregroundColor(.white)
+                            .padding(.leading, 10)
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 60)
+                    
+                    // Limited Access Message - Only show when limited access
+                    if PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
+                        LimitAccessView(appName: appName)
+                    }
+                    
+                    if isLoading {
+                        Spacer()
+                        ProgressView()
+                            .tint(.white)
+                        Spacer()
+                    } else if videos.isEmpty {
+                        Spacer()
+                        VStack(spacing: 16) {
+                            Image(systemName: "video.slash")
+                                .font(.system(size: 50))
+                                .foregroundColor(.white.opacity(0.5))
+                            
+                            Text("No Videos Found".localized(self.language))
+                                .font(.custom("Poppins-Black", size: 18))
+                                .foregroundColor(.white)
+                            
+                            Text("Tap below to access your videos".localized(self.language))
+                                .font(.custom("Urbanist-Medium", size: 14))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        Spacer()
+                        
+                        // Access Videos Button
+                        Button {
+                            checkPermissionAndLoadVideos()
+                        } label: {
+                            Text("Access Videos".localized(self.language))
+                                .font(.custom("Urbanist-Bold", size: 16))
+                                .foregroundColor(.white)
+                                .frame(width: 150)
+                                .frame(height: 50)
+                                .background(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(hex: "1973E8"),
+                                            Color(hex: "0E4082")
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                .cornerRadius(25)
+                        }
+                        .padding(.bottom, 40)
+                    } else {
+                        // Video Grid
+                        ScrollView {
+                            LazyVGrid(columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ], spacing: 10) {
+                                ForEach(videos) { video in
+                                    VideoThumbnailView(video: video)
+                                        .onTapGesture {
+                                            selectedVideo = video
+                                            navigateToAddMusic = true
+                                        }
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 10)
+                            .padding(.bottom, 30)
+                        }
+                    }
                 }
             }
-        } message: {
-            Text("Please grant photo library access to select videos".localized(self.language))
-        }
-        // Manage Options Alert - Matches uploaded image style
-        .alert("Manage", isPresented: $showManageOptions) {
-            Button("Select More Videos") {
-                showPhotoPicker = true
+            .navigationBarHidden(true)
+            .onAppear {
+                photoObserver.onChange = {
+                    loadVideos()
+                }
+                checkPermissionAndLoadVideos()
             }
-            
-            Button("Change Settings") {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
+            .alert("Permission Required".localized(self.language), isPresented: $showPermissionAlert) {
+                Button("Cancel".localized(self.language), role: .cancel) { }
+                Button("Settings".localized(self.language)) {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            } message: {
+                Text("Please grant photo library access to select videos".localized(self.language))
+            }
+            // Manage Options Alert - Matches uploaded image style
+            .alert("Manage", isPresented: $showManageOptions) {
+                Button("Select More Videos") {
+                    showPhotoPicker = true
+                }
+                
+                Button("Change Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("You've given \(appName) limited access to select number of videos")
+            }
+            // PHPicker for selecting more media
+            .photosPicker(
+                isPresented: $showPhotoPicker,
+                selection: $selectedItems,
+                maxSelectionCount: nil,
+                matching: .videos,
+                preferredItemEncoding: .automatic
+            )
+            .onChange(of: selectedItems) { newItems in
+                if !newItems.isEmpty {
+                    handleSelectedPhotosPickerItems(newItems)
                 }
             }
-            
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("You've given \(appName) limited access to select number of videos")
-        }
-        // PHPicker for selecting more media
-        .photosPicker(
-            isPresented: $showPhotoPicker,
-            selection: $selectedItems,
-            maxSelectionCount: nil,
-            matching: .videos,
-            preferredItemEncoding: .automatic
-        )
-        .onChange(of: selectedItems) { newItems in
-            if !newItems.isEmpty {
-                handleSelectedPhotosPickerItems(newItems)
-            }
-        }
-        .navigationDestination(isPresented: $navigateToAddMusic) {
-            if let video = selectedVideo {
-                AddMusicToVideoView(videoAsset: video)
+            .navigationDestination(isPresented: $navigateToAddMusic) {
+                if let video = selectedVideo {
+                    AddMusicToVideoView(videoAsset: video)
+                }
             }
         }
     }
