@@ -515,244 +515,510 @@ struct FolderContentView: View {
     }()
     
     var body: some View {
-        ZStack {
-            Image("app_bg_image")
-                .resizable()
-                .ignoresSafeArea()
-                .scaledToFill()
-            
-            VStack {
-                
-                // MARK: - HEADER (UNCHANGED)
-                HStack {
-                    Button(action: {
-                        cancelLoadTask()
-                        dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.white)
-                            .font(.system(size: 18, weight: .medium))
-                            .padding(.leading, 4)
-                    }
+        if Device.isIpad {
+            GeometryReader { geometry in
+                ZStack {
+                    Image("app_bg_image")
+                        .resizable()
+                        .ignoresSafeArea()
+                        .scaledToFill()
                     
-                    Spacer()
-                    
-                    Text(folder.name)
-                        .font(.custom("Urbanist-Bold", size: 20))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading, 10)
-                    
-                    Spacer()
-                    
-                    if folder.isDeviceVideos && !deviceVideos.isEmpty {
-                        Button(action: {
-                            refreshDeviceVideos()
-                        }) {
-                            Image(systemName: "arrow.clockwise")
-                                .foregroundColor(.white)
-                                .font(.system(size: 16, weight: .medium))
-                                .frame(width: 30, height: 30)
-                        }
-                    } else {
-                        Color.clear.frame(width: 60, height: 20)
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, UIApplication.shared.connectedScenes
-                    .compactMap { $0 as? UIWindowScene }
-                    .first?.windows
-                    .first?.safeAreaInsets.top ?? 0)
-                
-                // ✅ LIMITED ACCESS VIEW (NEW - SAFE)
-                if folder.isDeviceVideos &&
-                    PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
-                    
-                    LimitAccessView(appName: appName)
-                        .padding(.top, 10)
-                }
-                
-                // MARK: - STATES
-                
-                // Loading State
-                if folderManager.isScanningVideos && folder.isDeviceVideos {
-                    Spacer()
-                    VStack(spacing: 20) {
-                        ProgressView()
-                            .tint(.white)
-                            .scaleEffect(1.5)
+                    VStack {
                         
-                        Text("Loading videos...".localized(language))
-                            .font(.custom("Urbanist-Medium", size: 16))
-                            .foregroundColor(.white.opacity(0.6))
-                    }
-                    Spacer()
-                }
-                
-                // Permission Denied
-                else if folder.isDeviceVideos && VideoScanner.shared.permissionDenied {
-                    Spacer()
-                    VStack(spacing: 20) {
-                        Image(systemName: "photo.on.rectangle.angled")
-                            .font(.system(size: 60))
-                            .foregroundColor(.white.opacity(0.3))
-                        
-                        Text("Permission Denied".localized(language))
-                            .font(.custom("Urbanist-Bold", size: 20))
-                            .foregroundColor(.white)
-                        
-                        Text("Please allow access to your photos and videos in Settings".localized(language))
-                            .font(.custom("Urbanist-Medium", size: 16))
-                            .foregroundColor(.white.opacity(0.6))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 40)
-                        
-                        Button(action: {
-                            if let url = URL(string: UIApplication.openSettingsURLString) {
-                                UIApplication.shared.open(url)
+                        // MARK: - HEADER (UNCHANGED)
+                        HStack {
+                            Button(action: {
+                                cancelLoadTask()
+                                dismiss()
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 18, weight: .medium))
+                                    .padding(.leading, 4)
                             }
-                        }) {
-                            Text("Open Settings".localized(language))
-                                .font(.custom("Urbanist-Bold", size: 16))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 30)
-                                .padding(.vertical, 15)
-                                .background(Color.blue)
-                                .cornerRadius(25)
-                        }
-                    }
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 40)
-                    Spacer()
-                }
-                
-                // Empty Device Videos
-                else if folder.isDeviceVideos && deviceVideos.isEmpty {
-                    Spacer()
-                    VStack(spacing: 20) {
-                        Image(systemName: "video.slash")
-                            .font(.system(size: 60))
-                            .foregroundColor(.white.opacity(0.3))
-                        
-                        Text("No Videos Found".localized(language))
-                            .font(.custom("Urbanist-Bold", size: 20))
-                            .foregroundColor(.white)
-                        
-                        Text(
-                            PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited
-                            ? "Only selected videos are visible. You can manage access.".localized(language)
-                            : "No videos found in your device gallery".localized(language)
-                        )
-                        .font(.custom("Urbanist-Medium", size: 16))
-                        .foregroundColor(.white.opacity(0.6))
-                        .multilineTextAlignment(.center)
-                    }
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 40)
-                    Spacer()
-                }
-                
-                // Empty Folder
-                else if !folder.isDeviceVideos && videos.isEmpty {
-                    Spacer()
-                    VStack(spacing: 20) {
-                        Image(systemName: "folder")
-                            .font(.system(size: 60))
-                            .foregroundColor(.white.opacity(0.3))
-                        
-                        Text("No Videos in this Folder".localized(language))
-                            .font(.custom("Urbanist-Bold", size: 20))
-                            .foregroundColor(.white)
-                        
-                        Text("Download videos and save them to this folder".localized(language))
-                            .font(.custom("Urbanist-Medium", size: 16))
-                            .foregroundColor(.white.opacity(0.6))
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 40)
-                    Spacer()
-                }
-                
-                // MARK: - GRID
-                else {
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 16) {
                             
-                            if folder.isDeviceVideos {
-                                ForEach(deviceVideos) { deviceVideo in
-                                    DeviceVideoCardView(video: deviceVideo) {
-                                        selectedDeviceVideo = deviceVideo
-                                        showDeviceVideoView = true
-                                    }
+                            Spacer()
+                            
+                            Text(folder.name)
+                                .font(.custom("Urbanist-Bold", size: 20))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.leading, 10)
+                            
+                            Spacer()
+                            
+                            if folder.isDeviceVideos && !deviceVideos.isEmpty {
+                                Button(action: {
+                                    refreshDeviceVideos()
+                                }) {
+                                    Image(systemName: "arrow.clockwise")
+                                        .foregroundColor(.white)
+                                        .font(.system(size: 16, weight: .medium))
+                                        .frame(width: 30, height: 30)
                                 }
                             } else {
-                                ForEach(videos) { video in
-                                    SavedVideoCardView(
-                                        video: video,
-                                        showDeleteButton: true
-                                    ) {
-                                        videoToDelete = video
-                                        showDeleteVideoAlert = true
+                                Color.clear.frame(width: 60, height: 20)
+                            }
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.top, UIApplication.shared.connectedScenes
+                            .compactMap { $0 as? UIWindowScene }
+                            .first?.windows
+                            .first?.safeAreaInsets.top ?? 0)
+                        
+                        // ✅ LIMITED ACCESS VIEW (NEW - SAFE)
+                        if folder.isDeviceVideos &&
+                            PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
+                            
+                            LimitAccessView(appName: appName)
+                                .padding(.top, 10)
+                        }
+                        
+                        // MARK: - STATES
+                        
+                        // Loading State
+                        if folderManager.isScanningVideos && folder.isDeviceVideos {
+                            Spacer()
+                            VStack(spacing: 20) {
+                                ProgressView()
+                                    .tint(.white)
+                                    .scaleEffect(1.5)
+                                
+                                Text("Loading videos...".localized(language))
+                                    .font(.custom("Urbanist-Medium", size: 16))
+                                    .foregroundColor(.white.opacity(0.6))
+                            }
+                            Spacer()
+                        }
+                        
+                        // Permission Denied
+                        else if folder.isDeviceVideos && VideoScanner.shared.permissionDenied {
+                            Spacer()
+                            VStack(spacing: 20) {
+                                Image(systemName: "photo.on.rectangle.angled")
+                                    .font(.system(size: 60))
+                                    .foregroundColor(.white.opacity(0.3))
+                                
+                                Text("Permission Denied".localized(language))
+                                    .font(.custom("Urbanist-Bold", size: 20))
+                                    .foregroundColor(.white)
+                                
+                                Text("Please allow access to your photos and videos in Settings".localized(language))
+                                    .font(.custom("Urbanist-Medium", size: 16))
+                                    .foregroundColor(.white.opacity(0.6))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 40)
+                                
+                                Button(action: {
+                                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                                        UIApplication.shared.open(url)
                                     }
-                                    .onTapGesture {
-                                        selectedVideo = video
-                                        showFullVideoView = true
+                                }) {
+                                    Text("Open Settings".localized(language))
+                                        .font(.custom("Urbanist-Bold", size: 16))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 30)
+                                        .padding(.vertical, 15)
+                                        .background(Color.blue)
+                                        .cornerRadius(25)
+                                }
+                            }
+                            .padding(.horizontal, 40)
+                            .padding(.bottom, 40)
+                            Spacer()
+                        }
+                        
+                        // Empty Device Videos
+                        else if folder.isDeviceVideos && deviceVideos.isEmpty {
+                            Spacer()
+                            VStack(spacing: 20) {
+                                Image(systemName: "video.slash")
+                                    .font(.system(size: 60))
+                                    .foregroundColor(.white.opacity(0.3))
+                                
+                                Text("No Videos Found".localized(language))
+                                    .font(.custom("Urbanist-Bold", size: 20))
+                                    .foregroundColor(.white)
+                                
+                                Text(
+                                    PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited
+                                    ? "Only selected videos are visible. You can manage access.".localized(language)
+                                    : "No videos found in your device gallery".localized(language)
+                                )
+                                .font(.custom("Urbanist-Medium", size: 16))
+                                .foregroundColor(.white.opacity(0.6))
+                                .multilineTextAlignment(.center)
+                            }
+                            .padding(.horizontal, 40)
+                            .padding(.bottom, 40)
+                            Spacer()
+                        }
+                        
+                        // Empty Folder
+                        else if !folder.isDeviceVideos && videos.isEmpty {
+                            if Device.isIpad {
+                                Spacer()
+                                VStack(spacing: 20) {
+                                    Image(systemName: "folder")
+                                        .font(.system(size: 60))
+                                        .foregroundColor(.white.opacity(0.3))
+                                    
+                                    Text("No Videos in this Folder".localized(language))
+                                        .font(.custom("Urbanist-Bold", size: 20))
+                                        .foregroundColor(.white)
+                                    
+                                    Text("Download videos and save them to this folder".localized(language))
+                                        .font(.custom("Urbanist-Medium", size: 16))
+                                        .foregroundColor(.white.opacity(0.6))
+                                        .multilineTextAlignment(.center)
+                                }
+                                .padding(.horizontal, 40)
+                                .padding(.bottom, 40)
+                                Spacer()
+                                Spacer()
+                            } else {
+                                Spacer()
+                                VStack(spacing: 20) {
+                                    Image(systemName: "folder")
+                                        .font(.system(size: 60))
+                                        .foregroundColor(.white.opacity(0.3))
+                                    
+                                    Text("No Videos in this Folder".localized(language))
+                                        .font(.custom("Urbanist-Bold", size: 20))
+                                        .foregroundColor(.white)
+                                    
+                                    Text("Download videos and save them to this folder".localized(language))
+                                        .font(.custom("Urbanist-Medium", size: 16))
+                                        .foregroundColor(.white.opacity(0.6))
+                                        .multilineTextAlignment(.center)
+                                }
+                                .padding(.horizontal, 40)
+                                .padding(.bottom, 40)
+                                Spacer()
+                            }
+                        }
+                        
+                        // MARK: - GRID
+                        else {
+                            ScrollView {
+                                LazyVGrid(columns: columns, spacing: 16) {
+                                    
+                                    if folder.isDeviceVideos {
+                                        ForEach(deviceVideos) { deviceVideo in
+                                            DeviceVideoCardView(video: deviceVideo) {
+                                                selectedDeviceVideo = deviceVideo
+                                                showDeviceVideoView = true
+                                            }
+                                        }
+                                    } else {
+                                        ForEach(videos) { video in
+                                            SavedVideoCardView(
+                                                video: video,
+                                                showDeleteButton: true
+                                            ) {
+                                                videoToDelete = video
+                                                showDeleteVideoAlert = true
+                                            }
+                                            .onTapGesture {
+                                                selectedVideo = video
+                                                showFullVideoView = true
+                                            }
+                                        }
                                     }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.top, 10)
+                                .padding(.bottom, 30)
+                            }
+                            .refreshable {
+                                if folder.isDeviceVideos {
+                                    await refreshDeviceVideosAsync()
                                 }
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 10)
-                        .padding(.bottom, 30)
                     }
-                    .refreshable {
-                        if folder.isDeviceVideos {
-                            await refreshDeviceVideosAsync()
+                }
+                .navigationBarHidden(true)
+                
+                // MARK: - Navigation
+                .navigationDestination(isPresented: $showFullVideoView) {
+                    if let video = selectedVideo {
+                        FullVideoView(video: video)
+                    }
+                }
+                
+                .sheet(isPresented: $showDeviceVideoView) {
+                    if let deviceVideo = selectedDeviceVideo {
+                        DeviceVideoPlayerView(video: deviceVideo)
+                    }
+                }
+                
+                .alert("Delete Video".localized(language), isPresented: $showDeleteVideoAlert) {
+                    Button("Cancel".localized(language), role: .cancel) {
+                        videoToDelete = nil
+                    }
+                    Button("Delete".localized(language), role: .destructive) {
+                        if let video = videoToDelete {
+                            deleteVideo(video)
+                        }
+                    }
+                } message: {
+                    if let video = videoToDelete {
+                        let videoName = video.musicName ?? "this video".localized(language)
+                        Text("\("Are you sure you want to delete".localized(language)) \"\(videoName)\"?")
+                    } else {
+                        Text("Are you sure you want to delete this video?".localized(language))
+                    }
+                }
+                
+                .onAppear {
+                    loadContent()
+                }
+                
+                .onDisappear {
+                    cancelLoadTask()
+                }
+            }
+        } else {
+            ZStack {
+                Image("app_bg_image")
+                    .resizable()
+                    .ignoresSafeArea()
+                    .scaledToFill()
+                
+                VStack {
+                    
+                    // MARK: - HEADER (UNCHANGED)
+                    HStack {
+                        Button(action: {
+                            cancelLoadTask()
+                            dismiss()
+                        }) {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.white)
+                                .font(.system(size: 18, weight: .medium))
+                                .padding(.leading, 4)
+                        }
+                        
+                        Spacer()
+                        
+                        Text(folder.name)
+                            .font(.custom("Urbanist-Bold", size: 20))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 10)
+                        
+                        Spacer()
+                        
+                        if folder.isDeviceVideos && !deviceVideos.isEmpty {
+                            Button(action: {
+                                refreshDeviceVideos()
+                            }) {
+                                Image(systemName: "arrow.clockwise")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .frame(width: 30, height: 30)
+                            }
+                        } else {
+                            Color.clear.frame(width: 60, height: 20)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, UIApplication.shared.connectedScenes
+                        .compactMap { $0 as? UIWindowScene }
+                        .first?.windows
+                        .first?.safeAreaInsets.top ?? 0)
+                    
+                    // ✅ LIMITED ACCESS VIEW (NEW - SAFE)
+                    if folder.isDeviceVideos &&
+                        PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
+                        
+                        LimitAccessView(appName: appName)
+                            .padding(.top, 10)
+                    }
+                    
+                    // MARK: - STATES
+                    
+                    // Loading State
+                    if folderManager.isScanningVideos && folder.isDeviceVideos {
+                        Spacer()
+                        VStack(spacing: 20) {
+                            ProgressView()
+                                .tint(.white)
+                                .scaleEffect(1.5)
+                            
+                            Text("Loading videos...".localized(language))
+                                .font(.custom("Urbanist-Medium", size: 16))
+                                .foregroundColor(.white.opacity(0.6))
+                        }
+                        Spacer()
+                    }
+                    
+                    // Permission Denied
+                    else if folder.isDeviceVideos && VideoScanner.shared.permissionDenied {
+                        Spacer()
+                        VStack(spacing: 20) {
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.system(size: 60))
+                                .foregroundColor(.white.opacity(0.3))
+                            
+                            Text("Permission Denied".localized(language))
+                                .font(.custom("Urbanist-Bold", size: 20))
+                                .foregroundColor(.white)
+                            
+                            Text("Please allow access to your photos and videos in Settings".localized(language))
+                                .font(.custom("Urbanist-Medium", size: 16))
+                                .foregroundColor(.white.opacity(0.6))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 40)
+                            
+                            Button(action: {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }) {
+                                Text("Open Settings".localized(language))
+                                    .font(.custom("Urbanist-Bold", size: 16))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 30)
+                                    .padding(.vertical, 15)
+                                    .background(Color.blue)
+                                    .cornerRadius(25)
+                            }
+                        }
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 40)
+                        Spacer()
+                    }
+                    
+                    // Empty Device Videos
+                    else if folder.isDeviceVideos && deviceVideos.isEmpty {
+                        Spacer()
+                        VStack(spacing: 20) {
+                            Image(systemName: "video.slash")
+                                .font(.system(size: 60))
+                                .foregroundColor(.white.opacity(0.3))
+                            
+                            Text("No Videos Found".localized(language))
+                                .font(.custom("Urbanist-Bold", size: 20))
+                                .foregroundColor(.white)
+                            
+                            Text(
+                                PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited
+                                ? "Only selected videos are visible. You can manage access.".localized(language)
+                                : "No videos found in your device gallery".localized(language)
+                            )
+                            .font(.custom("Urbanist-Medium", size: 16))
+                            .foregroundColor(.white.opacity(0.6))
+                            .multilineTextAlignment(.center)
+                        }
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 40)
+                        Spacer()
+                    }
+                    
+                    // Empty Folder
+                    else if !folder.isDeviceVideos && videos.isEmpty {
+                        Spacer()
+                        VStack(spacing: 20) {
+                            Image(systemName: "folder")
+                                .font(.system(size: 60))
+                                .foregroundColor(.white.opacity(0.3))
+                            
+                            Text("No Videos in this Folder".localized(language))
+                                .font(.custom("Urbanist-Bold", size: 20))
+                                .foregroundColor(.white)
+                            
+                            Text("Download videos and save them to this folder".localized(language))
+                                .font(.custom("Urbanist-Medium", size: 16))
+                                .foregroundColor(.white.opacity(0.6))
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 40)
+                        Spacer()
+                    }
+                    
+                    // MARK: - GRID
+                    else {
+                        ScrollView {
+                            LazyVGrid(columns: columns, spacing: 16) {
+                                
+                                if folder.isDeviceVideos {
+                                    ForEach(deviceVideos) { deviceVideo in
+                                        DeviceVideoCardView(video: deviceVideo) {
+                                            selectedDeviceVideo = deviceVideo
+                                            showDeviceVideoView = true
+                                        }
+                                    }
+                                } else {
+                                    ForEach(videos) { video in
+                                        SavedVideoCardView(
+                                            video: video,
+                                            showDeleteButton: true
+                                        ) {
+                                            videoToDelete = video
+                                            showDeleteVideoAlert = true
+                                        }
+                                        .onTapGesture {
+                                            selectedVideo = video
+                                            showFullVideoView = true
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 10)
+                            .padding(.bottom, 30)
+                        }
+                        .refreshable {
+                            if folder.isDeviceVideos {
+                                await refreshDeviceVideosAsync()
+                            }
                         }
                     }
                 }
             }
-        }
-        .navigationBarHidden(true)
-        
-        // MARK: - Navigation
-        .navigationDestination(isPresented: $showFullVideoView) {
-            if let video = selectedVideo {
-                FullVideoView(video: video)
-            }
-        }
-        
-        .sheet(isPresented: $showDeviceVideoView) {
-            if let deviceVideo = selectedDeviceVideo {
-                DeviceVideoPlayerView(video: deviceVideo)
-            }
-        }
-        
-        .alert("Delete Video".localized(language), isPresented: $showDeleteVideoAlert) {
-            Button("Cancel".localized(language), role: .cancel) {
-                videoToDelete = nil
-            }
-            Button("Delete".localized(language), role: .destructive) {
-                if let video = videoToDelete {
-                    deleteVideo(video)
+            .navigationBarHidden(true)
+            
+            // MARK: - Navigation
+            .navigationDestination(isPresented: $showFullVideoView) {
+                if let video = selectedVideo {
+                    FullVideoView(video: video)
                 }
             }
-        } message: {
-            if let video = videoToDelete {
-                let videoName = video.musicName ?? "this video".localized(language)
-                Text("\("Are you sure you want to delete".localized(language)) \"\(videoName)\"?")
-            } else {
-                Text("Are you sure you want to delete this video?".localized(language))
+            
+            .sheet(isPresented: $showDeviceVideoView) {
+                if let deviceVideo = selectedDeviceVideo {
+                    DeviceVideoPlayerView(video: deviceVideo)
+                }
             }
-        }
-        
-        .onAppear {
-            loadContent()
-        }
-        
-        .onDisappear {
-            cancelLoadTask()
+            
+            .alert("Delete Video".localized(language), isPresented: $showDeleteVideoAlert) {
+                Button("Cancel".localized(language), role: .cancel) {
+                    videoToDelete = nil
+                }
+                Button("Delete".localized(language), role: .destructive) {
+                    if let video = videoToDelete {
+                        deleteVideo(video)
+                    }
+                }
+            } message: {
+                if let video = videoToDelete {
+                    let videoName = video.musicName ?? "this video".localized(language)
+                    Text("\("Are you sure you want to delete".localized(language)) \"\(videoName)\"?")
+                } else {
+                    Text("Are you sure you want to delete this video?".localized(language))
+                }
+            }
+            
+            .onAppear {
+                loadContent()
+            }
+            
+            .onDisappear {
+                cancelLoadTask()
+            }
         }
     }
     
