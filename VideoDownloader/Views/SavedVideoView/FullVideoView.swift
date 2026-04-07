@@ -28,203 +28,371 @@ struct FullVideoView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .top) {
-            // Background
-            Image("app_bg_image")
-                .resizable()
-                .scaledToFill()
-                .edgesIgnoringSafeArea(.all)
-            
-            // Custom Navigation Bar
-            HStack {
-                Button {
-                    player.pause()
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.white)
-                        .font(.system(size: 18, weight: .medium))
-                        .padding(.leading, 16)
-                }
+        if Device.isIpad {
+            GeometryReader { geometry in
                 
-                Spacer()
-                
-                // Video Info
-                VStack(spacing: 4) {
-                    if let musicName = video.musicName {
-                        Text(musicName)
-                            .font(.custom("Urbanist-Bold", size: 18))
-                            .foregroundColor(.white)
-                            .lineLimit(1)
-                    }
+                ZStack(alignment: .top) {
                     
-                    if let artist = video.musicArtist {
-                        Text(artist)
-                            .font(.custom("Urbanist-Medium", size: 14))
-                            .foregroundColor(.white.opacity(0.7))
-                            .lineLimit(1)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                
-                Spacer()
-                
-                // Download Button
-                Button(action: {
-                    downloadVideoToGallery()
-                }) {
-                    if isDownloading {
-                        ProgressView()
-                            .tint(.white)
-                            .frame(width: 24, height: 24)
-                            .padding(.trailing, 16)
-                    } else {
-                        Image(systemName: "arrow.down.circle")
-                            .foregroundColor(.white)
-                            .font(.system(size: 22))
-                            .padding(.trailing, 16)
-                    }
-                }
-                .disabled(isDownloading)
-            }
-            .padding(.top, UIApplication.shared.safeAreaTop)
-            .padding(.bottom, 10)
-            .background(Color.clear)
-            .zIndex(1)
-            
-            // Content starts from top (below custom nav bar)
-            VStack(spacing: 0) {
-                // Spacer for custom nav bar height
-                Color.clear
-                    .frame(height: UIApplication.shared.safeAreaTop + 44)
-                
-                // Video Player Container
-                ZStack {
-                    // Custom Video Player
-                    CustomVideoPlayer(player: player, isReady: $isPlayerReady)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: UIScreen.main.bounds.height * 0.45)
-                        .cornerRadius(16)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                        )
-                        .padding(.horizontal, 16)
-                        .padding(.top, 20)
+                    // MARK: Background
+                    Image("app_bg_image")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
                     
-                    // Loading Overlay
-                    if !isPlayerReady {
-                        VStack {
-                            ProgressView()
-                                .tint(.white)
-                                .scaleEffect(1.5)
+                    // MARK: Top Navigation Bar
+                    HStack {
+                        
+                        // Back Button
+                        Button {
+                            player.pause()
+                            dismiss()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.white)
+                                .font(.system(size: 18, weight: .medium))
+                                .padding(.leading, 16)
+                        }
+                        
+                        Spacer()
+                        
+                        // Title
+                        VStack(spacing: 4) {
+                            if let musicName = video.musicName {
+                                Text(musicName)
+                                    .font(.custom("Urbanist-Bold", size: 18))
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                            }
                             
-                            Text("Preparing video...".localized(self.language))
+                            if let artist = video.musicArtist {
+                                Text(artist)
+                                    .font(.custom("Urbanist-Medium", size: 14))
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .lineLimit(1)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        
+                        Spacer()
+                        
+                        // MARK: Right Buttons (NEW)
+                        HStack(spacing: 16) {
+                            
+                            // Share
+                            Button {
+                                showShareSheet = true
+                            } label: {
+                                Image(systemName: "square.and.arrow.up")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 20))
+                            }
+                            
+                            // Delete
+                            Button {
+                                player.pause()
+                                showDeleteAlert = true
+                            } label: {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 20))
+                            }
+                            
+                            // Download
+                            Button {
+                                downloadVideoToGallery()
+                            } label: {
+                                if isDownloading {
+                                    ProgressView()
+                                        .tint(.white)
+                                } else {
+                                    Image(systemName: "arrow.down.circle")
+                                        .foregroundColor(.white)
+                                        .font(.system(size: 22))
+                                }
+                            }
+                        }
+                        .padding(.trailing, 16)
+                    }
+                    .padding(.top, UIApplication.shared.safeAreaTop)
+                    .padding(.bottom, 10)
+                    .zIndex(1)
+                    
+                    // MARK: Content
+                    VStack(spacing: 0) {
+                        
+                        Color.clear
+                            .frame(height: UIApplication.shared.safeAreaTop + 44)
+                        
+                        ZStack {
+                            
+                            CustomVideoPlayer(player: player, isReady: $isPlayerReady)
+                                .frame(height: geometry.size.height * 0.5)
+                                .cornerRadius(16)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                )
+                                .padding(.horizontal, 40)
+                                .padding(.top, 30)
+                            
+                            if !isPlayerReady {
+                                VStack {
+                                    ProgressView()
+                                        .tint(.white)
+                                        .scaleEffect(1.5)
+                                    
+                                    Text("Preparing video...".localized(self.language))
+                                        .foregroundColor(.white.opacity(0.7))
+                                        .padding(.top, 10)
+                                }
+                                .frame(height: geometry.size.height * 0.5)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.black.opacity(0.5))
+                                .cornerRadius(16)
+                                .padding(.horizontal, 40)
+                                .padding(.top, 30)
+                            }
+                        }
+                        
+                        Spacer()
+                    }
+                }
+                .navigationBarHidden(true)
+                .navigationBarBackButtonHidden(true)
+                .toolbar(.hidden, for: .tabBar)
+                .ignoresSafeArea(.all, edges: .top)
+                
+                // MARK: Alerts
+                .alert("Delete Video".localized(self.language), isPresented: $showDeleteAlert) {
+                    Button("Cancel".localized(self.language), role: .cancel) { }
+                    Button("Delete".localized(self.language), role: .destructive) {
+                        deleteCurrentVideo()
+                    }
+                } message: {
+                    Text("Are you sure you want to delete this video?".localized(self.language))
+                }
+                
+                .alert("Download".localized(self.language), isPresented: $showDownloadAlert) {
+                    Button("OK".localized(self.language), role: .cancel) { }
+                } message: {
+                    Text(downloadMessage)
+                }
+                
+                // MARK: Share Sheet
+                .sheet(isPresented: $showShareSheet) {
+                    if FileManager.default.fileExists(atPath: video.videoURL.path) {
+                        ShareSheet(items: [video.videoURL])
+                    }
+                }
+                
+                .onAppear {
+                    setupPlayer()
+                    hideTabBar()
+                }
+                .onDisappear {
+                    player.pause()
+                    player.replaceCurrentItem(with: nil)
+                }
+            }
+        } else {
+            ZStack(alignment: .top) {
+                // Background
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .edgesIgnoringSafeArea(.all)
+                
+                // Custom Navigation Bar
+                HStack {
+                    Button {
+                        player.pause()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .font(.system(size: 18, weight: .medium))
+                            .padding(.leading, 16)
+                    }
+                    
+                    Spacer()
+                    
+                    // Video Info
+                    VStack(spacing: 4) {
+                        if let musicName = video.musicName {
+                            Text(musicName)
+                                .font(.custom("Urbanist-Bold", size: 18))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                        }
+                        
+                        if let artist = video.musicArtist {
+                            Text(artist)
                                 .font(.custom("Urbanist-Medium", size: 14))
                                 .foregroundColor(.white.opacity(0.7))
-                                .padding(.top, 10)
+                                .lineLimit(1)
                         }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: UIScreen.main.bounds.height * 0.45)
-                        .background(Color.black.opacity(0.5))
-                        .cornerRadius(16)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 20)
                     }
-                }
-                
-                Spacer()
-                
-                // Bottom Buttons
-                HStack(spacing: 20) {
-                    // Share Button
+                    .frame(maxWidth: .infinity)
+                    
+                    Spacer()
+                    
+                    // Download Button
                     Button(action: {
-                        showShareSheet = true
+                        downloadVideoToGallery()
                     }) {
-                        HStack(spacing: 12) {
-                            Image("share_ic")
-                                .resizable()
-                                .frame(width: 20, height: 20)
+                        if isDownloading {
+                            ProgressView()
+                                .tint(.white)
+                                .frame(width: 24, height: 24)
+                                .padding(.trailing, 16)
+                        } else {
+                            Image(systemName: "arrow.down.circle")
                                 .foregroundColor(.white)
-                            
-                            Text("Share".localized(self.language))
-                                .font(.custom("Urbanist-Medium", size: 16))
-                                .foregroundColor(.white)
+                                .font(.system(size: 22))
+                                .padding(.trailing, 16)
                         }
-                        .padding(.horizontal, 30)
-                        .padding(.vertical, 15)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color(hex: "#1973E8"), Color(hex: "#0E4082")]),
-                                startPoint: .top,
-                                endPoint: .bottom
+                    }
+                    .disabled(isDownloading)
+                }
+                .padding(.top, UIApplication.shared.safeAreaTop)
+                .padding(.bottom, 10)
+                .background(Color.clear)
+                .zIndex(1)
+                
+                // Content starts from top (below custom nav bar)
+                VStack(spacing: 0) {
+                    // Spacer for custom nav bar height
+                    Color.clear
+                        .frame(height: UIApplication.shared.safeAreaTop + 44)
+                    
+                    // Video Player Container
+                    ZStack {
+                        // Custom Video Player
+                        CustomVideoPlayer(player: player, isReady: $isPlayerReady)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: UIScreen.main.bounds.height * 0.45)
+                            .cornerRadius(16)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
                             )
-                        )
-                        .cornerRadius(25)
-                        .shadow(color: Color(hex: "#1973E8").opacity(0.3), radius: 10, x: 0, y: 5)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 20)
+                        
+                        // Loading Overlay
+                        if !isPlayerReady {
+                            VStack {
+                                ProgressView()
+                                    .tint(.white)
+                                    .scaleEffect(1.5)
+                                
+                                Text("Preparing video...".localized(self.language))
+                                    .font(.custom("Urbanist-Medium", size: 14))
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .padding(.top, 10)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: UIScreen.main.bounds.height * 0.45)
+                            .background(Color.black.opacity(0.5))
+                            .cornerRadius(16)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 20)
+                        }
                     }
                     
-                    // Delete Button
-                    Button(action: {
-                        player.pause()
-                        showDeleteAlert = true
-                    }) {
-                        HStack(spacing: 12) {
-                            Image("delete_ic")
-                                .resizable()
-                                .frame(width: 20, height: 20)
-                                .foregroundColor(.white)
-                            
-                            Text("Delete".localized(self.language))
-                                .font(.custom("Urbanist-Medium", size: 16))
-                                .foregroundColor(.white)
-                        }
-                        .padding(.horizontal, 30)
-                        .padding(.vertical, 15)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color(hex: "#1973E8"), Color(hex: "#0E4082")]),
-                                startPoint: .top,
-                                endPoint: .bottom
+                    Spacer()
+                    
+                    // Bottom Buttons
+                    HStack(spacing: 20) {
+                        // Share Button
+                        Button(action: {
+                            showShareSheet = true
+                        }) {
+                            HStack(spacing: 12) {
+                                Image("share_ic")
+                                    .resizable()
+                                    .frame(width: 20, height: 20)
+                                    .foregroundColor(.white)
+                                
+                                Text("Share".localized(self.language))
+                                    .font(.custom("Urbanist-Medium", size: 16))
+                                    .foregroundColor(.white)
+                            }
+                            .padding(.horizontal, 30)
+                            .padding(.vertical, 15)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color(hex: "#1973E8"), Color(hex: "#0E4082")]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
                             )
-                        )
-                        .cornerRadius(25)
-                        .shadow(color: Color(hex: "#1973E8").opacity(0.3), radius: 10, x: 0, y: 5)
+                            .cornerRadius(25)
+                            .shadow(color: Color(hex: "#1973E8").opacity(0.3), radius: 10, x: 0, y: 5)
+                        }
+                        
+                        // Delete Button
+                        Button(action: {
+                            player.pause()
+                            showDeleteAlert = true
+                        }) {
+                            HStack(spacing: 12) {
+                                Image("delete_ic")
+                                    .resizable()
+                                    .frame(width: 20, height: 20)
+                                    .foregroundColor(.white)
+                                
+                                Text("Delete".localized(self.language))
+                                    .font(.custom("Urbanist-Medium", size: 16))
+                                    .foregroundColor(.white)
+                            }
+                            .padding(.horizontal, 30)
+                            .padding(.vertical, 15)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color(hex: "#1973E8"), Color(hex: "#0E4082")]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .cornerRadius(25)
+                            .shadow(color: Color(hex: "#1973E8").opacity(0.3), radius: 10, x: 0, y: 5)
+                        }
                     }
+                    .padding(.horizontal)
+                    .padding(.bottom, 50)
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 50)
             }
-        }
-        .navigationBarHidden(true)
-        .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .tabBar)
-        .ignoresSafeArea(.all, edges: .top)
-        .alert("Delete Video".localized(self.language), isPresented: $showDeleteAlert) {
-            Button("Cancel".localized(self.language), role: .cancel) { }
-            Button("Delete".localized(self.language), role: .destructive) {
-                deleteCurrentVideo()
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .tabBar)
+            .ignoresSafeArea(.all, edges: .top)
+            .alert("Delete Video".localized(self.language), isPresented: $showDeleteAlert) {
+                Button("Cancel".localized(self.language), role: .cancel) { }
+                Button("Delete".localized(self.language), role: .destructive) {
+                    deleteCurrentVideo()
+                }
+            } message: {
+                Text("Are you sure you want to delete this video?".localized(self.language))
             }
-        } message: {
-            Text("Are you sure you want to delete this video?".localized(self.language))
-        }
-        .alert("Download".localized(self.language), isPresented: $showDownloadAlert) {
-            Button("OK".localized(self.language), role: .cancel) { }
-        } message: {
-            Text(downloadMessage)
-        }
-        .sheet(isPresented: $showShareSheet) {
-            if FileManager.default.fileExists(atPath: video.videoURL.path) {
-                ShareSheet(items: [video.videoURL])
+            .alert("Download".localized(self.language), isPresented: $showDownloadAlert) {
+                Button("OK".localized(self.language), role: .cancel) { }
+            } message: {
+                Text(downloadMessage)
             }
-        }
-        .onAppear {
-            setupPlayer()
-            hideTabBar()
-        }
-        .onDisappear {
-            player.pause()
-            player.replaceCurrentItem(with: nil)
+            .sheet(isPresented: $showShareSheet) {
+                if FileManager.default.fileExists(atPath: video.videoURL.path) {
+                    ShareSheet(items: [video.videoURL])
+                }
+            }
+            .onAppear {
+                setupPlayer()
+                hideTabBar()
+            }
+            .onDisappear {
+                player.pause()
+                player.replaceCurrentItem(with: nil)
+            }
         }
     }
     
