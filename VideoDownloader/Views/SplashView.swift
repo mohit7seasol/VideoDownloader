@@ -368,7 +368,7 @@ struct SplashContent: View {
                     loopMode: .loop
                 )
                 .frame(width: 120, height: 80)
-                .padding(.bottom, 10)
+                .padding(.bottom, Device.isIpad ? 500 : 10)
             }
         }
     }
