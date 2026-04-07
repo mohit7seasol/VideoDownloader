@@ -76,7 +76,7 @@ struct OnBoardingView: View {
                                 language: language,
                                 isIpad: true
                             )
-                            .frame(width: geo.size.width * 0.8)
+                            .frame(width: geo.size.width * 0.92)
                             
                             Button {
                                 if currentIndex < pages.count - 1 {
