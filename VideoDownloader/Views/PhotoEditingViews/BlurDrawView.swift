@@ -211,15 +211,19 @@ struct BlurPreviewView: View {
         if let blurred = blurredImage {
             Image(uiImage: blurred)
                 .resizable()
-                .scaledToFit()
+                .scaledToFill()
                 .frame(width: radius * 2, height: radius * 2)
                 .position(point)
-                .clipShape(Circle())
+                .clipShape(RoundedRectangle(cornerRadius: 12)) // Optional: rounded corners
         } else {
-            Circle()
+            RoundedRectangle(cornerRadius: 12)
                 .fill(Color.clear)
                 .frame(width: radius * 2, height: radius * 2)
                 .position(point)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                )
                 .onAppear {
                     generateBlurPreview()
                 }
