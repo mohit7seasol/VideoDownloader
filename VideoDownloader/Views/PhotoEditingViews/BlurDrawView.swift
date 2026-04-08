@@ -15,9 +15,12 @@ struct BlurDrawView: View {
     let onImageEdited: (UIImage) -> Void
     
     @Environment(\.dismiss) var dismiss
+    
     @State private var blurPoints: [BlurPoint] = []
-    @State private var blurRadius: CGFloat = 15
+    @State private var blurRadius: CGFloat = 40
     @State private var imageViewSize = CGSize.zero
+    
+    @State private var blurredFullImage: UIImage?
     
     struct BlurPoint: Identifiable {
         let id = UUID()
@@ -30,11 +33,10 @@ struct BlurDrawView: View {
             Color.black.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Top Bar
+                
+                // MARK: - Top Bar
                 HStack {
-                    Button {
-                        dismiss()
-                    } label: {
+                    Button { dismiss() } label: {
                         Image(systemName: "xmark")
                             .foregroundColor(.white)
                             .font(.system(size: 20, weight: .semibold))
@@ -42,96 +44,103 @@ struct BlurDrawView: View {
                     
                     Spacer()
                     
-                    Text("Blur".localized(LocalizationService.shared.language))
-                        .font(.custom("Poppins-Black", size: 18))
+                    Text("Blur")
+                        .font(.headline)
                         .foregroundColor(.white)
                     
                     Spacer()
                     
-                    Button {
-                        saveBlurredImage()
-                    } label: {
-                        Text("Save".localized(LocalizationService.shared.language))
-                            .font(.custom("Urbanist-Medium", size: 16))
+                    Button { saveBlurredImage() } label: {
+                        Text("Save")
                             .foregroundColor(.white)
                     }
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 0)
                 .padding(.bottom, 20)
                 
-                // Blur Canvas with real-time blur preview
+                // MARK: - Canvas
                 GeometryReader { geometry in
                     let size = geometry.size
+                    
                     ZStack {
-                        // Base image
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: size.width, height: size.height)
-                            .onAppear {
-                                imageViewSize = size
-                            }
+                        Color.clear
                         
-                        // Apply real-time blur preview
-                        ForEach(blurPoints) { blurPoint in
-                            BlurPreviewView(
-                                image: image,
-                                point: blurPoint.point,
-                                radius: blurPoint.radius,
-                                viewSize: size
-                            )
+                        // ✅ CENTERED IMAGE CONTAINER
+                        ZStack {
+                            
+                            // Original Image
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                            
+                            // Blur Overlay
+                            if let blurred = blurredFullImage {
+                                Image(uiImage: blurred)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .mask(
+                                        Canvas { context, _ in
+                                            for point in blurPoints {
+                                                let rect = CGRect(
+                                                    x: point.point.x - point.radius,
+                                                    y: point.point.y - point.radius,
+                                                    width: point.radius * 2,
+                                                    height: point.radius * 2
+                                                )
+                                                
+                                                context.fill(
+                                                    Path(ellipseIn: rect),
+                                                    with: .radialGradient(
+                                                        Gradient(colors: [.white, .white.opacity(0)]),
+                                                        center: CGPoint(x: rect.midX, y: rect.midY),
+                                                        startRadius: 0,
+                                                        endRadius: point.radius
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    )
+                            }
                         }
+                        .frame(width: size.width, height: size.height, alignment: .center) // 🔥 KEY FIX
                     }
-                    .frame(width: size.width, height: size.height)
+                    .onAppear {
+                        imageViewSize = size
+                        generateFullBlur()
+                    }
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { value in
-                                let newPoint = BlurPoint(point: value.location, radius: blurRadius)
-                                blurPoints.append(newPoint)
+                                blurPoints.append(
+                                    BlurPoint(
+                                        point: value.location,
+                                        radius: blurRadius
+                                    )
+                                )
                             }
                     )
                 }
-                .padding(.horizontal, 15)
-                .padding(.top, 15)
-                .padding(.bottom, 15)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(15)
                 
                 Spacer()
                 
-                // Controls
+                // MARK: - Controls
                 VStack(spacing: 20) {
-                    // Blur Radius Slider
+                    
                     VStack(alignment: .leading) {
                         Text("Blur Radius: \(Int(blurRadius))")
                             .foregroundColor(.white)
-                            .font(.custom("Urbanist-Medium", size: 14))
-                        Slider(value: $blurRadius, in: 10...50, step: 1)
+                        
+                        Slider(value: $blurRadius, in: 20...80)
                             .tint(.white)
                     }
                     .padding(.horizontal, 40)
                     
-                    // Clear Button
                     Button {
                         blurPoints.removeAll()
                     } label: {
-                        HStack {
-                            Image(systemName: "trash")
-                                .font(.system(size: 14))
-                            Text("Clear All".localized(LocalizationService.shared.language))
-                                .font(.custom("Urbanist-Medium", size: 14))
-                        }
-                        .foregroundColor(.red)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(Color.red.opacity(0.2))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 20)
-                                        .stroke(Color.red, lineWidth: 1)
-                                )
-                        )
+                        Text("Clear All")
+                            .foregroundColor(.red)
                     }
                 }
                 .padding(.bottom, 50)
@@ -139,62 +148,69 @@ struct BlurDrawView: View {
         }
     }
     
+    // MARK: - Generate Full Blur Image
+    private func generateFullBlur() {
+        guard let ciImage = CIImage(image: image) else { return }
+        
+        let context = CIContext()
+        let filter = CIFilter.gaussianBlur()
+        
+        let clamped = ciImage.clampedToExtent()
+        filter.inputImage = clamped
+        filter.radius = 25
+        
+        guard let output = filter.outputImage else { return }
+        
+        let cropped = output.cropped(to: ciImage.extent)
+        
+        if let cgImage = context.createCGImage(cropped, from: ciImage.extent) {
+            blurredFullImage = UIImage(cgImage: cgImage)
+        }
+    }
+    
+    // MARK: - Save Final Image
     private func saveBlurredImage() {
-        // Calculate scale factors between display size and actual image size
-        let scaleX = image.size.width / imageViewSize.width
-        let scaleY = image.size.height / imageViewSize.height
         
         let renderer = UIGraphicsImageRenderer(size: image.size)
-        let finalImage = renderer.image { ctx in
-            // Draw original image
+        
+        let final = renderer.image { ctx in
+            
             image.draw(in: CGRect(origin: .zero, size: image.size))
             
-            // Apply blur to each point with proper scaling
-            for blurPoint in blurPoints {
-                let scaledRadius = blurPoint.radius * min(scaleX, scaleY)
+            guard let blurred = blurredFullImage else { return }
+            
+            let scaleX = image.size.width / imageViewSize.width
+            let scaleY = image.size.height / imageViewSize.height
+            
+            for point in blurPoints {
+                
                 let scaledPoint = CGPoint(
-                    x: blurPoint.point.x * scaleX,
-                    y: blurPoint.point.y * scaleY
+                    x: point.point.x * scaleX,
+                    y: point.point.y * scaleY
                 )
                 
-                let blurRect = CGRect(
+                let scaledRadius = point.radius * min(scaleX, scaleY)
+                
+                let rect = CGRect(
                     x: scaledPoint.x - scaledRadius,
                     y: scaledPoint.y - scaledRadius,
                     width: scaledRadius * 2,
                     height: scaledRadius * 2
                 )
                 
-                // Ensure rect is within image bounds
-                let validRect = blurRect.intersection(CGRect(origin: .zero, size: image.size))
-                if validRect.width > 0 && validRect.height > 0 {
-                    // Crop the area to blur
-                    if let cgImage = image.cgImage?.cropping(to: validRect) {
-                        let uiCropped = UIImage(cgImage: cgImage)
-                        if let blurred = applyBlur(to: uiCropped, radius: blurPoint.radius) {
-                            blurred.draw(in: validRect)
-                        }
-                    }
-                }
+                ctx.cgContext.saveGState()
+                
+                ctx.cgContext.addEllipse(in: rect) // ✅ Circle instead of square
+                ctx.cgContext.clip()
+                
+                blurred.draw(in: CGRect(origin: .zero, size: image.size))
+                
+                ctx.cgContext.restoreGState()
             }
         }
         
-        onImageEdited(finalImage)
+        onImageEdited(final)
         dismiss()
-    }
-    
-    private func applyBlur(to image: UIImage, radius: CGFloat) -> UIImage? {
-        guard let ciImage = CIImage(image: image) else { return nil }
-        
-        let filter = CIFilter.gaussianBlur()
-        filter.inputImage = ciImage
-        filter.radius = Float(radius)
-        
-        guard let outputImage = filter.outputImage,
-              let cgImage = CIContext().createCGImage(outputImage, from: ciImage.extent) else {
-            return nil
-        }
-        
-        return UIImage(cgImage: cgImage)
     }
 }
 
@@ -214,7 +230,7 @@ struct BlurPreviewView: View {
                 .scaledToFill()
                 .frame(width: radius * 2, height: radius * 2)
                 .position(point)
-                .clipShape(RoundedRectangle(cornerRadius: 12)) // Optional: rounded corners
+                .clipShape(RoundedRectangle(cornerRadius: 12))
         } else {
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color.clear)
@@ -248,26 +264,41 @@ struct BlurPreviewView: View {
             height: scaledRadius * 2
         )
         
-        // Crop the area and apply blur
-        if let cgImage = image.cgImage?.cropping(to: blurRect) {
-            let uiCropped = UIImage(cgImage: cgImage)
-            if let blurred = applyBlur(to: uiCropped, radius: radius) {
-                DispatchQueue.main.async {
-                    self.blurredImage = blurred
+        // Ensure rect is within image bounds
+        let validRect = blurRect.intersection(CGRect(origin: .zero, size: image.size))
+        
+        if validRect.width > 0 && validRect.height > 0 {
+            // Crop the area and apply blur
+            if let cgImage = image.cgImage?.cropping(to: validRect) {
+                let uiCropped = UIImage(cgImage: cgImage)
+                // FIXED: Use the improved blur function
+                if let blurred = applyBlurWithoutColorTint(to: uiCropped, radius: radius) {
+                    DispatchQueue.main.async {
+                        self.blurredImage = blurred
+                    }
                 }
             }
         }
     }
     
-    private func applyBlur(to image: UIImage, radius: CGFloat) -> UIImage? {
+    // FIXED: Apply blur without color tint at edges
+    private func applyBlurWithoutColorTint(to image: UIImage, radius: CGFloat) -> UIImage? {
         guard let ciImage = CIImage(image: image) else { return nil }
         
+        // IMPORTANT: Clamp the image to extend its edges to prevent dark/color tint at borders
+        let clampedImage = ciImage.clampedToExtent()
+        
         let filter = CIFilter.gaussianBlur()
-        filter.inputImage = ciImage
+        filter.inputImage = clampedImage
         filter.radius = Float(radius)
         
-        guard let outputImage = filter.outputImage,
-              let cgImage = CIContext().createCGImage(outputImage, from: ciImage.extent) else {
+        guard let outputImage = filter.outputImage else { return nil }
+        
+        // Crop back to the original extent to remove the clamped edges
+        let croppedImage = outputImage.cropped(to: ciImage.extent)
+        
+        let context = CIContext()
+        guard let cgImage = context.createCGImage(croppedImage, from: ciImage.extent) else {
             return nil
         }
         

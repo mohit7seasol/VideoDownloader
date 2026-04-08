@@ -108,7 +108,17 @@ struct PhotoEditorMainView: View {
             loadImage()
         }
         .fullScreenCover(item: $selectedFeature) { feature in
-            featureView(feature)
+            if Device.isIpad {
+                ZStack {
+                    Color.black.ignoresSafeArea()
+                    
+                    featureView(feature)
+                        .frame(maxWidth: 600) // 🔥 control width here
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                }
+            } else {
+                featureView(feature)
+            }
         }
         .alert("Success".localized(LocalizationService.shared.language), isPresented: $showDoneAlert) {
             Button("OK".localized(LocalizationService.shared.language), role: .cancel) {
@@ -188,32 +198,69 @@ struct PhotoFeaturesView: View {
     let labels = ["Draw", "Crop", "Text", "Filter", "Adjust", "Blur"]
     
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 15) {
-                ForEach(0..<icons.count, id: \.self) { i in
-                    Button {
-                        if let feature = PhotoFeature(rawValue: i) {
-                            onTap(feature)
+        if Device.isIpad {
+            GeometryReader { geo in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 15) {
+                        ForEach(0..<icons.count, id: \.self) { i in
+                            Button {
+                                if let feature = PhotoFeature(rawValue: i) {
+                                    onTap(feature)
+                                }
+                            } label: {
+                                VStack(spacing: 8) {
+                                    Image(systemName: icons[i])
+                                        .foregroundColor(.white)
+                                        .font(.system(size: 24))
+                                        .frame(width: 50, height: 50)
+                                        .background(Color.white.opacity(0.15))
+                                        .cornerRadius(12)
+                                    
+                                    Text(labels[i])
+                                        .font(.custom("Urbanist-Medium", size: 11))
+                                        .foregroundColor(.white)
+                                }
+                            }
                         }
-                    } label: {
-                        VStack(spacing: 8) {
-                            Image(systemName: icons[i])
-                                .foregroundColor(.white)
-                                .font(.system(size: 24))
-                                .frame(width: 50, height: 50)
-                                .background(Color.white.opacity(0.15))
-                                .cornerRadius(12)
-                            
-                            Text(labels[i])
-                                .font(.custom("Urbanist-Medium", size: 11))
-                                .foregroundColor(.white)
+                    }
+                    .frame(
+                        minWidth: geo.size.width,
+                        alignment: .center
+                    )
+                    .padding(.horizontal, 20)
+                }
+            }
+            .frame(height: 100)
+            .padding(.vertical, 12)
+            .padding(.bottom, 10)
+        } else {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 15) {
+                    ForEach(0..<icons.count, id: \.self) { i in
+                        Button {
+                            if let feature = PhotoFeature(rawValue: i) {
+                                onTap(feature)
+                            }
+                        } label: {
+                            VStack(spacing: 8) {
+                                Image(systemName: icons[i])
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 24))
+                                    .frame(width: 50, height: 50)
+                                    .background(Color.white.opacity(0.15))
+                                    .cornerRadius(12)
+                                
+                                Text(labels[i])
+                                    .font(.custom("Urbanist-Medium", size: 11))
+                                    .foregroundColor(.white)
+                            }
                         }
                     }
                 }
+                .padding(.horizontal, 20)
             }
-            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .padding(.bottom, 10)
         }
-        .padding(.vertical, 12)
-        .padding(.bottom, 10)
     }
 }
