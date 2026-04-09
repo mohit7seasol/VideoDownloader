@@ -23,8 +23,8 @@ struct OnBoardingView: View {
     
     private let pages: [OnboardingItem] = [
         OnboardingItem(
-            title: "Fast Video Downloader",
-            subtitle: "Download your favorite videos quickly and easily.",
+            title: "Bookmark in One Tap",
+            subtitle: "Bookmark your favorite videos quickly and easily.",
             topImageName: Device.isIpad ? "ion1" : "on1"
         ),
         OnboardingItem(
