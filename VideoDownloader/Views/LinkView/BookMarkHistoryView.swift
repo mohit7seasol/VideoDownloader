@@ -26,7 +26,7 @@ struct BookMarkHistoryView: View {
             
             // Title Section
             HStack {
-                Text("Bookmark History")
+                Text("Bookmark History".localized(self.language))
                     .font(Font.custom("Poppins-Black.ttf", size: 18))
                     .foregroundColor(.white)
                 
@@ -40,7 +40,7 @@ struct BookMarkHistoryView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "trash")
                                 .font(.system(size: 14))
-                            Text("Clear All")
+                            Text("Clear All".localized(self.language))
                                 .font(Font.custom("Urbanist-Medium", size: 14))
                         }
                         .foregroundColor(.red.opacity(0.8))
@@ -59,11 +59,11 @@ struct BookMarkHistoryView: View {
                         .font(.system(size: isIpad ? 60 : 50))
                         .foregroundColor(.white.opacity(0.5))
                     
-                    Text("No bookmarks yet")
+                    Text("No bookmarks yet".localized(self.language))
                         .font(Font.custom("Urbanist-Medium", size: isIpad ? 18 : 16))
                         .foregroundColor(.white.opacity(0.6))
                     
-                    Text("Failed downloads will appear here")
+                    Text("Failed downloads will appear here".localized(self.language))
                         .font(Font.custom("Urbanist-Regular", size: isIpad ? 16 : 14))
                         .foregroundColor(.white.opacity(0.4))
                         .multilineTextAlignment(.center)
@@ -89,16 +89,16 @@ struct BookMarkHistoryView: View {
             }
         }
         .background(Color.clear)
-        .alert("Clear All Bookmarks?", isPresented: $showDeleteAllAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Clear All", role: .destructive) {
+        .alert("Clear All Bookmarks?".localized(self.language), isPresented: $showDeleteAllAlert) {
+            Button("Cancel".localized(self.language), role: .cancel) { }
+            Button("Clear All".localized(self.language), role: .destructive) {
                 withAnimation {
                     viewModel.failedURLs.removeAll()
                     UserDefaults.standard.removeObject(forKey: "FailedVideoURLs")
                 }
             }
         } message: {
-            Text("This will remove all your saved bookmark URLs. This action cannot be undone.")
+            Text("This will remove all your saved bookmark URLs. This action cannot be undone.".localized(self.language))
         }
     }
 }

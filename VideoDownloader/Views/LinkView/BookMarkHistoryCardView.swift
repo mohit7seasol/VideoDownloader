@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import SafariServices
 
 struct BookMarkHistoryCardView: View {
     let url: String
     let onDelete: () -> Void
     @State private var isPressed = false
+    @State private var showSafari = false
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -18,29 +20,34 @@ struct BookMarkHistoryCardView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Link Icon
+            // Bookmark Icon on left
             Image(systemName: "bookmark.fill")
-                .font(.system(size: isIpad ? 24 : 20))
+                .font(.system(size: isIpad ? 22 : 18))
                 .foregroundColor(.white.opacity(0.8))
                 .padding(.leading, 16)
             
-            // URL Label with marquee effect
+            // URL Label with marquee effect (horizontal scrolling)
             ScrollView(.horizontal, showsIndicators: false) {
-                Text(url)
-                    .font(Font.custom("Urbanist-Regular", size: 16))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
+                HStack(spacing: 0) {
+                    Text(url)
+                        .font(Font.custom("Urbanist-Regular", size: 16))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                    
+                    // Add spacing for smooth scrolling
+                    Spacer(minLength: 20)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
-            // Delete Button
+            // Delete Button on right
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     onDelete()
                 }
             }) {
                 Image(systemName: "trash")
-                    .font(.system(size: isIpad ? 20 : 16))
+                    .font(.system(size: isIpad ? 18 : 16))
                     .foregroundColor(.white.opacity(0.7))
                     .padding(.trailing, 16)
             }
@@ -64,19 +71,39 @@ struct BookMarkHistoryCardView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 isPressed = false
             }
-            // Copy URL to clipboard
-            UIPasteboard.general.string = url
-            // You can add a toast notification here if needed
+            // Open URL in browser
+            openURLInBrowser()
+        }
+    }
+    
+    // Function to open URL in browser
+    private func openURLInBrowser() {
+        guard let validURL = URL(string: url) else { return }
+        
+        // Check if URL has http/https scheme, if not add https
+        var urlToOpen = validURL
+        if urlToOpen.scheme == nil {
+            urlToOpen = URL(string: "https://\(url)") ?? validURL
+        }
+        
+        // Open in Safari
+        UIApplication.shared.open(urlToOpen) { success in
+            if !success {
+                print("Failed to open URL: \(url)")
+            }
         }
     }
 }
 
 #Preview {
-    VStack {
-        BookMarkHistoryCardView(url: "https://www.instagram.com/p/example123") {
+    VStack(spacing: 12) {
+        BookMarkHistoryCardView(url: "https://www.instagram.com/p/Cxample123456789") {
             print("Delete tapped")
         }
-        BookMarkHistoryCardView(url: "https://www.youtube.com/watch?v=example456") {
+        BookMarkHistoryCardView(url: "https://www.youtube.com/watch?v=example123456") {
+            print("Delete tapped")
+        }
+        BookMarkHistoryCardView(url: "https://www.tiktok.com/@user/video/123456789") {
             print("Delete tapped")
         }
     }

@@ -532,11 +532,12 @@ class LinkViewModel: ObservableObject {
         saveFailedURL(urlString)
         
         DispatchQueue.main.async { [weak self] in
-            self?.isLoading = false
-            self?.isSaving = false
-            self?.postLink = ""
-            self?.alertMessage = "📌 Your video link saved as Bookmark! We'll keep it safe for you."
-            self?.showAlert = true
+            guard let self = self else { return }
+            self.isLoading = false
+            self.isSaving = false
+            self.postLink = ""
+            self.alertMessage = "📌 Your video link saved as Bookmark! We'll keep it safe for you.".localized(self.language)
+            self.showAlert = true
         }
     }
     
@@ -546,11 +547,12 @@ class LinkViewModel: ObservableObject {
         saveFailedURL(urlString)
         
         DispatchQueue.main.async { [weak self] in
-            self?.isLoading = false
-            self?.isSaving = false
-            self?.postLink = ""
-            self?.alertMessage = "⚠️ Download failed but your link is saved as Bookmark! 🔖"
-            self?.showAlert = true
+            guard let self = self else { return }
+            self.isLoading = false
+            self.isSaving = false
+            self.postLink = ""
+            self.alertMessage = "⚠️ Download failed but your link is saved as Bookmark! 🔖".localized(self.language)
+            self.showAlert = true
         }
     }
     

@@ -174,3 +174,10 @@
 "Paste the link and enjoy fast, hassle-free video BookMark" = "Bağlantıyı yapıştırın ve hızlı, sorunsuz video yer iminin keyfini çıkarın";
 "Bookmark in One Tap" = "Tek dokunuşla yer imi ekle";
 "Bookmark your favorite videos quickly and easily." = "Favori videolarınızı hızlı ve kolay bir şekilde yer imlerine ekleyin.";
+"📌 Your video link saved as Bookmark! We'll keep it safe for you." = "📌 Video bağlantınız yer imi olarak kaydedildi! Sizin için güvende tutacağız.";
+"⚠️ Download failed but your link is saved as Bookmark! 🔖" = "⚠️ İndirme başarısız oldu ancak bağlantınız yer imi olarak kaydedildi! 🔖";
+"This will remove all your saved bookmark URLs. This action cannot be undone." = "Bu işlem kaydedilmiş tüm yer imi URL'lerini kaldıracaktır. Bu işlem geri alınamaz.";
+"Clear All Bookmarks?" = "Tüm yer imleri temizlensin mi?";
+"Failed downloads will appear here" = "Başarısız indirmeler burada görünecek";
+"No bookmarks yet" = "Henüz yer imi yok";
+"Bookmark History" = "Yer imi geçmişi";
