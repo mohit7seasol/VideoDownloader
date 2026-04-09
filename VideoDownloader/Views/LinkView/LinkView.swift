@@ -16,6 +16,7 @@ struct LinkView: View {
     @State private var bottomImageOffset: CGFloat = 0
     @StateObject private var folderSelectionManager = FolderSelectionManager()
     @State private var showCreateFolderAlert = false
+    @State private var showBookmarkHistory = false
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -108,11 +109,21 @@ struct LinkView: View {
                         
                         // Bottom Image
                         VStack {
-                            Image("link_bottom_ic")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxWidth: geometry.size.width - (Device.isIpad ? 80 : 40))
-                                .padding(.horizontal, Device.isIpad ? 40 : 20)
+                            if viewModel.failedURLs.isEmpty && !showBookmarkHistory {
+                                // Bottom Image
+                                VStack {
+                                    Image("link_bottom_ic")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(maxWidth: geometry.size.width - (Device.isIpad ? 80 : 40))
+                                        .padding(.horizontal, Device.isIpad ? 40 : 20)
+                                }
+                                .padding(.bottom, UIApplication.shared.safeAreaBottom + (Device.isIpad ? 40 : 20))
+                            } else {
+                                // Bookmark History View
+                                BookMarkHistoryView(viewModel: viewModel)
+                                    .padding(.bottom, UIApplication.shared.safeAreaBottom + (Device.isIpad ? 40 : 20))
+                            }
                         }
                         .padding(.bottom, UIApplication.shared.safeAreaBottom + (Device.isIpad ? 40 : 20))
                         
@@ -285,11 +296,21 @@ struct LinkView: View {
                         
                         // Bottom Image - Fixed at bottom with proper spacing
                         VStack {
-                            Image("link_bottom_ic")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxWidth: geometry.size.width - 40)
-                                .padding(.horizontal, 20)
+                            if viewModel.failedURLs.isEmpty && !showBookmarkHistory {
+                                // Bottom Image
+                                VStack {
+                                    Image("link_bottom_ic")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(maxWidth: geometry.size.width - (Device.isIpad ? 80 : 40))
+                                        .padding(.horizontal, Device.isIpad ? 40 : 20)
+                                }
+                                .padding(.bottom, UIApplication.shared.safeAreaBottom + (Device.isIpad ? 40 : 20))
+                            } else {
+                                // Bookmark History View
+                                BookMarkHistoryView(viewModel: viewModel)
+                                    .padding(.bottom, UIApplication.shared.safeAreaBottom + (Device.isIpad ? 40 : 20))
+                            }
                         }
                         .padding(.bottom, UIApplication.shared.safeAreaBottom + 20)
                         .opacity(1)

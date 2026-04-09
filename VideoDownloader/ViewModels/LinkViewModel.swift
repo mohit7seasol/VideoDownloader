@@ -109,6 +109,7 @@ class LinkViewModel: ObservableObject {
     @Published var showAlert = false
     @Published var alertMessage = ""
     @Published var isSaving = false
+    @Published var failedURLs: [String] = [] // Store failed URLs
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     private var cancellables = Set<AnyCancellable>()
@@ -120,6 +121,38 @@ class LinkViewModel: ObservableObject {
     @AppStorage("FacebookAPIToken") private var facebookAPIToken: String = ""
     @AppStorage("TiktokAPIToken") private var tiktokAPIToken: String = ""
     @Published var didDownloadSuccessfully: Bool = false
+    
+    // Key for storing failed URLs in UserDefaults
+    private let failedURLsKey = "FailedVideoURLs"
+    
+    init() {
+        loadFailedURLs()
+    }
+    
+    // Load failed URLs from UserDefaults
+    private func loadFailedURLs() {
+        if let savedURLs = UserDefaults.standard.array(forKey: failedURLsKey) as? [String] {
+            failedURLs = savedURLs
+        }
+    }
+    
+    // Save failed URL to UserDefaults
+    private func saveFailedURL(_ url: String) {
+        if !failedURLs.contains(url) {
+            failedURLs.insert(url, at: 0) // Add at the beginning
+            // Keep only last 20 URLs to avoid too much data
+            if failedURLs.count > 20 {
+                failedURLs = Array(failedURLs.prefix(20))
+            }
+            UserDefaults.standard.set(failedURLs, forKey: failedURLsKey)
+        }
+    }
+    
+    // Remove failed URL
+    func removeFailedURL(_ url: String) {
+        failedURLs.removeAll { $0 == url }
+        UserDefaults.standard.set(failedURLs, forKey: failedURLsKey)
+    }
     
     // Method to set tab manager
     func setTabManager(_ manager: TabSelectionManager) {
@@ -176,12 +209,6 @@ class LinkViewModel: ObservableObject {
         
         // Facebook
         if isFacebookURL(webURL) {
-            /* DispatchQueue.main.async { [weak self] in
-                self?.isLoading = false
-                self?.isSaving = false
-                self?.alertMessage = "Facebook video download is temporarily not supported. Please try again later."
-                self?.showAlert = true
-            } */
             handleFacebookURL(webURL)
             return
         }
@@ -293,12 +320,12 @@ class LinkViewModel: ObservableObject {
     // MARK: - YouTube Handling
     private func handleYouTubeURL(_ urlString: String) {
         guard let videoID = extractYouTubeVideoID(from: urlString) else {
-            showError("Could not extract video ID".localized(language))
+            handleVideoParseFailure(urlString)
             return
         }
         
         guard let apiURL = URL(string: "https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=\(videoID)") else {
-            showError("Invalid API URL".localized(language))
+            handleVideoParseFailure(urlString)
             return
         }
         
@@ -310,12 +337,12 @@ class LinkViewModel: ObservableObject {
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
-                    self?.showError(error.localizedDescription)
+                    self?.handleVideoParseFailure(urlString)
                     return
                 }
                 
                 guard let data = data else {
-                    self?.showError("No data received")
+                    self?.handleVideoParseFailure(urlString)
                     return
                 }
                 
@@ -329,10 +356,10 @@ class LinkViewModel: ObservableObject {
                         
                         self?.downloadMedia(from: videoURL, sourceURL: urlString)
                     } else {
-                        self?.showError("Failed to parse video URL")
+                        self?.handleVideoParseFailure(urlString)
                     }
                 } catch {
-                    self?.showError(error.localizedDescription)
+                    self?.handleVideoParseFailure(urlString)
                 }
             }
         }.resume()
@@ -341,12 +368,12 @@ class LinkViewModel: ObservableObject {
     // MARK: - Instagram Handling
     private func handleInstagramURL(_ urlString: String) {
         guard let (shortcode, _) = extractInstagramShortcode(from: urlString) else {
-            showError("Invalid Instagram URL")
+            handleVideoParseFailure(urlString)
             return
         }
         
         guard let apiURL = URL(string: "https://instagram-scraper-stable-api.p.rapidapi.com/get_media_data_v2.php?media_code=\(shortcode)") else {
-            showError("Invalid API URL")
+            handleVideoParseFailure(urlString)
             return
         }
         
@@ -358,12 +385,12 @@ class LinkViewModel: ObservableObject {
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
-                    self?.showError(error.localizedDescription)
+                    self?.handleVideoParseFailure(urlString)
                     return
                 }
                 
                 guard let data = data else {
-                    self?.showError("No data received")
+                    self?.handleVideoParseFailure(urlString)
                     return
                 }
                 
@@ -380,11 +407,11 @@ class LinkViewModel: ObservableObject {
                               let url = URL(string: imageURL) {
                         self?.downloadMedia(from: url, sourceURL: urlString)
                     } else {
-                        self?.showError("No media found in Instagram URL")
+                        self?.handleVideoParseFailure(urlString)
                     }
                     
                 } catch {
-                    self?.showError(error.localizedDescription)
+                    self?.handleVideoParseFailure(urlString)
                 }
             }
         }.resume()
@@ -394,12 +421,12 @@ class LinkViewModel: ObservableObject {
     private func handleFacebookURL(_ urlString: String) {
         resolveFacebookShareURL(urlString) { [weak self] resolvedURL in
             guard let resolvedURL = resolvedURL else {
-                self?.showError("Invalid Facebook URL")
+                self?.handleVideoParseFailure(urlString)
                 return
             }
             
             guard let mediaID = self?.extractFacebookMediaID(from: resolvedURL) else {
-                self?.showError("Could not extract media ID")
+                self?.handleVideoParseFailure(urlString)
                 return
             }
             
@@ -412,12 +439,12 @@ class LinkViewModel: ObservableObject {
             URLSession.shared.dataTask(with: request) { data, response, error in
                 DispatchQueue.main.async {
                     if let error = error {
-                        self?.showError(error.localizedDescription)
+                        self?.handleVideoParseFailure(urlString)
                         return
                     }
                     
                     guard let data = data else {
-                        self?.showError("No data received")
+                        self?.handleVideoParseFailure(urlString)
                         return
                     }
                     
@@ -425,7 +452,7 @@ class LinkViewModel: ObservableObject {
                         let apiResponse = try JSONDecoder().decode(FacebookAPIResponse.self, from: data)
                         
                         guard let mediaInfo = apiResponse.data else {
-                            self?.showError("No media info found")
+                            self?.handleVideoParseFailure(urlString)
                             return
                         }
                         
@@ -440,11 +467,11 @@ class LinkViewModel: ObservableObject {
                             self?.downloadMedia(from: imageURL, sourceURL: urlString)
                         }
                         else {
-                            self?.showError("No media found in Facebook URL")
+                            self?.handleVideoParseFailure(urlString)
                         }
                         
                     } catch {
-                        self?.showError(error.localizedDescription)
+                        self?.handleVideoParseFailure(urlString)
                     }
                 }
             }.resume()
@@ -455,7 +482,7 @@ class LinkViewModel: ObservableObject {
     private func handleTikTokURL(_ urlString: String) {
         guard let videoID = extractTikTokVideoID(from: urlString),
               let url = URL(string: "https://tiktok-api23.p.rapidapi.com/api/post/detail?videoId=\(videoID)") else {
-            showError("Invalid TikTok URL")
+            handleVideoParseFailure(urlString)
             return
         }
         
@@ -467,12 +494,12 @@ class LinkViewModel: ObservableObject {
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
-                    self?.showError(error.localizedDescription)
+                    self?.handleVideoParseFailure(urlString)
                     return
                 }
                 
                 guard let data = data else {
-                    self?.showError("No data received")
+                    self?.handleVideoParseFailure(urlString)
                     return
                 }
                 
@@ -490,13 +517,41 @@ class LinkViewModel: ObservableObject {
                         
                         self?.downloadMedia(from: videoURL, sourceURL: urlString)
                     } else {
-                        self?.showError("Failed to parse video URL")
+                        self?.handleVideoParseFailure(urlString)
                     }
                 } catch {
-                    self?.showError(error.localizedDescription)
+                    self?.handleVideoParseFailure(urlString)
                 }
             }
         }.resume()
+    }
+    
+    // MARK: - Handle Video Parse Failure
+    private func handleVideoParseFailure(_ urlString: String) {
+        // Save the URL to local storage
+        saveFailedURL(urlString)
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.isLoading = false
+            self?.isSaving = false
+            self?.postLink = ""
+            self?.alertMessage = "📌 Your video link saved as Bookmark! We'll keep it safe for you."
+            self?.showAlert = true
+        }
+    }
+    
+    // MARK: - Handle Download Failure
+    private func handleDownloadFailure(_ urlString: String, error: Error? = nil) {
+        // Save the URL to local storage
+        saveFailedURL(urlString)
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.isLoading = false
+            self?.isSaving = false
+            self?.postLink = ""
+            self?.alertMessage = "⚠️ Download failed but your link is saved as Bookmark! 🔖"
+            self?.showAlert = true
+        }
     }
     
     // MARK: - Download Helpers
@@ -504,7 +559,7 @@ class LinkViewModel: ObservableObject {
         URLSession.shared.downloadTask(with: url) { [weak self] tempURL, response, error in
             DispatchQueue.main.async {
                 guard let tempURL = tempURL, error == nil else {
-                    self?.showError("Download failed: \(error?.localizedDescription ?? "Unknown error")")
+                    self?.handleDownloadFailure(sourceURL, error: error)
                     return
                 }
                 
@@ -717,6 +772,7 @@ class LinkViewModel: ObservableObject {
         }.resume()
     }
 }
+
 extension LinkViewModel {
     // Add this method to show folder selection before saving
     func showFolderSelectionForDownload(videoURL: URL, thumbnailURL: URL?, sourceURL: String) {
