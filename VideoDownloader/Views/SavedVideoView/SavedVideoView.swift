@@ -240,7 +240,7 @@ struct SavedVideoView: View {
             }
             .onAppear {
                 folderManager.loadFolders()
-                if let downloadsIndex = folderManager.folders.firstIndex(where: { $0.isSystemFolder && $0.name == "Downloads" }), downloadsIndex != 0 {
+                if let downloadsIndex = folderManager.folders.firstIndex(where: { $0.isSystemFolder && $0.name == "Bookmarks" }), downloadsIndex != 0 {
                     let downloadsFolder = folderManager.folders.remove(at: downloadsIndex)
                     folderManager.folders.insert(downloadsFolder, at: 0)
                     folderManager.saveFolders()
@@ -409,7 +409,7 @@ struct SavedVideoView: View {
                             }
                             .refreshable {
                                 // Refresh downloads folder data
-                                if let downloadsFolder = folderManager.folders.first(where: { $0.isSystemFolder && $0.name == "Downloads" }) {
+                                if let downloadsFolder = folderManager.folders.first(where: { $0.isSystemFolder && $0.name == "Bookmarks" }) {
                                     folderManager.loadDeviceVideos(forceRefresh: true)
                                 }
                             }
@@ -475,7 +475,7 @@ struct SavedVideoView: View {
             .onAppear {
                 folderManager.loadFolders()
                 // Ensure Downloads folder is at the top
-                if let downloadsIndex = folderManager.folders.firstIndex(where: { $0.isSystemFolder && $0.name == "Downloads" }), downloadsIndex != 0 {
+                if let downloadsIndex = folderManager.folders.firstIndex(where: { $0.isSystemFolder && $0.name == "Bookmarks" }), downloadsIndex != 0 {
                     let downloadsFolder = folderManager.folders.remove(at: downloadsIndex)
                     folderManager.folders.insert(downloadsFolder, at: 0)
                     folderManager.saveFolders()

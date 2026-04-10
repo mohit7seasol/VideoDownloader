@@ -70,7 +70,7 @@ struct LanguageView: View {
                                             .font(Font.custom("Unlock-Regular", size: 22))
                                             .foregroundColor(.white)
                                         
-                                        Text("Paste the link and enjoy fast, hassle-free video downloads".localized(self.language))
+                                        Text("Paste the link and enjoy fast, hassle-free video BookMark".localized(self.language))
                                             .font(Font.custom("Urbanist-Medium", size: 16))
                                             .foregroundColor(.white.opacity(0.8))
                                             .fixedSize(horizontal: false, vertical: true)
@@ -182,7 +182,7 @@ struct LanguageView: View {
                                         .font(Font.custom("Unlock-Regular", size: 22))
                                         .foregroundColor(.white)
                                     
-                                    Text("Paste the link and enjoy fast, hassle-free video downloads".localized(self.language))
+                                    Text("Paste the link and enjoy fast, hassle-free video BookMark".localized(self.language))
                                         .font(Font.custom("Urbanist-Medium", size: 16))
                                         .foregroundColor(.white.opacity(0.8))
                                         .fixedSize(horizontal: false, vertical: true)

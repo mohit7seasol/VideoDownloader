@@ -50,10 +50,10 @@ class FolderManager: ObservableObject {
     }
     
     private func ensureDownloadsFolderExists() {
-        let downloadsExists = folders.contains { $0.name == "Downloads" && $0.isSystemFolder }
+        let downloadsExists = folders.contains { $0.name == "Bookmarks" && $0.isSystemFolder }
         
         if !downloadsExists {
-            let downloadsFolder = VideoFolder(name: "Downloads", isSystemFolder: true, isDeviceVideos: true)
+            let downloadsFolder = VideoFolder(name: "Bookmarks", isSystemFolder: true, isDeviceVideos: true)
             folders.insert(downloadsFolder, at: 0)
             saveFolders()
             print("✅ Downloads folder created")
