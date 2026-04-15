@@ -55,35 +55,79 @@ struct HomeView: View {
     @State private var navigateToSomeView = false
 
     var body: some View {
-        GeometryReader { geometry in
+        if Device.isIpad {
+            GeometryReader { geometry in
+                ZStack {
+                    Image("app_bg_image")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
+                    
+                    VStack(spacing: 24) {
+                        TopHomeView()
+                        
+                        LazyVGrid(columns: columns, spacing: 18) {
+                            ForEach(homeItems.indices, id: \.self) { index in
+                                HomeViewCard(item: homeItems[index])
+                            }
+                        }
+                        .padding(.horizontal, 20)
+    //                    ThirdCardView()
+                        Spacer()
+                    }
+                    .padding(.top, UIApplication.shared.connectedScenes
+                        .compactMap { $0 as? UIWindowScene }
+                        .first?.windows
+                        .first?.safeAreaInsets.top ?? 0)
+                }
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
+            .hideNavigationbar() // ✅ Use your extension
+            .navigationDestination(isPresented: $navigateToSomeView) {
+                SettingView()
+            }
+        } else {
             ZStack {
                 Image("app_bg_image")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea()
                 
-                VStack(spacing: 24) {
-                    TopHomeView()
+                VStack(spacing: 0) {
                     
-                    LazyVGrid(columns: columns, spacing: 18) {
-                        ForEach(homeItems.indices, id: \.self) { index in
-                            HomeViewCard(item: homeItems[index])
+                    // ✅ FIXED HEADER (NON-SCROLL)
+                    TopHomeView()
+                        .padding(.top, UIApplication.shared.connectedScenes
+                            .compactMap { $0 as? UIWindowScene }
+                            .first?.windows
+                            .first?.safeAreaInsets.top ?? 0)
+                    
+                    // ✅ SCROLLABLE CONTENT
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 24) {
+                            
+                            LazyVGrid(columns: columns, spacing: 18) {
+                                ForEach(homeItems.indices, id: \.self) { index in
+                                    HomeViewCard(item: homeItems[index])
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            
+                            BottomFeaturesView()
+                            
+                            // ✅ EXTRA BOTTOM SPACE (IMPORTANT FIX)
+                            Spacer()
+                                .frame(height: 50)
                         }
+                        .padding(.top, 10)
                     }
-                    .padding(.horizontal, 20)
-//                    ThirdCardView()
-                    Spacer()
                 }
-                .padding(.top, UIApplication.shared.connectedScenes
-                    .compactMap { $0 as? UIWindowScene }
-                    .first?.windows
-                    .first?.safeAreaInsets.top ?? 0)
             }
-        }
-        .navigationViewStyle(StackNavigationViewStyle())
-        .hideNavigationbar() // ✅ Use your extension
-        .navigationDestination(isPresented: $navigateToSomeView) {
-            SettingView()
+            .navigationViewStyle(StackNavigationViewStyle())
+            .hideNavigationbar()
+            .navigationDestination(isPresented: $navigateToSomeView) {
+                SettingView()
+            }
         }
     }
 }
@@ -305,6 +349,118 @@ struct ThirdCardView: View {
         .navigationDestination(isPresented: $navigate) {
             SoundTrackView()
         }
+    }
+}
+// MARK: - Bottom Features View
+struct BottomFeaturesView: View {
+    
+    private var isIpad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            
+            // TITLE
+            Text("Edit Photos Like a Pro")
+                .font(.custom("Poppins-Black", size: 20))
+                .foregroundColor(.white)
+                .padding(.horizontal, 20)
+            
+            VStack(spacing: 16) {
+                
+                BottomFeaturesCardView(
+                    bgImage: "e_ic",
+                    title: "Enhance Your Image",
+                    icon: "pencil_ic",
+                    buttonColor: "#FFCC3F"
+                )
+                
+                BottomFeaturesCardView(
+                    bgImage: "s_ic",
+                    title: "Smart Background Editor",
+                    icon: "gallery_ic",
+                    buttonColor: "#45B8FF"
+                )
+            }
+        }
+    }
+}
+
+//
+// MARK: - Bottom Feature Card
+//
+struct BottomFeaturesCardView: View {
+    
+    let bgImage: String
+    let title: String
+    let icon: String
+    let buttonColor: String
+    
+    private var isIpad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+    
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            
+            // BACKGROUND IMAGE
+            Image(bgImage)
+                .resizable()
+                .scaledToFill()
+                .frame(height: isIpad ? 180 : 150)
+                .clipped()
+                .cornerRadius(16)
+            
+            // DARK OVERLAY (for readability)
+            LinearGradient(
+                colors: [
+                    Color.black.opacity(0.0),
+                    Color.black.opacity(0.6)
+                ],
+                startPoint: .center,
+                endPoint: .bottom
+            )
+            .cornerRadius(16)
+            
+            // CONTENT
+            VStack {
+                Spacer()
+                
+                HStack(alignment: .bottom) {
+                    
+                    // LEFT CONTENT
+                    VStack(alignment: .leading, spacing: 5) {
+                        
+                        Image(icon)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 30, height: 30)
+                        
+                        Text(title)
+                            .font(.custom("Urbanist-Bold", size: 16))
+                            .foregroundColor(.white)
+                    }
+                    
+                    Spacer()
+                    
+                    // BUTTON
+                    Button {
+                        // action
+                    } label: {
+                        Text("Try Now")
+                            .font(.custom("Urbanist-Bold", size: 14))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color(hex: buttonColor))
+                            .cornerRadius(12)
+                    }
+                }
+                .padding(16)
+            }
+        }
+        .padding(.horizontal, 20)
     }
 }
 #Preview {
