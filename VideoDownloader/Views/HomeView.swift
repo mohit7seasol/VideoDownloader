@@ -63,26 +63,34 @@ struct HomeView: View {
                         .scaledToFill()
                         .ignoresSafeArea()
                     
-                    VStack(spacing: 24) {
-                        TopHomeView()
-                        
-                        LazyVGrid(columns: columns, spacing: 18) {
-                            ForEach(homeItems.indices, id: \.self) { index in
-                                HomeViewCard(item: homeItems[index])
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 24) {
+                            TopHomeView()
+                                .padding(.top, UIApplication.shared.connectedScenes
+                                    .compactMap { $0 as? UIWindowScene }
+                                    .first?.windows
+                                    .first?.safeAreaInsets.top ?? 0)
+                            
+                            // Grid Cards
+                            LazyVGrid(columns: columns, spacing: 18) {
+                                ForEach(homeItems.indices, id: \.self) { index in
+                                    HomeViewCard(item: homeItems[index])
+                                }
                             }
+                            .padding(.horizontal, 20)
+                            
+                            // ✅ Bottom Features for iPad
+                            BottomFeaturesView()
+                            
+                            // Extra bottom space
+                            Spacer()
+                                .frame(height: 600)
                         }
-                        .padding(.horizontal, 20)
-    //                    ThirdCardView()
-                        Spacer()
                     }
-                    .padding(.top, UIApplication.shared.connectedScenes
-                        .compactMap { $0 as? UIWindowScene }
-                        .first?.windows
-                        .first?.safeAreaInsets.top ?? 0)
                 }
             }
             .navigationViewStyle(StackNavigationViewStyle())
-            .hideNavigationbar() // ✅ Use your extension
+            .hideNavigationbar()
             .navigationDestination(isPresented: $navigateToSomeView) {
                 SettingView()
             }
