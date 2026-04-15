@@ -1,5 +1,5 @@
 {
-  "originHash" : "83c42a3f7860dc10dd8fc763cd46a8b152037d5be9d6272d4bbc37f5dd24f977",
+  "originHash" : "27c5754757dd05318f60336ba1a48644316baf7ede6d25f727ae23032bd17aed",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "3f99050e75bbc6fe71fc323adabb039756680016",
         "version" : "5.11.1"
+      }
+    },
+    {
+      "identity" : "backgroundremoval",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Ezaldeen99/BackgroundRemoval.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "3f3da746509cdfeefb837d35ba5ba620cd53bcfe"
       }
     },
     {

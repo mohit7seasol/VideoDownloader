@@ -409,6 +409,8 @@ struct BottomFeaturesCardView: View {
         UIDevice.current.userInterfaceIdiom == .pad
     }
     
+    @State private var navigateToBg = false
+    
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             
@@ -420,7 +422,7 @@ struct BottomFeaturesCardView: View {
                 .clipped()
                 .cornerRadius(16)
             
-            // DARK OVERLAY (for readability)
+            // OVERLAY
             LinearGradient(
                 colors: [
                     Color.black.opacity(0.0),
@@ -431,15 +433,12 @@ struct BottomFeaturesCardView: View {
             )
             .cornerRadius(16)
             
-            // CONTENT
             VStack {
                 Spacer()
                 
                 HStack(alignment: .bottom) {
                     
-                    // LEFT CONTENT
                     VStack(alignment: .leading, spacing: 5) {
-                        
                         Image(icon)
                             .resizable()
                             .scaledToFit()
@@ -452,9 +451,10 @@ struct BottomFeaturesCardView: View {
                     
                     Spacer()
                     
-                    // BUTTON
                     Button {
-                        // action
+                        if title == "Smart Background Editor" {
+                            navigateToBg = true
+                        }
                     } label: {
                         Text("Try Now")
                             .font(.custom("Urbanist-Bold", size: 14))
@@ -466,6 +466,14 @@ struct BottomFeaturesCardView: View {
                     }
                 }
                 .padding(16)
+            }
+            
+            // ✅ NavigationLink MUST be here
+            NavigationLink(
+                destination: BgEraserView(image: UIImage(named: "demo")!),
+                isActive: $navigateToBg
+            ) {
+                EmptyView()
             }
         }
         .padding(.horizontal, 20)

