@@ -16,6 +16,7 @@ enum PhotoFeature: Int, Identifiable {
     case filter
     case adjust
     case blur
+    case sticker
     
     var id: Int { rawValue }
 }
@@ -185,6 +186,10 @@ struct PhotoEditorMainView: View {
                 BlurDrawView(image: currentImage) { editedImg in
                     self.editedImage = editedImg
                 }
+            case .sticker:
+                StickerEditorView(image: currentImage) { editedImg in
+                    self.editedImage = editedImg
+                }
             }
         }
     }
@@ -194,8 +199,8 @@ struct PhotoFeaturesView: View {
     
     let onTap: (PhotoFeature) -> Void
     
-    let icons = ["pencil", "crop", "textformat", "camera.filters", "slider.horizontal.3", "drop"]
-    let labels = ["Draw", "Crop", "Text", "Filter", "Adjust", "Blur"]
+    let icons = ["pencil", "crop", "textformat", "camera.filters", "slider.horizontal.3", "drop", "smiley.fill"]
+    let labels = ["Draw", "Crop", "Text", "Filter", "Adjust", "Blur", "Stickers"]
     
     var body: some View {
         if Device.isIpad {
