@@ -379,7 +379,7 @@ struct BottomFeaturesView: View {
                 
                 BottomFeaturesCardView(
                     bgImage: "e_ic",
-                    title: "Enhance Your Image",
+                    title: "Photo Collage Maker",
                     icon: "pencil_ic",
                     buttonColor: "#FFCC3F"
                 )
@@ -481,8 +481,8 @@ struct BottomFeaturesCardView: View {
     private var destinationView: some View {
         if title == "Smart Background Editor" {
             PhotoChooseView(selectionType: .photoBGRemover)
-        } else {
-//            PhotoChooseView(selectionType: .photoEdit)
+        } else if title == "Photo Collage Maker" {
+            CollageMakerView() 
         }
     }
 }

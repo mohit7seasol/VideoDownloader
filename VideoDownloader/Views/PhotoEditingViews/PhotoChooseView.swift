@@ -13,6 +13,7 @@ import PhotosUI
 enum PhotoSelectionTypes {
     case photoEdit
     case photoBGRemover
+    case photoCollage
 }
 
 // MARK: - PhotoAsset Model
@@ -80,19 +81,24 @@ struct PhotoChooseView: View {
     @State private var images: [PhotoAsset] = []
     @State private var isLoading = false
     @State private var selectedImage: PhotoAsset?
+    @State private var selectedImages: [UIImage] = []
     @State private var navigateToEditor = false
     @State private var navigateToBGEraser = false
+    @State private var navigateToCollage = false
     @State private var showPermissionAlert = false
-    @State private var selectedItems: [PhotosPickerItem] = []
+    @State private var showPhotosPicker = false
+    @State private var selectedPickerItems: [PhotosPickerItem] = []
     @StateObject private var photoObserver = PhotoLibraryObserver()
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var selectionType: PhotoSelectionTypes
+    var maxSelectionCount: Int = 1
     
     let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "App"
     
-    init(selectionType: PhotoSelectionTypes = .photoEdit) {
+    init(selectionType: PhotoSelectionTypes = .photoEdit, maxSelectionCount: Int = 1) {
         self.selectionType = selectionType
+        self.maxSelectionCount = maxSelectionCount
     }
     
     var body: some View {
@@ -118,6 +124,17 @@ struct PhotoChooseView: View {
                         .padding(.leading, 10)
                     
                     Spacer()
+                    
+                    // Multiple Selection Indicator for Collage
+                    if selectionType == .photoCollage && maxSelectionCount > 1 {
+                        Text("\(selectedImages.count)/\(maxSelectionCount)")
+                            .font(.custom("Urbanist-Bold", size: 16))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.blue.opacity(0.5))
+                            .cornerRadius(15)
+                    }
                     
                     // Manage Button - Only show for limited access
                     if PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
@@ -191,9 +208,40 @@ struct PhotoChooseView: View {
                         LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 10) {
                             ForEach(images) { img in
                                 PhotoThumbnailView(asset: img)
+                                    .overlay(
+                                        // Selection indicator for collage mode
+                                        Group {
+                                            if selectionType == .photoCollage && maxSelectionCount > 1 {
+                                                let isSelected = isImageSelected(img)
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 3)
+                                                    .overlay(
+                                                        VStack {
+                                                            HStack {
+                                                                Spacer()
+                                                                if isSelected {
+                                                                    Image(systemName: "checkmark.circle.fill")
+                                                                        .foregroundColor(.blue)
+                                                                        .background(Color.white)
+                                                                        .clipShape(Circle())
+                                                                        .font(.system(size: 24))
+                                                                        .padding(8)
+                                                                }
+                                                                Spacer()
+                                                            }
+                                                            Spacer()
+                                                        }
+                                                    )
+                                            }
+                                        }
+                                    )
                                     .onTapGesture {
-                                        selectedImage = img
-                                        navigateToDestination()
+                                        if selectionType == .photoCollage && maxSelectionCount > 1 {
+                                            handleMultipleSelection(img)
+                                        } else {
+                                            selectedImage = img
+                                            navigateToDestination()
+                                        }
                                     }
                             }
                         }
@@ -201,6 +249,29 @@ struct PhotoChooseView: View {
                         .padding(.top, 20)
                         .padding(.bottom, 30)
                     }
+                }
+                
+                // Done Button for Multiple Selection
+                if selectionType == .photoCollage && maxSelectionCount > 1 && selectedImages.count > 0 {
+                    Button {
+                        navigateToCollage = true
+                    } label: {
+                        Text("Done (\(selectedImages.count)/\(maxSelectionCount))")
+                            .font(.custom("Urbanist-Bold", size: 16))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 55)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color(hex: "1973E8"), Color(hex: "0E4082")],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(30)
+                    }
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 20)
                 }
             }
         }
@@ -232,6 +303,9 @@ struct PhotoChooseView: View {
                 BgEraserView(image: image ?? UIImage())
             }
         }
+        .navigationDestination(isPresented: $navigateToCollage) {
+            CollageMakerView(selectedImages: selectedImages)
+        }
     }
     
     private func getTitle() -> String {
@@ -240,6 +314,24 @@ struct PhotoChooseView: View {
             return "Select Photo".localized(self.language)
         case .photoBGRemover:
             return "Select Photo".localized(self.language)
+        case .photoCollage:
+            return "Select Photos".localized(self.language)
+        }
+    }
+    
+    private func isImageSelected(_ asset: PhotoAsset) -> Bool {
+        // Check if this asset's image is already selected
+        return false // Implement based on your selection logic
+    }
+    
+    private func handleMultipleSelection(_ asset: PhotoAsset) {
+        let image = getUIImage(from: asset.asset)
+        if let img = image {
+            if selectedImages.contains(where: { $0.isEqual(img) }) {
+                selectedImages.removeAll { $0.isEqual(img) }
+            } else if selectedImages.count < maxSelectionCount {
+                selectedImages.append(img)
+            }
         }
     }
     
@@ -249,6 +341,8 @@ struct PhotoChooseView: View {
             navigateToEditor = true
         case .photoBGRemover:
             navigateToBGEraser = true
+        case .photoCollage:
+            navigateToCollage = true
         }
     }
     
