@@ -76,26 +76,30 @@ struct CollageMakerView: View {
                                 let photo = photos[index]
                                 
                                 if photo.isPlaceholder {
-                                    Rectangle()
-                                        .fill(Color.white.opacity(0.12))
-                                        .frame(width: photo.frame.width * collageSize.width,
-                                               height: photo.frame.height * collageSize.height)
-                                        .position(x: (photo.frame.midX) * collageSize.width,
-                                                  y: (photo.frame.midY) * collageSize.height)
-                                        .overlay(
-                                            VStack(spacing: 8) {
-                                                Image(systemName: "plus")
-                                                    .foregroundColor(.white.opacity(0.6))
-                                                    .font(.system(size: 36, weight: .thin))
-                                                Text("Add Photo")
-                                                    .foregroundColor(.white.opacity(0.5))
-                                                    .font(.system(size: 12))
-                                            }
-                                        )
-                                        .onTapGesture {
+                                    ZStack {
+                                        Rectangle()
+                                            .fill(Color.white.opacity(0.12))
+
+                                        Button {
                                             selectedPhotoIndex = index
                                             showPhotoPicker = true
+                                        } label: {
+                                            Image(systemName: "plus")
+                                                .foregroundColor(.white)
+                                                .font(.system(size: 28, weight: .bold))
+                                                .frame(width: 50, height: 50)
+                                                .background(Color.white.opacity(0.2))
+                                                .clipShape(Circle())
                                         }
+                                    }
+                                    .frame(
+                                        width: photo.frame.width * collageSize.width,
+                                        height: photo.frame.height * collageSize.height
+                                    )
+                                    .position(
+                                        x: photo.frame.midX * collageSize.width,
+                                        y: photo.frame.midY * collageSize.height
+                                    )
                                 } else if let image = photo.image {
                                     Image(uiImage: image)
                                         .resizable()
@@ -277,6 +281,7 @@ struct CollageMakerView: View {
         dismiss()
     }
 }
+
 struct GridButton: View {
     let grid: GridType
     let isSelected: Bool
@@ -417,51 +422,78 @@ struct CollageGridSelectorView: View {
         UIImageWriteToSavedPhotosAlbum(finalImage, nil, nil, nil)
     }
 }
-// MARK: - CollagePreview
+
+// MARK: - CollagePreview (FIXED VERSION)
 struct CollagePreview: View {
     let gridType: GridType
     let images: [UIImage?]
     let onTapImage: (Int) -> Void
     
+    let spacing: CGFloat = 4
+    let paddingInsets: EdgeInsets = EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8) // Adjustable padding
+
     var body: some View {
         GeometryReader { geometry in
             let layouts = gridType.layout
+            let availableSize = CGSize(
+                width: geometry.size.width - paddingInsets.leading - paddingInsets.trailing,
+                height: geometry.size.height - paddingInsets.top - paddingInsets.bottom
+            )
+
             ZStack {
-                ForEach(0..<min(layouts.count, images.count), id: \.self) { index in
+                // Grid line background
+                Color.white.opacity(0.15)
+
+                ForEach(0..<layouts.count, id: \.self) { index in
                     let layout = layouts[index]
+
+                    // Calculate rect with padding offset
                     let rect = CGRect(
-                        x: layout.minX * geometry.size.width,
-                        y: layout.minY * geometry.size.height,
-                        width: layout.width * geometry.size.width,
-                        height: layout.height * geometry.size.height
+                        x: paddingInsets.leading + (layout.minX * availableSize.width),
+                        y: paddingInsets.top + (layout.minY * availableSize.height),
+                        width: layout.width * availableSize.width,
+                        height: layout.height * availableSize.height
                     )
-                    
-                    Button(action: {
-                        onTapImage(index)
-                    }) {
-                        if let image = images[index] {
+
+                    ZStack {
+                        if let image = images.indices.contains(index) ? images[index] : nil {
                             Image(uiImage: image)
                                 .resizable()
                                 .scaledToFill()
                                 .frame(width: rect.width, height: rect.height)
                                 .clipped()
                         } else {
-                            RoundedRectangle(cornerRadius: 0)
-                                .fill(Color.gray.opacity(0.3))
-                                .overlay(
+                            Button {
+                                onTapImage(index)
+                            } label: {
+                                ZStack {
+                                    Rectangle()
+                                        .fill(Color.white.opacity(0.12))
+                                    
                                     Image(systemName: "plus")
+                                        .font(.system(size: 24, weight: .bold))
                                         .foregroundColor(.white)
-                                )
+                                        .frame(width: 40, height: 40)
+                                        .background(Color.white.opacity(0.2))
+                                        .clipShape(Circle())
+                                }
+                            }
                         }
                     }
                     .frame(width: rect.width, height: rect.height)
+                    .overlay(
+                        Rectangle()
+                            .stroke(Color.white.opacity(0.3), lineWidth: spacing / 2)
+                    )
                     .position(x: rect.midX, y: rect.midY)
                 }
             }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .background(Color.black.opacity(0.3))
+            .clipped()
         }
     }
 }
-
 
 // MARK: - Preview
 #Preview {

@@ -83,8 +83,8 @@ struct BgEraserView: View {
                         .background(
                             LinearGradient(
                                 colors: [Color.blue, Color.blue.opacity(0.7)],
-                                startPoint: .leading,
-                                endPoint: .trailing
+                                startPoint: .top,
+                                endPoint: .bottom
                             )
                         )
                         .cornerRadius(30)

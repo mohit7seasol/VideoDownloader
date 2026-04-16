@@ -12,8 +12,6 @@ import PhotosUI
 enum GridType: String, CaseIterable {
     case single = "Single"
     case double = "Double"
-    case triple = "Triple"
-    case quad = "Quad"
     case grid2x2 = "2x2 Grid"
     case grid3x3 = "3x3 Grid"
     case oneTwo = "1+2"
@@ -23,8 +21,6 @@ enum GridType: String, CaseIterable {
         switch self {
         case .single: return "square"
         case .double: return "rectangle.split.2x1"
-        case .triple: return "rectangle.split.3x1"
-        case .quad: return "rectangle.split.2x2"
         case .grid2x2: return "square.grid.2x2"
         case .grid3x3: return "square.grid.3x3"
         case .oneTwo: return "rectangle.split.1x2"
@@ -36,8 +32,6 @@ enum GridType: String, CaseIterable {
         switch self {
         case .single: return "Single"
         case .double: return "Double"
-        case .triple: return "Triple"
-        case .quad: return "Quad"
         case .grid2x2: return "2x2"
         case .grid3x3: return "3x3"
         case .oneTwo: return "1+2"
@@ -53,19 +47,6 @@ enum GridType: String, CaseIterable {
             return [
                 CGRect(x: 0, y: 0, width: 0.5, height: 1),
                 CGRect(x: 0.5, y: 0, width: 0.5, height: 1)
-            ]
-        case .triple:
-            return [
-                CGRect(x: 0, y: 0, width: 1/3, height: 1),
-                CGRect(x: 1/3, y: 0, width: 1/3, height: 1),
-                CGRect(x: 2/3, y: 0, width: 1/3, height: 1)
-            ]
-        case .quad:
-            return [
-                CGRect(x: 0, y: 0, width: 0.5, height: 0.5),
-                CGRect(x: 0.5, y: 0, width: 0.5, height: 0.5),
-                CGRect(x: 0, y: 0.5, width: 0.5, height: 0.5),
-                CGRect(x: 0.5, y: 0.5, width: 0.5, height: 0.5)
             ]
         case .grid2x2:
             return [
