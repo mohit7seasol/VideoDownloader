@@ -16,7 +16,7 @@ struct AddNewBGView: View {
     @State private var selectedBG: String?
     @State private var isSaved = false
     
-    let bgList = ["bg1", "bg2"]
+    let bgList = ["bg1", "bg2", "bg3", "bg4", "bg5", "bg6", "bg7", "bg8", "bg9"]
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
