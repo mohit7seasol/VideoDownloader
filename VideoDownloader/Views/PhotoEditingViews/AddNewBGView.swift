@@ -13,9 +13,14 @@ struct AddNewBGView: View {
     
     @Environment(\.dismiss) var dismiss
     
-    @State private var selectedBG: UIImage?
+    @State private var selectedBG: String?
+    @State private var isSaved = false
     
     let bgList = ["bg1", "bg2"]
+    
+    private var isIpad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
     
     var body: some View {
         ZStack {
@@ -24,7 +29,7 @@ struct AddNewBGView: View {
                 .scaledToFill()
                 .ignoresSafeArea()
             
-            VStack(spacing: 20) {
+            VStack(spacing: 0) {
                 
                 // HEADER
                 HStack {
@@ -33,24 +38,23 @@ struct AddNewBGView: View {
                     } label: {
                         Image(systemName: "chevron.left")
                             .foregroundColor(.white)
+                            .font(.system(size: isIpad ? 22 : 18, weight: .semibold))
                     }
                     
                     Text("Background Remove")
                         .foregroundColor(.white)
-                        .font(.custom("Urbanist-Bold", size: 18))
+                        .font(.custom("Urbanist-Bold", size: isIpad ? 24 : 18))
                     
                     Spacer()
                 }
                 .padding(.top, UIApplication.shared.safeAreaTop)
-                .padding(.bottom, 10)
-                .padding(.leading, 12)
-                .background(Color.clear)
+                .padding(.horizontal, isIpad ? 24 : 20)
+                .padding(.bottom, isIpad ? 20 : 16)
                 
                 // IMAGE VIEW
                 ZStack {
-                    
-                    if let bg = selectedBG {
-                        Image(uiImage: bg)
+                    if let bgName = selectedBG, let bgImage = UIImage(named: bgName) {
+                        Image(uiImage: bgImage)
                             .resizable()
                             .scaledToFit()
                     }
@@ -59,65 +63,134 @@ struct AddNewBGView: View {
                         .resizable()
                         .scaledToFit()
                 }
-                .frame(height: 400)
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(12)
+                .frame(height: isIpad ? 450 : 380)
+                .background(Color.white.opacity(0.08))
+                .cornerRadius(24)
                 .padding(.horizontal, 20)
+                .padding(.top, 10)
+                
+                Spacer(minLength: 20)
+                
+                // BG OPTIONS TITLE
+                Text("Choose Background")
+                    .font(.custom("Urbanist-Bold", size: isIpad ? 20 : 16))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
                 
                 // BG OPTIONS
-                HStack(spacing: 15) {
-                    
-                    // NO BG
-                    Button {
-                        selectedBG = nil
-                    } label: {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.purple.opacity(0.4))
-                            .frame(width: 70, height: 70)
-                            .overlay(Image(systemName: "nosign"))
-                    }
-                    
-                    ForEach(bgList, id: \.self) { bg in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        // NO BG Button
                         Button {
-                            selectedBG = UIImage(named: bg)
+                            selectedBG = nil
                         } label: {
-                            Image(bg)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 80, height: 70)
-                                .cornerRadius(12)
+                            VStack(spacing: 8) {
+                                ZStack(alignment: .topTrailing) {
+                                    // Background circle/rectangle
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color.white.opacity(0.15))
+                                        .frame(width: isIpad ? 100 : 82, height: isIpad ? 100 : 82)
+                                        .overlay(
+                                            Image(systemName: "nosign")
+                                                .font(.system(size: isIpad ? 32 : 26))
+                                                .foregroundColor(.white)
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .stroke(selectedBG == nil ? Color.blue : Color.clear, lineWidth: 3)
+                                        )
+                                    
+                                    // Selected checkmark for None
+                                    if selectedBG == nil {
+                                        Image("selected_bg_ic")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: isIpad ? 28 : 24, height: isIpad ? 28 : 24)
+                                            .padding(4)
+                                            .offset(x: isIpad ? 8 : 6, y: isIpad ? -8 : -6)
+                                    }
+                                }
+                                
+                                Text("None")
+                                    .font(.custom("Urbanist-Medium", size: isIpad ? 14 : 12))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        
+                        // BG Options
+                        ForEach(bgList, id: \.self) { bg in
+                            Button {
+                                selectedBG = bg
+                            } label: {
+                                VStack(spacing: 8) {
+                                    ZStack(alignment: .topTrailing) {
+                                        Image(bg)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: isIpad ? 100 : 80, height: isIpad ? 100 : 80)
+                                            .cornerRadius(16)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .stroke(selectedBG == bg ? Color.blue : Color.clear, lineWidth: 3)
+                                            )
+                                        
+                                        // Selected checkmark
+                                        if selectedBG == bg {
+                                            Image("selected_bg_ic")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: isIpad ? 28 : 24, height: isIpad ? 28 : 24)
+                                                .padding(4)
+                                                .offset(x: isIpad ? 6 : 4, y: isIpad ? -6 : -4)
+                                        }
+                                    }
+                                    
+                                    Text(bg.uppercased())
+                                        .font(.custom("Urbanist-Medium", size: isIpad ? 14 : 12))
+                                        .foregroundColor(.white)
+                                }
+                            }
                         }
                     }
+                    .padding(.horizontal, 20)
                 }
                 
-                Spacer()
+                Spacer(minLength: 20)
                 
                 // SAVE BUTTON
                 Button {
                     saveImage()
                 } label: {
-                    HStack {
+                    HStack(spacing: 12) {
                         Text("Save")
-                        Image(systemName: "arrow.down")
+                            .font(.custom("Urbanist-Bold", size: isIpad ? 18 : 16))
+                        Image(systemName: "arrow.down.circle.fill")
+                            .font(.system(size: isIpad ? 22 : 18))
                     }
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 55)
+                    .frame(height: isIpad ? 65 : 55)
                     .background(
                         LinearGradient(
-                            colors: [Color.blue, Color.blue.opacity(0.7)],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                            colors: [Color(hex: "#1973E8"), Color(hex: "#0E4082")],
+                            startPoint: .top,
+                            endPoint: .bottom
                         )
                     )
                     .cornerRadius(30)
                 }
                 .padding(.horizontal, 40)
-                .padding(.bottom, Device.bottomSafeArea)
+                .padding(.bottom, Device.bottomSafeArea + 20)
             }
-            
         }
         .navigationBarHidden(true)
+        .alert("Success", isPresented: $isSaved) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Image saved to gallery successfully!")
+        }
     }
     
     // MARK: SAVE
@@ -125,12 +198,14 @@ struct AddNewBGView: View {
         let renderer = UIGraphicsImageRenderer(size: image.size)
         
         let final = renderer.image { ctx in
-            if let bg = selectedBG {
-                bg.draw(in: CGRect(origin: .zero, size: image.size))
+            if let bgName = selectedBG, let bgImage = UIImage(named: bgName) {
+                bgImage.draw(in: CGRect(origin: .zero, size: image.size))
             }
             image.draw(in: CGRect(origin: .zero, size: image.size))
         }
         
         UIImageWriteToSavedPhotosAlbum(final, nil, nil, nil)
+        isSaved = true
     }
 }
+
