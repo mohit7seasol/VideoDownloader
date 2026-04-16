@@ -60,118 +60,119 @@ struct CollageMakerView: View {
                     .font(.system(size: 16, weight: .semibold))
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
+                .padding(.top, UIApplication.shared.safeAreaTop)
                 .padding(.bottom, 16)
                 
-                // Collage View
-                ZStack {
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white.opacity(0.08))
-                        .frame(width: collageSize.width, height: collageSize.height)
-                    
+                // Main Content - Takes remaining space
+                VStack(spacing: 20) {
+                    // Collage View
                     ZStack {
-                        ForEach(photos.indices, id: \.self) { index in
-                            let photo = photos[index]
-                            
-                            if photo.isPlaceholder {
-                                // Placeholder with Plus Icon
-                                Rectangle()
-                                    .fill(Color.white.opacity(0.12))
-                                    .frame(width: photo.frame.width * collageSize.width,
-                                           height: photo.frame.height * collageSize.height)
-                                    .position(x: (photo.frame.midX) * collageSize.width,
-                                              y: (photo.frame.midY) * collageSize.height)
-                                    .overlay(
-                                        VStack(spacing: 8) {
-                                            Image(systemName: "plus")
-                                                .foregroundColor(.white.opacity(0.6))
-                                                .font(.system(size: 36, weight: .thin))
-                                            Text("Add Photo")
-                                                .foregroundColor(.white.opacity(0.5))
-                                                .font(.system(size: 12))
-                                        }
-                                    )
-                                    .onTapGesture {
-                                        selectedPhotoIndex = index
-                                        showPhotoPicker = true
-                                    }
-                            } else if let image = photo.image {
-                                // Actual Image
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: photo.frame.width * collageSize.width,
-                                           height: photo.frame.height * collageSize.height)
-                                    .clipped()
-                                    .overlay(
-                                        Rectangle()
-                                            .stroke(selectedPhotoIndex == index ? Color.blue : Color.clear, lineWidth: 3)
-                                    )
-                                    .position(x: (photo.frame.midX) * collageSize.width,
-                                              y: (photo.frame.midY) * collageSize.height)
-                                    .onTapGesture {
-                                        if isEditing {
+                        RoundedRectangle(cornerRadius: 0)
+                            .fill(Color.white.opacity(0.08))
+                            .frame(width: collageSize.width, height: collageSize.height)
+                        
+                        ZStack {
+                            ForEach(photos.indices, id: \.self) { index in
+                                let photo = photos[index]
+                                
+                                if photo.isPlaceholder {
+                                    Rectangle()
+                                        .fill(Color.white.opacity(0.12))
+                                        .frame(width: photo.frame.width * collageSize.width,
+                                               height: photo.frame.height * collageSize.height)
+                                        .position(x: (photo.frame.midX) * collageSize.width,
+                                                  y: (photo.frame.midY) * collageSize.height)
+                                        .overlay(
+                                            VStack(spacing: 8) {
+                                                Image(systemName: "plus")
+                                                    .foregroundColor(.white.opacity(0.6))
+                                                    .font(.system(size: 36, weight: .thin))
+                                                Text("Add Photo")
+                                                    .foregroundColor(.white.opacity(0.5))
+                                                    .font(.system(size: 12))
+                                            }
+                                        )
+                                        .onTapGesture {
                                             selectedPhotoIndex = index
                                             showPhotoPicker = true
                                         }
-                                    }
+                                } else if let image = photo.image {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: photo.frame.width * collageSize.width,
+                                               height: photo.frame.height * collageSize.height)
+                                        .clipped()
+                                        .overlay(
+                                            Rectangle()
+                                                .stroke(selectedPhotoIndex == index ? Color.blue : Color.clear, lineWidth: 3)
+                                        )
+                                        .position(x: (photo.frame.midX) * collageSize.width,
+                                                  y: (photo.frame.midY) * collageSize.height)
+                                        .onTapGesture {
+                                            if isEditing {
+                                                selectedPhotoIndex = index
+                                                showPhotoPicker = true
+                                            }
+                                        }
+                                }
                             }
                         }
+                        .frame(width: collageSize.width, height: collageSize.height)
+                        .clipped()
                     }
-                    .frame(width: collageSize.width, height: collageSize.height)
-                    .clipped()
-                }
-                .padding(.horizontal, 20)
-                
-                // Edit Mode Toggle
-                HStack {
-                    Button(action: {
-                        isEditing.toggle()
-                    }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
-                                .font(.system(size: 18))
-                            Text(isEditing ? "Done Editing" : "Edit Photos")
-                                .font(.custom("Urbanist-Medium", size: 14))
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(Color(hex: "#A925CA").opacity(0.3))
-                        .cornerRadius(25)
-                    }
+                    .padding(.horizontal, 20)
                     
-                    Spacer()
-                    
-                    if isEditing && selectedPhotoIndex != nil {
+                    // Edit Mode Toggle
+                    HStack {
                         Button(action: {
-                            if let index = selectedPhotoIndex {
-                                photos[index].isPlaceholder = true
-                                photos[index].image = nil
-                                selectedPhotoIndex = nil
-                            }
+                            isEditing.toggle()
                         }) {
                             HStack(spacing: 8) {
-                                Image(systemName: "trash")
-                                    .font(.system(size: 16))
-                                Text("Remove")
+                                Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
+                                    .font(.system(size: 18))
+                                Text(isEditing ? "Done Editing" : "Edit Photos")
                                     .font(.custom("Urbanist-Medium", size: 14))
                             }
-                            .foregroundColor(.red)
+                            .foregroundColor(.white)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
-                            .background(Color.red.opacity(0.25))
+                            .background(Color(hex: "#A925CA").opacity(0.3))
                             .cornerRadius(25)
                         }
+                        
+                        Spacer()
+                        
+                        if isEditing && selectedPhotoIndex != nil {
+                            Button(action: {
+                                if let index = selectedPhotoIndex {
+                                    photos[index].isPlaceholder = true
+                                    photos[index].image = nil
+                                    selectedPhotoIndex = nil
+                                }
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "trash")
+                                        .font(.system(size: 16))
+                                    Text("Remove")
+                                        .font(.custom("Urbanist-Medium", size: 14))
+                                }
+                                .foregroundColor(.red)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                                .background(Color.red.opacity(0.25))
+                                .cornerRadius(25)
+                            }
+                        }
                     }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
+                .frame(maxHeight: .infinity, alignment: .top)
                 
+                // Spacer to push content up
                 Spacer(minLength: 0)
                 
-                // Grid Selection - Bottom Scroll
+                // Grid Selection - Fixed at Bottom with Safe Area
                 VStack(spacing: 0) {
                     Rectangle()
                         .fill(Color.white.opacity(0.1))
@@ -195,7 +196,7 @@ struct CollageMakerView: View {
                     }
                     .background(Color.black.opacity(0.3))
                 }
-                .padding(.bottom, 0)
+                .padding(.bottom, UIApplication.shared.safeAreaBottom) // Add bottom safe area
             }
         }
         .navigationBarHidden(true)
@@ -374,7 +375,7 @@ struct CollageGridSelectorView: View {
                     }
                     .background(Color.black.opacity(0.3))
                 }
-                .padding(.bottom, 40) 
+                .padding(.bottom, 40)
             }
         }
         .photosPicker(isPresented: $showImagePicker, selection: $selectedPickerItem, matching: .images)
@@ -445,7 +446,7 @@ struct CollagePreview: View {
                                 .frame(width: rect.width, height: rect.height)
                                 .clipped()
                         } else {
-                            RoundedRectangle(cornerRadius: 8)
+                            RoundedRectangle(cornerRadius: 0)
                                 .fill(Color.gray.opacity(0.3))
                                 .overlay(
                                     Image(systemName: "plus")
