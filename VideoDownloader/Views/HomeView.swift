@@ -254,7 +254,7 @@ struct HomeViewCard: View {
         case "Soundtrack":
             SoundTrackView()
         case "Image Editor":
-            PhotoChooseView()
+            PhotoChooseView(selectionType: .photoEdit)
         default:
             EmptyView()
         }
@@ -409,7 +409,7 @@ struct BottomFeaturesCardView: View {
         UIDevice.current.userInterfaceIdiom == .pad
     }
     
-    @State private var navigateToBg = false
+    @State private var navigateToPhotoPicker = false
     
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -452,9 +452,7 @@ struct BottomFeaturesCardView: View {
                     Spacer()
                     
                     Button {
-                        if title == "Smart Background Editor" {
-                            navigateToBg = true
-                        }
+                        navigateToPhotoPicker = true
                     } label: {
                         Text("Try Now")
                             .font(.custom("Urbanist-Bold", size: 14))
@@ -468,15 +466,24 @@ struct BottomFeaturesCardView: View {
                 .padding(16)
             }
             
-            // ✅ NavigationLink MUST be here
+            // Navigation based on title
             NavigationLink(
-                destination: BgEraserView(image: UIImage(named: "demo")!),
-                isActive: $navigateToBg
+                destination: destinationView,
+                isActive: $navigateToPhotoPicker
             ) {
                 EmptyView()
             }
         }
         .padding(.horizontal, 20)
+    }
+    
+    @ViewBuilder
+    private var destinationView: some View {
+        if title == "Smart Background Editor" {
+            PhotoChooseView(selectionType: .photoBGRemover)
+        } else {
+//            PhotoChooseView(selectionType: .photoEdit)
+        }
     }
 }
 #Preview {

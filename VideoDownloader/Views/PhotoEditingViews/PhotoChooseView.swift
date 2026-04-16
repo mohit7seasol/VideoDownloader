@@ -9,11 +9,18 @@ import SwiftUI
 import Photos
 import PhotosUI
 
+// MARK: - PhotoSelectionTypes Enum
+enum PhotoSelectionTypes {
+    case photoEdit
+    case photoBGRemover
+}
+
 // MARK: - PhotoAsset Model
 struct PhotoAsset: Identifiable {
     let id = UUID()
     let asset: PHAsset
 }
+
 // MARK: - PhotoThumbnailView
 struct PhotoThumbnailView: View {
     let asset: PhotoAsset
@@ -66,6 +73,7 @@ struct PhotoThumbnailView: View {
     }
 }
 
+// MARK: - PhotoChooseView
 struct PhotoChooseView: View {
     
     @Environment(\.dismiss) var dismiss
@@ -73,12 +81,19 @@ struct PhotoChooseView: View {
     @State private var isLoading = false
     @State private var selectedImage: PhotoAsset?
     @State private var navigateToEditor = false
+    @State private var navigateToBGEraser = false
     @State private var showPermissionAlert = false
     @State private var selectedItems: [PhotosPickerItem] = []
     @StateObject private var photoObserver = PhotoLibraryObserver()
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
+    var selectionType: PhotoSelectionTypes
+    
     let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "App"
+    
+    init(selectionType: PhotoSelectionTypes = .photoEdit) {
+        self.selectionType = selectionType
+    }
     
     var body: some View {
         ZStack {
@@ -87,7 +102,7 @@ struct PhotoChooseView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // NAVBAR - Removed top padding to start from safe area top
+                // NAVBAR
                 HStack {
                     Button {
                         dismiss()
@@ -97,7 +112,7 @@ struct PhotoChooseView: View {
                             .font(.system(size: 20, weight: .semibold))
                     }
                     
-                    Text("Select Photo".localized(self.language))
+                    Text(getTitle())
                         .font(.custom("Poppins-Black", size: 20))
                         .foregroundColor(.white)
                         .padding(.leading, 10)
@@ -122,9 +137,9 @@ struct PhotoChooseView: View {
                     }
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 0) // Set to 0 to remove extra space
+                .padding(.top, 0)
                 
-                // Limited Access Message - Only show when limited access
+                // Limited Access Message
                 if PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
                     LimitAccessPhotoView(appName: appName)
                 }
@@ -178,7 +193,7 @@ struct PhotoChooseView: View {
                                 PhotoThumbnailView(asset: img)
                                     .onTapGesture {
                                         selectedImage = img
-                                        navigateToEditor = true
+                                        navigateToDestination()
                                     }
                             }
                         }
@@ -211,6 +226,48 @@ struct PhotoChooseView: View {
                 PhotoEditorMainView(asset: img.asset)
             }
         }
+        .navigationDestination(isPresented: $navigateToBGEraser) {
+            if let img = selectedImage {
+                let image = getUIImage(from: img.asset)
+                BgEraserView(image: image ?? UIImage())
+            }
+        }
+    }
+    
+    private func getTitle() -> String {
+        switch selectionType {
+        case .photoEdit:
+            return "Select Photo".localized(self.language)
+        case .photoBGRemover:
+            return "Select Photo".localized(self.language)
+        }
+    }
+    
+    private func navigateToDestination() {
+        switch selectionType {
+        case .photoEdit:
+            navigateToEditor = true
+        case .photoBGRemover:
+            navigateToBGEraser = true
+        }
+    }
+    
+    private func getUIImage(from asset: PHAsset) -> UIImage? {
+        var resultImage: UIImage?
+        let options = PHImageRequestOptions()
+        options.isSynchronous = true
+        options.deliveryMode = .highQualityFormat
+        options.isNetworkAccessAllowed = true
+        
+        PHImageManager.default().requestImage(
+            for: asset,
+            targetSize: CGSize(width: asset.pixelWidth, height: asset.pixelHeight),
+            contentMode: .aspectFit,
+            options: options
+        ) { image, _ in
+            resultImage = image
+        }
+        return resultImage
     }
     
     private func showPermissionManagement() {
