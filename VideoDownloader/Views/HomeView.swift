@@ -53,6 +53,8 @@ struct HomeView: View {
         Array(repeating: GridItem(.flexible(), spacing: 16), count: 2)
     }
     @State private var navigateToSomeView = false
+    @State private var navigateToCollageMaker = false
+    @State private var navigateToBackgroundEditor = false
 
     var body: some View {
         if Device.isIpad {
@@ -63,29 +65,41 @@ struct HomeView: View {
                         .scaledToFill()
                         .ignoresSafeArea()
                     
-                    ScrollView(showsIndicators: false) {
-                        VStack(spacing: 24) {
-                            TopHomeView()
-                                .padding(.top, UIApplication.shared.connectedScenes
-                                    .compactMap { $0 as? UIWindowScene }
-                                    .first?.windows
-                                    .first?.safeAreaInsets.top ?? 0)
-                            
-                            // Grid Cards
-                            LazyVGrid(columns: columns, spacing: 18) {
-                                ForEach(homeItems.indices, id: \.self) { index in
-                                    HomeViewCard(item: homeItems[index])
+                    VStack(spacing: 0) {
+                        // ✅ FIXED: TopHomeView as navigation bar (non-scrolling)
+                        TopHomeView()
+                            .padding(.top, UIApplication.shared.connectedScenes
+                                .compactMap { $0 as? UIWindowScene }
+                                .first?.windows
+                                .first?.safeAreaInsets.top ?? 0)
+                        
+                        // ✅ SCROLLABLE CONTENT
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 24) {
+                                // Grid Cards
+                                LazyVGrid(columns: columns, spacing: 18) {
+                                    ForEach(homeItems.indices, id: \.self) { index in
+                                        HomeViewCard(item: homeItems[index])
+                                    }
                                 }
+                                .padding(.horizontal, 20)
+                                
+                                // Bottom Features for iPad
+                                BottomFeaturesView(
+                                    onCollageMakerTap: {
+                                        navigateToCollageMaker = true
+                                    },
+                                    onBackgroundEditorTap: {
+                                        navigateToBackgroundEditor = true
+                                    }
+                                )
+                                
+                                // Extra bottom space
+                                Spacer()
+                                    .frame(height: 600)
                             }
-                            .padding(.horizontal, 20)
-                            
-                            // ✅ Bottom Features for iPad
-                            BottomFeaturesView()
-                            
-                            // Extra bottom space
-                            Spacer()
-                                .frame(height: 600)
                         }
+                        .padding(.top, 10)
                     }
                 }
             }
@@ -93,6 +107,12 @@ struct HomeView: View {
             .hideNavigationbar()
             .navigationDestination(isPresented: $navigateToSomeView) {
                 SettingView()
+            }
+            .navigationDestination(isPresented: $navigateToCollageMaker) {
+                CollageMakerView()
+            }
+            .navigationDestination(isPresented: $navigateToBackgroundEditor) {
+                PhotoChooseView(selectionType: .photoBGRemover)
             }
         } else {
             ZStack {
@@ -103,14 +123,14 @@ struct HomeView: View {
                 
                 VStack(spacing: 0) {
                     
-                    // ✅ FIXED HEADER (NON-SCROLL)
+                    // FIXED HEADER (NON-SCROLL)
                     TopHomeView()
                         .padding(.top, UIApplication.shared.connectedScenes
                             .compactMap { $0 as? UIWindowScene }
                             .first?.windows
                             .first?.safeAreaInsets.top ?? 0)
                     
-                    // ✅ SCROLLABLE CONTENT
+                    // SCROLLABLE CONTENT
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 24) {
                             
@@ -121,9 +141,16 @@ struct HomeView: View {
                             }
                             .padding(.horizontal, 20)
                             
-                            BottomFeaturesView()
+                            BottomFeaturesView(
+                                onCollageMakerTap: {
+                                    navigateToCollageMaker = true
+                                },
+                                onBackgroundEditorTap: {
+                                    navigateToBackgroundEditor = true
+                                }
+                            )
                             
-                            // ✅ EXTRA BOTTOM SPACE (IMPORTANT FIX)
+                            // EXTRA BOTTOM SPACE
                             Spacer()
                                 .frame(height: 50)
                         }
@@ -136,9 +163,16 @@ struct HomeView: View {
             .navigationDestination(isPresented: $navigateToSomeView) {
                 SettingView()
             }
+            .navigationDestination(isPresented: $navigateToCollageMaker) {
+                CollageMakerView()
+            }
+            .navigationDestination(isPresented: $navigateToBackgroundEditor) {
+                PhotoChooseView(selectionType: .photoBGRemover)
+            }
         }
     }
 }
+
 struct TopHomeView: View {
     
     private var isIpad: Bool {
@@ -173,6 +207,7 @@ struct TopHomeView: View {
         .padding(.horizontal, 20)
     }
 }
+
 struct HomeViewCard: View {
     let item: HomeItem
     @State private var navigateToDestination = false
@@ -281,6 +316,8 @@ struct HomeViewCard: View {
 
 // MARK: - Bottom Features View
 struct BottomFeaturesView: View {
+    var onCollageMakerTap: (() -> Void)?
+    var onBackgroundEditorTap: (() -> Void)?
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -291,7 +328,7 @@ struct BottomFeaturesView: View {
             
             // TITLE
             Text("Edit Photos Like a Pro")
-                .font(.custom("Poppins-Black", size: 20))
+                .font(.custom("Poppins-Black", size: isIpad ? 28 : 20))
                 .foregroundColor(.white)
                 .padding(.horizontal, 20)
             
@@ -301,14 +338,16 @@ struct BottomFeaturesView: View {
                     bgImage: "e_ic",
                     title: "Photo Collage Maker",
                     icon: "pencil_ic",
-                    buttonColor: "#FFCC3F"
+                    buttonColor: "#FFCC3F",
+                    onTap: onCollageMakerTap
                 )
                 
                 BottomFeaturesCardView(
                     bgImage: "s_ic",
                     title: "Smart Background Editor",
                     icon: "gallery_ic",
-                    buttonColor: "#45B8FF"
+                    buttonColor: "#45B8FF",
+                    onTap: onBackgroundEditorTap
                 )
             }
         }
@@ -324,12 +363,11 @@ struct BottomFeaturesCardView: View {
     let title: String
     let icon: String
     let buttonColor: String
+    var onTap: (() -> Void)?
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
-    
-    @State private var navigateToPhotoPicker = false
     
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -362,51 +400,35 @@ struct BottomFeaturesCardView: View {
                         Image(icon)
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 30, height: 30)
+                            .frame(width: isIpad ? 40 : 30, height: isIpad ? 40 : 30)
                         
                         Text(title)
-                            .font(.custom("Urbanist-Bold", size: 16))
+                            .font(.custom("Urbanist-Bold", size: isIpad ? 20 : 16))
                             .foregroundColor(.white)
                     }
                     
                     Spacer()
                     
-                    Button {
-                        navigateToPhotoPicker = true
-                    } label: {
-                        Text("Try Now")
-                            .font(.custom("Urbanist-Bold", size: 14))
-                            .foregroundColor(.black)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color(hex: buttonColor))
-                            .cornerRadius(12)
-                    }
+                    // Try Now button - just for visual, navigation handled by tap on entire card
+                    Text("Try Now")
+                        .font(.custom("Urbanist-Bold", size: isIpad ? 18 : 14))
+                        .foregroundColor(.black)
+                        .padding(.horizontal, isIpad ? 24 : 16)
+                        .padding(.vertical, isIpad ? 12 : 8)
+                        .background(Color(hex: buttonColor))
+                        .cornerRadius(12)
                 }
                 .padding(16)
             }
-            
-            // Navigation based on title
-            NavigationLink(
-                destination: destinationView,
-                isActive: $navigateToPhotoPicker
-            ) {
-                EmptyView()
-            }
         }
         .padding(.horizontal, 20)
-    }
-    
-    @ViewBuilder
-    private var destinationView: some View {
-        if title == "Smart Background Editor" {
-            PhotoChooseView(selectionType: .photoBGRemover)
-        } else if title == "Photo Collage Maker" {
-            CollageMakerView() 
+        .onTapGesture {
+            // Trigger navigation when tapping anywhere on the card
+            onTap?()
         }
     }
 }
+
 #Preview {
     HomeView()
 }
-
