@@ -26,11 +26,13 @@ struct PhotoEditorMainView: View {
     
     let asset: PHAsset
     @Environment(\.dismiss) var dismiss
+    @Environment(\.presentationMode) var presentationMode
     
     @State private var image: UIImage?
     @State private var editedImage: UIImage?
     @State private var selectedFeature: PhotoFeature?
     @State private var showDoneAlert = false
+    @State private var navigateToHome = false
     
     var body: some View {
         ZStack {
@@ -58,15 +60,15 @@ struct PhotoEditorMainView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 0) // Set to 0 to match PhotoChooseView
+                .padding(.top, 0)
                 
-                // MARK: IMAGE VIEW with left and right padding 15
+                // MARK: IMAGE VIEW
                 if let displayImage = editedImage ?? image {
                     Image(uiImage: displayImage)
                         .resizable()
                         .scaledToFit()
                         .cornerRadius(20)
-                        .padding(.horizontal, 15) // Left and right padding 15
+                        .padding(.horizontal, 15)
                         .padding(.top, 20)
                 } else {
                     Spacer()
@@ -114,7 +116,7 @@ struct PhotoEditorMainView: View {
                     Color.black.ignoresSafeArea()
                     
                     featureView(feature)
-                        .frame(maxWidth: 600) // 🔥 control width here
+                        .frame(maxWidth: 600)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 }
             } else {
@@ -123,11 +125,18 @@ struct PhotoEditorMainView: View {
         }
         .alert("Success".localized(LocalizationService.shared.language), isPresented: $showDoneAlert) {
             Button("OK".localized(LocalizationService.shared.language), role: .cancel) {
-                dismiss()
+                // Navigate to HomeSegmentView (Root)
+                navigateToHome = true
             }
         } message: {
-            Text("Image edited successfully!".localized(LocalizationService.shared.language))
+            Text("Image edited and saved successfully!".localized(LocalizationService.shared.language))
         }
+        .background(
+            NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
+                EmptyView()
+            }
+            .hidden()
+        )
     }
     
     // MARK: Load Image
@@ -149,11 +158,26 @@ struct PhotoEditorMainView: View {
         }
     }
     
-    // MARK: Apply Changes
+    // MARK: Apply Changes - Save to local storage
     private func applyChanges() {
-        if let finalImage = editedImage ?? image {
-            UIImageWriteToSavedPhotosAlbum(finalImage, nil, nil, nil)
-            showDoneAlert = true
+        guard let finalImage = editedImage ?? image else { return }
+        
+        // Save to local storage using ImageSaveManager
+        ImageSaveManager.shared.saveImage(finalImage) { success in
+            DispatchQueue.main.async {
+                if success {
+                    showDoneAlert = true
+                } else {
+                    // Show error alert if saving fails
+                    let alert = UIAlertController(
+                        title: "Error".localized(LocalizationService.shared.language),
+                        message: "Failed to save image".localized(LocalizationService.shared.language),
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "OK".localized(LocalizationService.shared.language), style: .default))
+                    UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
+                }
+            }
         }
     }
     
@@ -194,6 +218,7 @@ struct PhotoEditorMainView: View {
         }
     }
 }
+
 // MARK: - PhotoFeaturesView
 struct PhotoFeaturesView: View {
     

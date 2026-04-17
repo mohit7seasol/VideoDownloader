@@ -18,10 +18,11 @@ struct CollageMakerView: View {
     @State private var showPhotoPicker = false
     @State private var isEditing = false
     @State private var selectedPickerItem: PhotosPickerItem?
+    @State private var showSaveAlert = false
+    @State private var navigateToHome = false
     
     let collageSize: CGSize = CGSize(width: UIScreen.main.bounds.width - 40, height: 500)
     
-    // Pre-computed grid items to avoid compiler type-check issues
     private let gridItems: [GridType] = GridType.allCases
     
     init(selectedImages: [UIImage] = []) {
@@ -32,7 +33,6 @@ struct CollageMakerView: View {
         if Device.isIpad {
             GeometryReader { geometry in
                 ZStack {
-                    // App Background Image
                     Image("app_bg_image")
                         .resizable()
                         .scaledToFill()
@@ -184,7 +184,6 @@ struct CollageMakerView: View {
                                 .fill(Color.white.opacity(0.1))
                                 .frame(height: 0.5)
                             
-                            // iPad: Center the grid selection horizontally
                             GeometryReader { geo in
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 20) {
@@ -241,11 +240,24 @@ struct CollageMakerView: View {
                         }
                     }
                 }
+                .alert("Success", isPresented: $showSaveAlert) {
+                    Button("OK", role: .cancel) {
+                        // Navigate to HomeSegmentView (Root)
+                        navigateToHome = true
+                    }
+                } message: {
+                    Text("Collage saved successfully!")
+                }
+                .background(
+                    NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
+                        EmptyView()
+                    }
+                    .hidden()
+                )
             }
         } else {
             // iPhone Layout
             ZStack {
-                // App Background Image
                 Image("app_bg_image")
                     .resizable()
                     .scaledToFill()
@@ -446,6 +458,20 @@ struct CollageMakerView: View {
                     }
                 }
             }
+            .alert("Success", isPresented: $showSaveAlert) {
+                Button("OK", role: .cancel) {
+                    // Navigate to HomeSegmentView (Root)
+                    navigateToHome = true
+                }
+            } message: {
+                Text("Collage saved successfully!")
+            }
+            .background(
+                NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
+                    EmptyView()
+                }
+                .hidden()
+            )
         }
     }
     
@@ -493,8 +519,23 @@ struct CollageMakerView: View {
             }
         }
         
-        UIImageWriteToSavedPhotosAlbum(finalImage, nil, nil, nil)
-        dismiss()
+        // Save to local storage instead of gallery
+        ImageSaveManager.shared.saveImage(finalImage) { success in
+            DispatchQueue.main.async {
+                if success {
+                    showSaveAlert = true
+                } else {
+                    // Show error alert if saving fails
+                    let alert = UIAlertController(
+                        title: "Error",
+                        message: "Failed to save collage",
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
+                }
+            }
+        }
     }
 }
 

@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeSegmentView: View {
     
     @State private var selectedIndex: Int = 0
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         ZStack {
@@ -18,8 +19,12 @@ struct HomeSegmentView: View {
             Group {
                 if selectedIndex == 0 {
                     HomeView()
+                        .navigationBarHidden(true)
+                        .navigationBarBackButtonHidden(true)
                 } else {
                     SavedImagesView()
+                        .navigationBarHidden(true)
+                        .navigationBarBackButtonHidden(true)
                 }
             }
             .ignoresSafeArea()
@@ -32,8 +37,28 @@ struct HomeSegmentView: View {
                     .padding(.bottom, Device.bottomSafeArea)
             }
         }
+        .navigationBarHidden(true)
+        .navigationBarBackButtonHidden(true)
+        .onAppear {
+            // Hide the navigation bar when this view appears
+            setupNavigationBar()
+        }
+    }
+    
+    private func setupNavigationBar() {
+        // Configure navigation bar appearance
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundColor = .clear
+        appearance.shadowColor = .clear
+        
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().compactAppearance = appearance
+        UINavigationBar.appearance().isTranslucent = true
     }
 }
+
 // MARK: - CustomSegmentBar
 struct CustomSegmentBar: View {
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
@@ -57,7 +82,7 @@ struct CustomSegmentBar: View {
             )
         }
         .padding(6)
-        .frame(height: Device.isIpad ? 65 : 60) // ✅ exact height
+        .frame(height: Device.isIpad ? 65 : 60)
         .background(
             Group {
                 if AppVersion.isIOS26 {
@@ -70,8 +95,9 @@ struct CustomSegmentBar: View {
                 }
             }
         )
+        .modifier(GlassCardModifier(cornerRadius: 25))
         .clipShape(Capsule())
-        .padding(.horizontal, 25) // ✅ exact padding
+        .padding(.horizontal, 25)
     }
     
     // MARK: Segment Item
@@ -103,7 +129,6 @@ struct CustomSegmentBar: View {
                 ZStack {
                     
                     if isSelected {
-                        // ✅ Selected (white pill)
                         Capsule()
                             .fill(
                                 LinearGradient(
@@ -116,7 +141,6 @@ struct CustomSegmentBar: View {
                                 )
                             )
                     } else {
-                        // ✅ Unselected (glass dark effect like screenshot)
                         Capsule()
                             .fill(
                                 LinearGradient(
