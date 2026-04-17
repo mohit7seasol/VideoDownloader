@@ -96,7 +96,7 @@ struct HomeView: View {
                                 
                                 // Extra bottom space
                                 Spacer()
-                                    .frame(height: 600)
+                                    .frame(height: 720)
                             }
                         }
                         .padding(.top, 10)
