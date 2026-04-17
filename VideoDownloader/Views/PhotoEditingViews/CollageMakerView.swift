@@ -29,204 +29,420 @@ struct CollageMakerView: View {
     }
     
     var body: some View {
-        ZStack {
-            // App Background Image
-            Image("app_bg_image")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                    .foregroundColor(.white)
-                    .font(.system(size: 16))
+        if Device.isIpad {
+            GeometryReader { geometry in
+                ZStack {
+                    // App Background Image
+                    Image("app_bg_image")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
                     
-                    Spacer()
-                    
-                    Text("Collage Maker")
-                        .font(.custom("Urbanist-Bold", size: 18))
-                        .foregroundColor(.white)
-                    
-                    Spacer()
-                    
-                    Button("Save") {
-                        saveCollage()
-                    }
-                    .foregroundColor(.blue)
-                    .font(.system(size: 16, weight: .semibold))
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, UIApplication.shared.safeAreaTop)
-                .padding(.bottom, 16)
-                
-                // Main Content - Takes remaining space
-                VStack(spacing: 20) {
-                    // Collage View
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 0)
-                            .fill(Color.white.opacity(0.08))
-                            .frame(width: collageSize.width, height: collageSize.height)
+                    VStack(spacing: 0) {
+                        // Header
+                        HStack {
+                            Button("Cancel") {
+                                dismiss()
+                            }
+                            .foregroundColor(.white)
+                            .font(.system(size: 16))
+                            
+                            Spacer()
+                            
+                            Text("Collage Maker")
+                                .font(.custom("Urbanist-Bold", size: 18))
+                                .foregroundColor(.white)
+                            
+                            Spacer()
+                            
+                            Button("Save") {
+                                saveCollage()
+                            }
+                            .foregroundColor(.blue)
+                            .font(.system(size: 16, weight: .semibold))
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, UIApplication.shared.safeAreaTop)
+                        .padding(.bottom, 16)
                         
-                        ZStack {
-                            ForEach(photos.indices, id: \.self) { index in
-                                let photo = photos[index]
-                                
-                                if photo.isPlaceholder {
+                        // Scrollable Content Area
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 20) {
+                                // Collage View
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 0)
+                                        .fill(Color.white.opacity(0.08))
+                                        .frame(width: collageSize.width, height: collageSize.height)
+                                    
                                     ZStack {
-                                        Rectangle()
-                                            .fill(Color.white.opacity(0.12))
+                                        ForEach(photos.indices, id: \.self) { index in
+                                            let photo = photos[index]
+                                            
+                                            if photo.isPlaceholder {
+                                                ZStack {
+                                                    Rectangle()
+                                                        .fill(Color.white.opacity(0.12))
 
-                                        Button {
-                                            selectedPhotoIndex = index
-                                            showPhotoPicker = true
-                                        } label: {
-                                            Image(systemName: "plus")
-                                                .foregroundColor(.white)
-                                                .font(.system(size: 28, weight: .bold))
-                                                .frame(width: 50, height: 50)
-                                                .background(Color.white.opacity(0.2))
-                                                .clipShape(Circle())
+                                                    Button {
+                                                        selectedPhotoIndex = index
+                                                        showPhotoPicker = true
+                                                    } label: {
+                                                        Image(systemName: "plus")
+                                                            .foregroundColor(.white)
+                                                            .font(.system(size: 28, weight: .bold))
+                                                            .frame(width: 50, height: 50)
+                                                            .background(Color.white.opacity(0.2))
+                                                            .clipShape(Circle())
+                                                    }
+                                                }
+                                                .frame(
+                                                    width: photo.frame.width * collageSize.width,
+                                                    height: photo.frame.height * collageSize.height
+                                                )
+                                                .position(
+                                                    x: photo.frame.midX * collageSize.width,
+                                                    y: photo.frame.midY * collageSize.height
+                                                )
+                                            } else if let image = photo.image {
+                                                Image(uiImage: image)
+                                                    .resizable()
+                                                    .scaledToFill()
+                                                    .frame(width: photo.frame.width * collageSize.width,
+                                                           height: photo.frame.height * collageSize.height)
+                                                    .clipped()
+                                                    .overlay(
+                                                        Rectangle()
+                                                            .stroke(selectedPhotoIndex == index ? Color.blue : Color.clear, lineWidth: 3)
+                                                    )
+                                                    .position(x: (photo.frame.midX) * collageSize.width,
+                                                              y: (photo.frame.midY) * collageSize.height)
+                                                    .onTapGesture {
+                                                        if isEditing {
+                                                            selectedPhotoIndex = index
+                                                            showPhotoPicker = true
+                                                        }
+                                                    }
+                                            }
+                                        }
+                                    }
+                                    .frame(width: collageSize.width, height: collageSize.height)
+                                    .clipped()
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.top, 10)
+                                
+                                // Edit Mode Toggle
+                                HStack {
+                                    Button(action: {
+                                        isEditing.toggle()
+                                    }) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
+                                                .font(.system(size: 18))
+                                            Text(isEditing ? "Done Editing" : "Edit Photos")
+                                                .font(.custom("Urbanist-Medium", size: 14))
+                                        }
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 10)
+                                        .background(Color(hex: "#A925CA").opacity(0.3))
+                                        .cornerRadius(25)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    if isEditing && selectedPhotoIndex != nil {
+                                        Button(action: {
+                                            if let index = selectedPhotoIndex {
+                                                photos[index].isPlaceholder = true
+                                                photos[index].image = nil
+                                                selectedPhotoIndex = nil
+                                            }
+                                        }) {
+                                            HStack(spacing: 8) {
+                                                Image(systemName: "trash")
+                                                    .font(.system(size: 16))
+                                                Text("Remove")
+                                                    .font(.custom("Urbanist-Medium", size: 14))
+                                            }
+                                            .foregroundColor(.red)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 10)
+                                            .background(Color.red.opacity(0.25))
+                                            .cornerRadius(25)
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 20)
+                            }
+                        }
+                        
+                        // Grid Selection - Fixed at Bottom with Center Alignment (iPad)
+                        VStack(spacing: 0) {
+                            Rectangle()
+                                .fill(Color.white.opacity(0.1))
+                                .frame(height: 0.5)
+                            
+                            // iPad: Center the grid selection horizontally
+                            GeometryReader { geo in
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 20) {
+                                        ForEach(gridItems, id: \.self) { grid in
+                                            GridButton(
+                                                grid: grid,
+                                                isSelected: selectedGrid == grid,
+                                                action: {
+                                                    selectedGrid = grid
+                                                    updateGridLayout()
+                                                }
+                                            )
                                         }
                                     }
                                     .frame(
-                                        width: photo.frame.width * collageSize.width,
-                                        height: photo.frame.height * collageSize.height
+                                        minWidth: geo.size.width,
+                                        alignment: .center
                                     )
-                                    .position(
-                                        x: photo.frame.midX * collageSize.width,
-                                        y: photo.frame.midY * collageSize.height
-                                    )
-                                } else if let image = photo.image {
-                                    Image(uiImage: image)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: photo.frame.width * collageSize.width,
-                                               height: photo.frame.height * collageSize.height)
-                                        .clipped()
-                                        .overlay(
-                                            Rectangle()
-                                                .stroke(selectedPhotoIndex == index ? Color.blue : Color.clear, lineWidth: 3)
-                                        )
-                                        .position(x: (photo.frame.midX) * collageSize.width,
-                                                  y: (photo.frame.midY) * collageSize.height)
-                                        .onTapGesture {
-                                            if isEditing {
-                                                selectedPhotoIndex = index
-                                                showPhotoPicker = true
-                                            }
-                                        }
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 12)
                                 }
                             }
+                            .frame(height: 100)
+                            .background(Color.black.opacity(0.3))
                         }
-                        .frame(width: collageSize.width, height: collageSize.height)
-                        .clipped()
+                        .padding(.bottom, 660)
                     }
-                    .padding(.horizontal, 20)
-                    
-                    // Edit Mode Toggle
-                    HStack {
-                        Button(action: {
-                            isEditing.toggle()
-                        }) {
-                            HStack(spacing: 8) {
-                                Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
-                                    .font(.system(size: 18))
-                                Text(isEditing ? "Done Editing" : "Edit Photos")
-                                    .font(.custom("Urbanist-Medium", size: 14))
+                }
+                .navigationBarHidden(true)
+                .photosPicker(isPresented: $showPhotoPicker, selection: $selectedPickerItem, matching: .images)
+                .onChange(of: selectedPickerItem) { newValue in
+                    Task {
+                        if let data = try? await newValue?.loadTransferable(type: Data.self),
+                           let image = UIImage(data: data) {
+                            await MainActor.run {
+                                if let index = selectedPhotoIndex {
+                                    photos[index].image = image
+                                    photos[index].isPlaceholder = false
+                                    selectedPhotoIndex = nil
+                                }
+                                selectedPickerItem = nil
                             }
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .background(Color(hex: "#A925CA").opacity(0.3))
-                            .cornerRadius(25)
                         }
+                    }
+                }
+                .onAppear {
+                    updateGridLayout()
+                    if !selectedImages.isEmpty {
+                        for (index, image) in selectedImages.enumerated() {
+                            if index < photos.count {
+                                photos[index].image = image
+                                photos[index].isPlaceholder = false
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // iPhone Layout
+            ZStack {
+                // App Background Image
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 0) {
+                    // Header
+                    HStack {
+                        Button("Cancel") {
+                            dismiss()
+                        }
+                        .foregroundColor(.white)
+                        .font(.system(size: 16))
                         
                         Spacer()
                         
-                        if isEditing && selectedPhotoIndex != nil {
-                            Button(action: {
-                                if let index = selectedPhotoIndex {
-                                    photos[index].isPlaceholder = true
-                                    photos[index].image = nil
-                                    selectedPhotoIndex = nil
-                                }
-                            }) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "trash")
-                                        .font(.system(size: 16))
-                                    Text("Remove")
-                                        .font(.custom("Urbanist-Medium", size: 14))
-                                }
-                                .foregroundColor(.red)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 10)
-                                .background(Color.red.opacity(0.25))
-                                .cornerRadius(25)
-                            }
+                        Text("Collage Maker")
+                            .font(.custom("Urbanist-Bold", size: 18))
+                            .foregroundColor(.white)
+                        
+                        Spacer()
+                        
+                        Button("Save") {
+                            saveCollage()
                         }
+                        .foregroundColor(.blue)
+                        .font(.system(size: 16, weight: .semibold))
                     }
                     .padding(.horizontal, 20)
-                }
-                .frame(maxHeight: .infinity, alignment: .top)
-                
-                // Spacer to push content up
-                Spacer(minLength: 0)
-                
-                // Grid Selection - Fixed at Bottom with Safe Area
-                VStack(spacing: 0) {
-                    Rectangle()
-                        .fill(Color.white.opacity(0.1))
-                        .frame(height: 0.5)
+                    .padding(.top, UIApplication.shared.safeAreaTop)
+                    .padding(.bottom, 16)
                     
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 20) {
-                            ForEach(gridItems, id: \.self) { grid in
-                                GridButton(
-                                    grid: grid,
-                                    isSelected: selectedGrid == grid,
-                                    action: {
-                                        selectedGrid = grid
-                                        updateGridLayout()
+                    // Scrollable Content Area
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 20) {
+                            // Collage View
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 0)
+                                    .fill(Color.white.opacity(0.08))
+                                    .frame(width: collageSize.width, height: collageSize.height)
+                                
+                                ZStack {
+                                    ForEach(photos.indices, id: \.self) { index in
+                                        let photo = photos[index]
+                                        
+                                        if photo.isPlaceholder {
+                                            ZStack {
+                                                Rectangle()
+                                                    .fill(Color.white.opacity(0.12))
+
+                                                Button {
+                                                    selectedPhotoIndex = index
+                                                    showPhotoPicker = true
+                                                } label: {
+                                                    Image(systemName: "plus")
+                                                        .foregroundColor(.white)
+                                                        .font(.system(size: 28, weight: .bold))
+                                                        .frame(width: 50, height: 50)
+                                                        .background(Color.white.opacity(0.2))
+                                                        .clipShape(Circle())
+                                                }
+                                            }
+                                            .frame(
+                                                width: photo.frame.width * collageSize.width,
+                                                height: photo.frame.height * collageSize.height
+                                            )
+                                            .position(
+                                                x: photo.frame.midX * collageSize.width,
+                                                y: photo.frame.midY * collageSize.height
+                                            )
+                                        } else if let image = photo.image {
+                                            Image(uiImage: image)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: photo.frame.width * collageSize.width,
+                                                       height: photo.frame.height * collageSize.height)
+                                                .clipped()
+                                                .overlay(
+                                                    Rectangle()
+                                                        .stroke(selectedPhotoIndex == index ? Color.blue : Color.clear, lineWidth: 3)
+                                                )
+                                                .position(x: (photo.frame.midX) * collageSize.width,
+                                                          y: (photo.frame.midY) * collageSize.height)
+                                                .onTapGesture {
+                                                    if isEditing {
+                                                        selectedPhotoIndex = index
+                                                        showPhotoPicker = true
+                                                    }
+                                                }
+                                        }
                                     }
-                                )
+                                }
+                                .frame(width: collageSize.width, height: collageSize.height)
+                                .clipped()
                             }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 10)
+                            
+                            // Edit Mode Toggle
+                            HStack {
+                                Button(action: {
+                                    isEditing.toggle()
+                                }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
+                                            .font(.system(size: 18))
+                                        Text(isEditing ? "Done Editing" : "Edit Photos")
+                                            .font(.custom("Urbanist-Medium", size: 14))
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                    .background(Color(hex: "#A925CA").opacity(0.3))
+                                    .cornerRadius(25)
+                                }
+                                
+                                Spacer()
+                                
+                                if isEditing && selectedPhotoIndex != nil {
+                                    Button(action: {
+                                        if let index = selectedPhotoIndex {
+                                            photos[index].isPlaceholder = true
+                                            photos[index].image = nil
+                                            selectedPhotoIndex = nil
+                                        }
+                                    }) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "trash")
+                                                .font(.system(size: 16))
+                                            Text("Remove")
+                                                .font(.custom("Urbanist-Medium", size: 14))
+                                        }
+                                        .foregroundColor(.red)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 10)
+                                        .background(Color.red.opacity(0.25))
+                                        .cornerRadius(25)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 20)
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
                     }
-                    .background(Color.black.opacity(0.3))
+                    
+                    // Grid Selection - Fixed at Bottom (iPhone)
+                    VStack(spacing: 0) {
+                        Rectangle()
+                            .fill(Color.white.opacity(0.1))
+                            .frame(height: 0.5)
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 20) {
+                                ForEach(gridItems, id: \.self) { grid in
+                                    GridButton(
+                                        grid: grid,
+                                        isSelected: selectedGrid == grid,
+                                        action: {
+                                            selectedGrid = grid
+                                            updateGridLayout()
+                                        }
+                                    )
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+                        }
+                        .background(Color.black.opacity(0.3))
+                    }
+                    .padding(.bottom, UIApplication.shared.safeAreaBottom)
                 }
-                .padding(.bottom, UIApplication.shared.safeAreaBottom) // Add bottom safe area
             }
-        }
-        .navigationBarHidden(true)
-        .photosPicker(isPresented: $showPhotoPicker, selection: $selectedPickerItem, matching: .images)
-        .onChange(of: selectedPickerItem) { newValue in
-            Task {
-                if let data = try? await newValue?.loadTransferable(type: Data.self),
-                   let image = UIImage(data: data) {
-                    await MainActor.run {
-                        if let index = selectedPhotoIndex {
+            .navigationBarHidden(true)
+            .photosPicker(isPresented: $showPhotoPicker, selection: $selectedPickerItem, matching: .images)
+            .onChange(of: selectedPickerItem) { newValue in
+                Task {
+                    if let data = try? await newValue?.loadTransferable(type: Data.self),
+                       let image = UIImage(data: data) {
+                        await MainActor.run {
+                            if let index = selectedPhotoIndex {
+                                photos[index].image = image
+                                photos[index].isPlaceholder = false
+                                selectedPhotoIndex = nil
+                            }
+                            selectedPickerItem = nil
+                        }
+                    }
+                }
+            }
+            .onAppear {
+                updateGridLayout()
+                if !selectedImages.isEmpty {
+                    for (index, image) in selectedImages.enumerated() {
+                        if index < photos.count {
                             photos[index].image = image
                             photos[index].isPlaceholder = false
-                            selectedPhotoIndex = nil
                         }
-                        selectedPickerItem = nil
-                    }
-                }
-            }
-        }
-        .onAppear {
-            updateGridLayout()
-            if !selectedImages.isEmpty {
-                for (index, image) in selectedImages.enumerated() {
-                    if index < photos.count {
-                        photos[index].image = image
-                        photos[index].isPlaceholder = false
                     }
                 }
             }
@@ -423,14 +639,14 @@ struct CollageGridSelectorView: View {
     }
 }
 
-// MARK: - CollagePreview (FIXED VERSION)
+// MARK: - CollagePreview
 struct CollagePreview: View {
     let gridType: GridType
     let images: [UIImage?]
     let onTapImage: (Int) -> Void
     
     let spacing: CGFloat = 4
-    let paddingInsets: EdgeInsets = EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8) // Adjustable padding
+    let paddingInsets: EdgeInsets = EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
 
     var body: some View {
         GeometryReader { geometry in
@@ -447,7 +663,6 @@ struct CollagePreview: View {
                 ForEach(0..<layouts.count, id: \.self) { index in
                     let layout = layouts[index]
 
-                    // Calculate rect with padding offset
                     let rect = CGRect(
                         x: paddingInsets.leading + (layout.minX * availableSize.width),
                         y: paddingInsets.top + (layout.minY * availableSize.height),
