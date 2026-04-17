@@ -181,7 +181,7 @@ struct SplashView: View {
         VStack {
             NavigationStack {
                 if isShowHomeView {
-                    TabBarView1()
+                    HomeSegmentView()
                 } else {
                     SplashContent(isLottiePlaying: $isLottiePlaying)
                 }
