@@ -409,19 +409,25 @@ struct BottomFeaturesCardView: View {
                     
                     Spacer()
                     
-                    // Try Now button - just for visual, navigation handled by tap on entire card
-                    Text("Try Now")
-                        .font(.custom("Urbanist-Bold", size: isIpad ? 18 : 14))
-                        .foregroundColor(.black)
-                        .padding(.horizontal, isIpad ? 24 : 16)
-                        .padding(.vertical, isIpad ? 12 : 8)
-                        .background(Color(hex: buttonColor))
-                        .cornerRadius(12)
+                    // Try Now button - Now with Button that triggers same navigation
+                    Button(action: {
+                        onTap?()
+                    }) {
+                        Text("Try Now")
+                            .font(.custom("Urbanist-Bold", size: isIpad ? 18 : 14))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, isIpad ? 24 : 16)
+                            .padding(.vertical, isIpad ? 12 : 8)
+                            .background(Color(hex: buttonColor))
+                            .cornerRadius(12)
+                    }
+                    .buttonStyle(.plain) // Prevents default button styling
                 }
                 .padding(16)
             }
         }
         .padding(.horizontal, 20)
+        .contentShape(Rectangle()) // Makes the entire ZStack tappable
         .onTapGesture {
             // Trigger navigation when tapping anywhere on the card
             onTap?()
