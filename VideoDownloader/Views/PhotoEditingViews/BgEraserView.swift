@@ -17,6 +17,7 @@ struct BgEraserView: View {
     @State private var outputImage: UIImage?
     @State private var isProcessing = false
     @State private var navigateNext = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
         if Device.isIpad {
@@ -38,7 +39,7 @@ struct BgEraserView: View {
                                     .foregroundColor(.white)
                             }
                             
-                            Text("Background Remove")
+                            Text("Background Remove".localized(self.language))
                                 .foregroundColor(.white)
                                 .font(.custom("Urbanist-Bold", size: 18))
                             
@@ -78,7 +79,7 @@ struct BgEraserView: View {
                         Button {
                             removeBG()
                         } label: {
-                            Text(outputImage == nil ? "Remove Bg" : "Next")
+                            Text(outputImage == nil ? "Remove Background".localized(self.language) : "Next".localized(self.language))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 55)
@@ -120,7 +121,7 @@ struct BgEraserView: View {
                                 .foregroundColor(.white)
                         }
                         
-                        Text("Background Remove")
+                        Text("Background Remove".localized(self.language))
                             .foregroundColor(.white)
                             .font(.custom("Urbanist-Bold", size: 18))
                         
@@ -160,7 +161,7 @@ struct BgEraserView: View {
                     Button {
                         removeBG()
                     } label: {
-                        Text(outputImage == nil ? "Remove Bg" : "Next")
+                        Text(outputImage == nil ? "Remove Background".localized(self.language) : "Next".localized(self.language))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 55)

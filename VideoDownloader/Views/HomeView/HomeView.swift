@@ -318,7 +318,7 @@ struct HomeViewCard: View {
 struct BottomFeaturesView: View {
     var onCollageMakerTap: (() -> Void)?
     var onBackgroundEditorTap: (() -> Void)?
-    
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
@@ -327,7 +327,7 @@ struct BottomFeaturesView: View {
         VStack(alignment: .leading, spacing: 16) {
             
             // TITLE
-            Text("Edit Photos Like a Pro")
+            Text("Edit Photos Like a Pro".localized(self.language))
                 .font(.custom("Poppins-Black", size: isIpad ? 28 : 20))
                 .foregroundColor(.white)
                 .padding(.horizontal, 20)
@@ -336,7 +336,7 @@ struct BottomFeaturesView: View {
                 
                 BottomFeaturesCardView(
                     bgImage: "e_ic",
-                    title: "Photo Collage Maker",
+                    title: "Photo Collage Maker".localized(self.language),
                     icon: "pencil_ic",
                     buttonColor: "#FFCC3F",
                     onTap: onCollageMakerTap
@@ -344,7 +344,7 @@ struct BottomFeaturesView: View {
                 
                 BottomFeaturesCardView(
                     bgImage: "s_ic",
-                    title: "Smart Background Editor",
+                    title: "Smart Background Editor".localized(self.language),
                     icon: "gallery_ic",
                     buttonColor: "#45B8FF",
                     onTap: onBackgroundEditorTap
@@ -368,7 +368,7 @@ struct BottomFeaturesCardView: View {
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
-    
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             
@@ -413,7 +413,7 @@ struct BottomFeaturesCardView: View {
                     Button(action: {
                         onTap?()
                     }) {
-                        Text("Try Now")
+                        Text("Try Now".localized(self.language))
                             .font(.custom("Urbanist-Bold", size: isIpad ? 18 : 14))
                             .foregroundColor(.black)
                             .padding(.horizontal, isIpad ? 24 : 16)

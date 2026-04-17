@@ -38,6 +38,7 @@ struct SavedImagesView: View {
         
         return (screenWidth - horizontalPadding - totalSpacing) / numberOfColumns
     }
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
         if Device.isIpad {
@@ -96,13 +97,13 @@ struct SavedImagesView: View {
                                     }
                                     
                                     // Main title with gradient
-                                    Text("No Saved Images")
+                                    Text("No Saved Images".localized(self.language))
                                         .font(.custom("Urbanist-Bold", size: 34))
                                         .foregroundColor(.white)
                                         .multilineTextAlignment(.center)
                                     
                                     // Subtitle
-                                    Text("Your saved images will appear here")
+                                    Text("Your saved images will appear here".localized(self.language))
                                         .font(.custom("Urbanist-Medium", size: 18))
                                         .foregroundColor(.white.opacity(0.7))
                                         .multilineTextAlignment(.center)
@@ -124,7 +125,7 @@ struct SavedImagesView: View {
                                         .padding(.vertical, 10)
                                     
                                     // Informational message
-                                    Text("Start editing photos and save them to see them here")
+                                    Text("Start editing photos and save them to see them here".localized(self.language))
                                         .font(.custom("Urbanist-Regular", size: 16))
                                         .foregroundColor(.white.opacity(0.5))
                                         .multilineTextAlignment(.center)
@@ -184,15 +185,15 @@ struct SavedImagesView: View {
                     loadSavedImages()
                     animateGradient = true
                 }
-                .alert("Delete Image", isPresented: $showDeleteAlert) {
-                    Button("Cancel", role: .cancel) { }
-                    Button("Delete", role: .destructive) {
+                .alert("Delete Image".localized(self.language), isPresented: $showDeleteAlert) {
+                    Button("Cancel".localized(self.language), role: .cancel) { }
+                    Button("Delete".localized(self.language), role: .destructive) {
                         if let index = imageToDelete {
                             deleteImage(at: index)
                         }
                     }
                 } message: {
-                    Text("Are you sure you want to delete this image?")
+                    Text("Are you sure you want to delete this image?".localized(self.language))
                 }
             }
         } else {
@@ -251,13 +252,13 @@ struct SavedImagesView: View {
                                 }
                                 
                                 // Main title with gradient
-                                Text("No Saved Images")
+                                Text("No Saved Images".localized(self.language))
                                     .font(.custom("Urbanist-Bold", size: 24))
                                     .foregroundColor(.white)
                                     .multilineTextAlignment(.center)
                                 
                                 // Subtitle
-                                Text("Your saved images will appear here")
+                                Text("Your saved images will appear here".localized(self.language))
                                     .font(.custom("Urbanist-Medium", size: 16))
                                     .foregroundColor(.white.opacity(0.7))
                                     .multilineTextAlignment(.center)
@@ -332,15 +333,15 @@ struct SavedImagesView: View {
                 loadSavedImages()
                 animateGradient = true
             }
-            .alert("Delete Image", isPresented: $showDeleteAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Delete", role: .destructive) {
+            .alert("Delete Image".localized(self.language), isPresented: $showDeleteAlert) {
+                Button("Cancel".localized(self.language), role: .cancel) { }
+                Button("Delete".localized(self.language), role: .destructive) {
                     if let index = imageToDelete {
                         deleteImage(at: index)
                     }
                 }
             } message: {
-                Text("Are you sure you want to delete this image?")
+                Text("Are you sure you want to delete this image?".localized(self.language))
             }
         }
     }

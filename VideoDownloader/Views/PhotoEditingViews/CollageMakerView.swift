@@ -20,6 +20,7 @@ struct CollageMakerView: View {
     @State private var selectedPickerItem: PhotosPickerItem?
     @State private var showSaveAlert = false
     @State private var navigateToHome = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     let collageSize: CGSize = CGSize(width: UIScreen.main.bounds.width - 40, height: 500)
     
@@ -41,7 +42,7 @@ struct CollageMakerView: View {
                     VStack(spacing: 0) {
                         // Header
                         HStack {
-                            Button("Cancel") {
+                            Button("Cancel".localized(self.language)) {
                                 dismiss()
                             }
                             .foregroundColor(.white)
@@ -49,13 +50,13 @@ struct CollageMakerView: View {
                             
                             Spacer()
                             
-                            Text("Collage Maker")
+                            Text("Collage Maker".localized(self.language))
                                 .font(.custom("Urbanist-Bold", size: 18))
                                 .foregroundColor(.white)
                             
                             Spacer()
                             
-                            Button("Save") {
+                            Button("Save".localized(self.language)) {
                                 saveCollage()
                             }
                             .foregroundColor(.blue)
@@ -139,7 +140,7 @@ struct CollageMakerView: View {
                                         HStack(spacing: 8) {
                                             Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
                                                 .font(.system(size: 18))
-                                            Text(isEditing ? "Done Editing" : "Edit Photos")
+                                            Text(isEditing ? "Done Editing".localized(self.language) : "Edit Photos".localized(self.language))
                                                 .font(.custom("Urbanist-Medium", size: 14))
                                         }
                                         .foregroundColor(.white)
@@ -240,13 +241,13 @@ struct CollageMakerView: View {
                         }
                     }
                 }
-                .alert("Success", isPresented: $showSaveAlert) {
-                    Button("OK", role: .cancel) {
+                .alert("Success".localized(self.language), isPresented: $showSaveAlert) {
+                    Button("OK".localized(self.language), role: .cancel) {
                         // Navigate to HomeSegmentView (Root)
                         navigateToHome = true
                     }
                 } message: {
-                    Text("Collage saved successfully!")
+                    Text("Collage saved successfully!".localized(self.language))
                 }
                 .background(
                     NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
@@ -266,7 +267,7 @@ struct CollageMakerView: View {
                 VStack(spacing: 0) {
                     // Header
                     HStack {
-                        Button("Cancel") {
+                        Button("Cancel".localized(self.language)) {
                             dismiss()
                         }
                         .foregroundColor(.white)
@@ -274,13 +275,13 @@ struct CollageMakerView: View {
                         
                         Spacer()
                         
-                        Text("Collage Maker")
+                        Text("Collage Maker".localized(self.language))
                             .font(.custom("Urbanist-Bold", size: 18))
                             .foregroundColor(.white)
                         
                         Spacer()
                         
-                        Button("Save") {
+                        Button("Save".localized(self.language)) {
                             saveCollage()
                         }
                         .foregroundColor(.blue)
@@ -364,7 +365,7 @@ struct CollageMakerView: View {
                                     HStack(spacing: 8) {
                                         Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
                                             .font(.system(size: 18))
-                                        Text(isEditing ? "Done Editing" : "Edit Photos")
+                                        Text(isEditing ? "Done Editing".localized(self.language) : "Edit Photos".localized(self.language))
                                             .font(.custom("Urbanist-Medium", size: 14))
                                     }
                                     .foregroundColor(.white)
@@ -458,13 +459,13 @@ struct CollageMakerView: View {
                     }
                 }
             }
-            .alert("Success", isPresented: $showSaveAlert) {
-                Button("OK", role: .cancel) {
+            .alert("Success".localized(self.language), isPresented: $showSaveAlert) {
+                Button("OK".localized(self.language), role: .cancel) {
                     // Navigate to HomeSegmentView (Root)
                     navigateToHome = true
                 }
             } message: {
-                Text("Collage saved successfully!")
+                Text("Collage saved successfully!".localized(self.language))
             }
             .background(
                 NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
@@ -569,6 +570,7 @@ struct CollageGridSelectorView: View {
     @State private var showImagePicker = false
     @State private var currentPickerIndex = 0
     @State private var selectedPickerItem: PhotosPickerItem?
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     private let gridItems: [GridType] = GridType.allCases
     
@@ -581,18 +583,18 @@ struct CollageGridSelectorView: View {
             
             VStack(spacing: 0) {
                 HStack {
-                    Button("Cancel") { }
+                    Button("Cancel".localized(self.language)) { }
                         .foregroundColor(.white)
                     
                     Spacer()
                     
-                    Text("Collage Maker")
+                    Text("Collage Maker".localized(self.language))
                         .font(.custom("Urbanist-Bold", size: 18))
                         .foregroundColor(.white)
                     
                     Spacer()
                     
-                    Button("Save") {
+                    Button("Save".localized(self.language)) {
                         saveCollage()
                     }
                     .foregroundColor(.blue)

@@ -17,6 +17,7 @@ struct AddNewBGView: View {
     @State private var selectedBG: String?
     @State private var isSaved = false
     @State private var navigateToHome = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     private var previewSize: CGSize {
         let containerHeight: CGFloat = Device.isIpad
@@ -64,7 +65,7 @@ struct AddNewBGView: View {
                                     .font(.system(size: isIpad ? 22 : 18, weight: .semibold))
                             }
                             
-                            Text("Background Remove")
+                            Text("Background Remove".localized(self.language))
                                 .foregroundColor(.white)
                                 .font(.custom("Urbanist-Bold", size: isIpad ? 24 : 18))
                             
@@ -99,7 +100,7 @@ struct AddNewBGView: View {
                         Spacer(minLength: 20)
                         
                         // BG OPTIONS TITLE
-                        Text("Choose Background")
+                        Text("Choose Background".localized(self.language))
                             .font(.custom("Urbanist-Bold", size: isIpad ? 20 : 16))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -138,7 +139,7 @@ struct AddNewBGView: View {
                                             }
                                         }
                                         
-                                        Text("None")
+                                        Text("None".localized(self.language))
                                             .font(.custom("Urbanist-Medium", size: isIpad ? 14 : 12))
                                             .foregroundColor(.white)
                                     }
@@ -189,7 +190,7 @@ struct AddNewBGView: View {
                             HStack(spacing: 12) {
                                 Image(systemName: "arrow.down.circle.fill")
                                     .font(.system(size: isIpad ? 22 : 18))
-                                Text("Save")
+                                Text("Save".localized(self.language))
                                     .font(.custom("Urbanist-Bold", size: isIpad ? 18 : 16))
                             }
                             .foregroundColor(.white)
@@ -210,13 +211,13 @@ struct AddNewBGView: View {
                 }
                 .navigationBarHidden(true) // Hide navigation bar for iPad
                 .navigationBarBackButtonHidden(true) // Hide back button for iPad
-                .alert("Success", isPresented: $isSaved) {
-                    Button("OK", role: .cancel) {
+                .alert("Success".localized(self.language), isPresented: $isSaved) {
+                    Button("OK".localized(self.language), role: .cancel) {
                         // Navigate to HomeSegmentView (Root)
                         navigateToHome = true
                     }
                 } message: {
-                    Text("Image saved successfully!")
+                    Text("Image saved successfully!".localized(self.language))
                 }
                 .background(
                     NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
@@ -244,7 +245,7 @@ struct AddNewBGView: View {
                                 .font(.system(size: isIpad ? 22 : 18, weight: .semibold))
                         }
                         
-                        Text("Background Remove")
+                        Text("Background Remove".localized(self.language))
                             .foregroundColor(.white)
                             .font(.custom("Urbanist-Bold", size: isIpad ? 24 : 18))
                         
@@ -279,7 +280,7 @@ struct AddNewBGView: View {
                     Spacer(minLength: 20)
                     
                     // BG OPTIONS TITLE
-                    Text("Choose Background")
+                    Text("Choose Background".localized(self.language))
                         .font(.custom("Urbanist-Bold", size: isIpad ? 20 : 16))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -318,7 +319,7 @@ struct AddNewBGView: View {
                                         }
                                     }
                                     
-                                    Text("None")
+                                    Text("None".localized(self.language))
                                         .font(.custom("Urbanist-Medium", size: isIpad ? 14 : 12))
                                         .foregroundColor(.white)
                                 }
@@ -367,7 +368,7 @@ struct AddNewBGView: View {
                         saveImage()
                     } label: {
                         HStack(spacing: 12) {
-                            Text("Save")
+                            Text("Save".localized(self.language))
                                 .font(.custom("Urbanist-Bold", size: isIpad ? 18 : 16))
                             Image(systemName: "arrow.down.circle.fill")
                                 .font(.system(size: isIpad ? 22 : 18))
@@ -389,13 +390,13 @@ struct AddNewBGView: View {
                 }
             }
             .navigationBarHidden(true)
-            .alert("Success", isPresented: $isSaved) {
-                Button("OK", role: .cancel) {
+            .alert("Success".localized(self.language), isPresented: $isSaved) {
+                Button("OK".localized(self.language), role: .cancel) {
                     // Navigate to HomeSegmentView (Root)
                     navigateToHome = true
                 }
             } message: {
-                Text("Image saved successfully!")
+                Text("Image saved successfully!".localized(self.language))
             }
             .background(
                 NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
