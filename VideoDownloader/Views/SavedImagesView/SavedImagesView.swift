@@ -48,127 +48,136 @@ struct SavedImagesView: View {
                         .scaledToFill()
                         .ignoresSafeArea()
                     
-                    if savedImages.isEmpty {
-                        // Attractive Empty State View - Vertically Centered for iPad
-                        ScrollView {
-                            VStack(spacing: 25) {
-                                Spacer(minLength: 0)
-                                
-                                // Animated icon container
-                                ZStack {
-                                    // Outer glowing circle
-                                    Circle()
+                    VStack(spacing: 0) {
+                        // TopHomeView for iPad
+                        TopHomeView()
+                            .padding(.top, UIApplication.shared.connectedScenes
+                                .compactMap { $0 as? UIWindowScene }
+                                .first?.windows
+                                .first?.safeAreaInsets.top ?? 0)
+                        
+                        if savedImages.isEmpty {
+                            // Attractive Empty State View - Vertically Centered for iPad
+                            ScrollView {
+                                VStack(spacing: 25) {
+                                    Spacer(minLength: 0)
+                                    
+                                    // Animated icon container
+                                    ZStack {
+                                        // Outer glowing circle
+                                        Circle()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [
+                                                        Color(hex: "#FC466B").opacity(0.3),
+                                                        Color(hex: "#3F5EFB").opacity(0.3)
+                                                    ],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .frame(width: 160, height: 160)
+                                            .scaleEffect(animateGradient ? 1.1 : 1.0)
+                                            .animation(
+                                                Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true),
+                                                value: animateGradient
+                                            )
+                                        
+                                        // Inner circle
+                                        Circle()
+                                            .fill(Color.white.opacity(0.1))
+                                            .frame(width: 140, height: 140)
+                                        
+                                        // Icon
+                                        Image(systemName: "photo.stack")
+                                            .font(.system(size: 60))
+                                            .foregroundColor(.white)
+                                            .shadow(color: .white.opacity(0.3), radius: 10)
+                                    }
+                                    
+                                    // Main title with gradient
+                                    Text("No Saved Images")
+                                        .font(.custom("Urbanist-Bold", size: 34))
+                                        .foregroundColor(.white)
+                                        .multilineTextAlignment(.center)
+                                    
+                                    // Subtitle
+                                    Text("Your saved images will appear here")
+                                        .font(.custom("Urbanist-Medium", size: 18))
+                                        .foregroundColor(.white.opacity(0.7))
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 40)
+                                    
+                                    // Divider with gradient
+                                    Rectangle()
                                         .fill(
                                             LinearGradient(
                                                 colors: [
-                                                    Color(hex: "#FC466B").opacity(0.3),
-                                                    Color(hex: "#3F5EFB").opacity(0.3)
+                                                    Color(hex: "#FC466B").opacity(0.5),
+                                                    Color(hex: "#3F5EFB").opacity(0.5)
                                                 ],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
+                                                startPoint: .leading,
+                                                endPoint: .trailing
                                             )
                                         )
-                                        .frame(width: 160, height: 160)
-                                        .scaleEffect(animateGradient ? 1.1 : 1.0)
-                                        .animation(
-                                            Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true),
-                                            value: animateGradient
-                                        )
+                                        .frame(width: 250, height: 1)
+                                        .padding(.vertical, 10)
                                     
-                                    // Inner circle
-                                    Circle()
-                                        .fill(Color.white.opacity(0.1))
-                                        .frame(width: 140, height: 140)
+                                    // Informational message
+                                    Text("Start editing photos and save them to see them here")
+                                        .font(.custom("Urbanist-Regular", size: 16))
+                                        .foregroundColor(.white.opacity(0.5))
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 50)
                                     
-                                    // Icon
-                                    Image(systemName: "photo.stack")
-                                        .font(.system(size: 60))
-                                        .foregroundColor(.white)
-                                        .shadow(color: .white.opacity(0.3), radius: 10)
+                                    Spacer(minLength: 0)
                                 }
-                                
-                                // Main title with gradient
-                                Text("No Saved Images")
-                                    .font(.custom("Urbanist-Bold", size: 34))
-                                    .foregroundColor(.white)
-                                    .multilineTextAlignment(.center)
-                                
-                                // Subtitle
-                                Text("Your saved images will appear here")
-                                    .font(.custom("Urbanist-Medium", size: 18))
-                                    .foregroundColor(.white.opacity(0.7))
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 40)
-                                
-                                // Divider with gradient
-                                Rectangle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [
-                                                Color(hex: "#FC466B").opacity(0.5),
-                                                Color(hex: "#3F5EFB").opacity(0.5)
-                                            ],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                    .frame(width: 250, height: 1)
-                                    .padding(.vertical, 10)
-                                
-                                // Informational message
-                                Text("Start editing photos and save them to see them here")
-                                    .font(.custom("Urbanist-Regular", size: 16))
-                                    .foregroundColor(.white.opacity(0.5))
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 50)
-                                
-                                Spacer(minLength: 0)
+                                .frame(minHeight: geometry.size.height - 100)
+                                .padding(.horizontal, 20)
                             }
-                            .frame(minHeight: geometry.size.height)
-                            .padding(.horizontal, 20)
-                        }
-                    } else {
-                        ScrollView {
-                            LazyVGrid(columns: columns, spacing: gridSpacing) {
-                                ForEach(Array(savedImages.enumerated()), id: \.offset) { index, image in
-                                    ZStack(alignment: .topTrailing) {
-                                        // Image with corner radius and equal size
-                                        Image(uiImage: image)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: imageSize, height: imageSize)
-                                            .clipped()
-                                            .cornerRadius(12)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                            )
-                                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
-                                        
-                                        // Trash button on top right
-                                        Button(action: {
-                                            imageToDelete = index
-                                            showDeleteAlert = true
-                                        }) {
-                                            ZStack {
-                                                Circle()
-                                                    .fill(Color.black.opacity(0.7))
-                                                    .frame(width: 32, height: 32)
-                                                
-                                                Image(systemName: "trash.fill")
-                                                    .font(.system(size: 16))
-                                                    .foregroundColor(.white)
+                        } else {
+                            ScrollView {
+                                LazyVGrid(columns: columns, spacing: gridSpacing) {
+                                    ForEach(Array(savedImages.enumerated()), id: \.offset) { index, image in
+                                        ZStack(alignment: .topTrailing) {
+                                            // Image with corner radius and equal size
+                                            Image(uiImage: image)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: imageSize, height: imageSize)
+                                                .clipped()
+                                                .cornerRadius(12)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                                )
+                                                .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                                            
+                                            // Trash button on top right
+                                            Button(action: {
+                                                imageToDelete = index
+                                                showDeleteAlert = true
+                                            }) {
+                                                ZStack {
+                                                    Circle()
+                                                        .fill(Color.black.opacity(0.7))
+                                                        .frame(width: 32, height: 32)
+                                                    
+                                                    Image(systemName: "trash.fill")
+                                                        .font(.system(size: 16))
+                                                        .foregroundColor(.white)
+                                                }
                                             }
+                                            .padding(8)
                                         }
-                                        .padding(8)
                                     }
                                 }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, gridSpacing)
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, gridSpacing)
+                            .padding(.top, 10)
+                            .padding(.bottom, Device.bottomSafeArea + 70)
                         }
-                        .padding(.top, UIApplication.shared.safeAreaTop + 10)
-                        .padding(.bottom, Device.bottomSafeArea + 70)
                     }
                 }
                 .onAppear {
@@ -194,120 +203,129 @@ struct SavedImagesView: View {
                     .scaledToFill()
                     .ignoresSafeArea()
                 
-                if savedImages.isEmpty {
-                    // Attractive Empty State View for iPhone
-                    ScrollView {
-                        VStack(spacing: 25) {
-                            Spacer(minLength: 0)
-                            
-                            // Animated icon container
-                            ZStack {
-                                // Outer glowing circle
-                                Circle()
+                VStack(spacing: 0) {
+                    // TopHomeView for iPhone
+                    TopHomeView()
+                        .padding(.top, UIApplication.shared.connectedScenes
+                            .compactMap { $0 as? UIWindowScene }
+                            .first?.windows
+                            .first?.safeAreaInsets.top ?? 0)
+                    
+                    if savedImages.isEmpty {
+                        // Attractive Empty State View for iPhone
+                        ScrollView {
+                            VStack(spacing: 25) {
+                                Spacer(minLength: 0)
+                                
+                                // Animated icon container
+                                ZStack {
+                                    // Outer glowing circle
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [
+                                                    Color(hex: "#FC466B").opacity(0.3),
+                                                    Color(hex: "#3F5EFB").opacity(0.3)
+                                                ],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .frame(width: 140, height: 140)
+                                        .scaleEffect(animateGradient ? 1.1 : 1.0)
+                                        .animation(
+                                            Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true),
+                                            value: animateGradient
+                                        )
+                                    
+                                    // Inner circle
+                                    Circle()
+                                        .fill(Color.white.opacity(0.1))
+                                        .frame(width: 120, height: 120)
+                                    
+                                    // Icon
+                                    Image(systemName: "photo.stack")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(.white)
+                                        .shadow(color: .white.opacity(0.3), radius: 10)
+                                }
+                                
+                                // Main title with gradient
+                                Text("No Saved Images")
+                                    .font(.custom("Urbanist-Bold", size: 24))
+                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.center)
+                                
+                                // Subtitle
+                                Text("Your saved images will appear here")
+                                    .font(.custom("Urbanist-Medium", size: 16))
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 20)
+                                
+                                // Divider with gradient
+                                Rectangle()
                                     .fill(
                                         LinearGradient(
                                             colors: [
-                                                Color(hex: "#FC466B").opacity(0.3),
-                                                Color(hex: "#3F5EFB").opacity(0.3)
+                                                Color(hex: "#FC466B").opacity(0.5),
+                                                Color(hex: "#3F5EFB").opacity(0.5)
                                             ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
+                                            startPoint: .leading,
+                                            endPoint: .trailing
                                         )
                                     )
-                                    .frame(width: 140, height: 140)
-                                    .scaleEffect(animateGradient ? 1.1 : 1.0)
-                                    .animation(
-                                        Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true),
-                                        value: animateGradient
-                                    )
+                                    .frame(width: 200, height: 1)
+                                    .padding(.vertical, 10)
                                 
-                                // Inner circle
-                                Circle()
-                                    .fill(Color.white.opacity(0.1))
-                                    .frame(width: 120, height: 120)
-                                
-                                // Icon
-                                Image(systemName: "photo.stack")
-                                    .font(.system(size: 50))
-                                    .foregroundColor(.white)
-                                    .shadow(color: .white.opacity(0.3), radius: 10)
+                                Spacer(minLength: 0)
                             }
-                            
-                            // Main title with gradient
-                            Text("No Saved Images")
-                                .font(.custom("Urbanist-Bold", size: 24))
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                            
-                            // Subtitle
-                            Text("Your saved images will appear here")
-                                .font(.custom("Urbanist-Medium", size: 16))
-                                .foregroundColor(.white.opacity(0.7))
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 20)
-                            
-                            // Divider with gradient
-                            Rectangle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(hex: "#FC466B").opacity(0.5),
-                                            Color(hex: "#3F5EFB").opacity(0.5)
-                                        ],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .frame(width: 200, height: 1)
-                                .padding(.vertical, 10)
-                            
-                            Spacer(minLength: 0)
+                            .frame(minHeight: UIScreen.main.bounds.height - 150)
+                            .padding(.horizontal, 20)
                         }
-                        .frame(minHeight: UIScreen.main.bounds.height - 100)
-                        .padding(.horizontal, 20)
-                    }
-                } else {
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: gridSpacing) {
-                            ForEach(Array(savedImages.enumerated()), id: \.offset) { index, image in
-                                ZStack(alignment: .topTrailing) {
-                                    // Image with corner radius and equal size
-                                    Image(uiImage: image)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: imageSize, height: imageSize)
-                                        .clipped()
-                                        .cornerRadius(8)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                        )
-                                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
-                                    
-                                    // Trash button on top right
-                                    Button(action: {
-                                        imageToDelete = index
-                                        showDeleteAlert = true
-                                    }) {
-                                        ZStack {
-                                            Circle()
-                                                .fill(Color.black.opacity(0.7))
-                                                .frame(width: 28, height: 28)
-                                            
-                                            Image(systemName: "trash.fill")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(.white)
+                    } else {
+                        ScrollView {
+                            LazyVGrid(columns: columns, spacing: gridSpacing) {
+                                ForEach(Array(savedImages.enumerated()), id: \.offset) { index, image in
+                                    ZStack(alignment: .topTrailing) {
+                                        // Image with corner radius and equal size
+                                        Image(uiImage: image)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: imageSize, height: imageSize)
+                                            .clipped()
+                                            .cornerRadius(8)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 8)
+                                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                            )
+                                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                                        
+                                        // Trash button on top right
+                                        Button(action: {
+                                            imageToDelete = index
+                                            showDeleteAlert = true
+                                        }) {
+                                            ZStack {
+                                                Circle()
+                                                    .fill(Color.black.opacity(0.7))
+                                                    .frame(width: 28, height: 28)
+                                                
+                                                Image(systemName: "trash.fill")
+                                                    .font(.system(size: 14))
+                                                    .foregroundColor(.white)
+                                            }
                                         }
+                                        .padding(6)
                                     }
-                                    .padding(6)
                                 }
                             }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, gridSpacing)
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, gridSpacing)
+                        .padding(.top, 10)
+                        .padding(.bottom, Device.bottomSafeArea + 70)
                     }
-                    .padding(.top, UIApplication.shared.safeAreaTop + 10)
-                    .padding(.bottom, Device.bottomSafeArea + 70)
                 }
             }
             .onAppear {
