@@ -19,86 +19,171 @@ struct BgEraserView: View {
     @State private var navigateNext = false
     
     var body: some View {
-        ZStack {
-            Image("app_bg_image")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            
-            VStack(spacing: 20) {
-                
-                // HEADER
-                HStack {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.white)
-                    }
+        if Device.isIpad {
+            GeometryReader { geometry in
+                ZStack {
+                    Image("app_bg_image")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
                     
-                    Text("Background Remove")
-                        .foregroundColor(.white)
-                        .font(.custom("Urbanist-Bold", size: 18))
+                    VStack(spacing: 20) {
+                        
+                        // HEADER
+                        HStack {
+                            Button {
+                                dismiss()
+                            } label: {
+                                Image(systemName: "chevron.left")
+                                    .foregroundColor(.white)
+                            }
+                            
+                            Text("Background Remove")
+                                .foregroundColor(.white)
+                                .font(.custom("Urbanist-Bold", size: 18))
+                            
+                            Spacer()
+                        }
+                        .padding(.top, UIApplication.shared.safeAreaTop)
+                        .padding(.bottom, 10)
+                        .padding(.leading, 12)
+                        .background(Color.clear)
+                        
+                        // IMAGE AREA
+                        ZStack {
+                            
+                            if let outputImage {
+                                Image(uiImage: outputImage)
+                                    .resizable()
+                                    .scaledToFit()
+                            } else {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFit()
+                            }
+                            
+                            if isProcessing {
+                                ProgressView()
+                                    .tint(.white)
+                            }
+                        }
+                        .frame(height: 400)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(12)
+                        .padding(.horizontal, 20)
+                        
+                        Spacer()
+                        
+                        // BUTTON
+                        Button {
+                            removeBG()
+                        } label: {
+                            Text(outputImage == nil ? "Remove Bg" : "Next")
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 55)
+                                .background(
+                                    LinearGradient(
+                                        colors: [Color.blue, Color.blue.opacity(0.7)],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                .cornerRadius(30)
+                        }
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 660)
+                        
+                        NavigationLink(
+                            destination: AddNewBGView(image: outputImage ?? image),
+                            isActive: $navigateNext
+                        ) { EmptyView() }
+                    }
+                }
+                .navigationBarHidden(true)
+            }
+        } else {
+            ZStack {
+                Image("app_bg_image")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 20) {
+                    
+                    // HEADER
+                    HStack {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.white)
+                        }
+                        
+                        Text("Background Remove")
+                            .foregroundColor(.white)
+                            .font(.custom("Urbanist-Bold", size: 18))
+                        
+                        Spacer()
+                    }
+                    .padding(.top, UIApplication.shared.safeAreaTop)
+                    .padding(.bottom, 10)
+                    .padding(.leading, 12)
+                    .background(Color.clear)
+                    
+                    // IMAGE AREA
+                    ZStack {
+                        
+                        if let outputImage {
+                            Image(uiImage: outputImage)
+                                .resizable()
+                                .scaledToFit()
+                        } else {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                        }
+                        
+                        if isProcessing {
+                            ProgressView()
+                                .tint(.white)
+                        }
+                    }
+                    .frame(height: 400)
+                    .background(Color.white.opacity(0.1))
+                    .cornerRadius(12)
+                    .padding(.horizontal, 20)
                     
                     Spacer()
-                }
-                .padding(.top, UIApplication.shared.safeAreaTop)
-                .padding(.bottom, 10)
-                .padding(.leading, 12)
-                .background(Color.clear)
-                
-                // IMAGE AREA
-                ZStack {
                     
-                    if let outputImage {
-                        Image(uiImage: outputImage)
-                            .resizable()
-                            .scaledToFit()
-                    } else {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                    }
-                    
-                    if isProcessing {
-                        ProgressView()
-                            .tint(.white)
-                    }
-                }
-                .frame(height: 400)
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(12)
-                .padding(.horizontal, 20)
-                
-                Spacer()
-                
-                // BUTTON
-                Button {
-                    removeBG()
-                } label: {
-                    Text(outputImage == nil ? "Remove Bg" : "Next")
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 55)
-                        .background(
-                            LinearGradient(
-                                colors: [Color.blue, Color.blue.opacity(0.7)],
-                                startPoint: .top,
-                                endPoint: .bottom
+                    // BUTTON
+                    Button {
+                        removeBG()
+                    } label: {
+                        Text(outputImage == nil ? "Remove Bg" : "Next")
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 55)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color.blue, Color.blue.opacity(0.7)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
                             )
-                        )
-                        .cornerRadius(30)
+                            .cornerRadius(30)
+                    }
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 20)
+                    
+                    NavigationLink(
+                        destination: AddNewBGView(image: outputImage ?? image),
+                        isActive: $navigateNext
+                    ) { EmptyView() }
                 }
-                .padding(.horizontal, 40)
-                .padding(.bottom, 20)
-                
-                NavigationLink(
-                    destination: AddNewBGView(image: outputImage ?? image),
-                    isActive: $navigateNext
-                ) { EmptyView() }
             }
+            .navigationBarHidden(true)
         }
-        .navigationBarHidden(true)
     }
     
     // MARK: - BG REMOVE
