@@ -15,6 +15,24 @@ struct AddNewBGView: View {
     
     @State private var selectedBG: String?
     @State private var isSaved = false
+    private var previewSize: CGSize {
+        let containerHeight: CGFloat = Device.isIpad
+            ? UIScreen.main.bounds.height * 0.65
+            : UIScreen.main.bounds.height * 0.58
+        
+        let maxWidth = UIScreen.main.bounds.width - 40
+        let aspectRatio = image.size.width / image.size.height
+        
+        var width = containerHeight * aspectRatio
+        var height = containerHeight
+        
+        if width > maxWidth {
+            width = maxWidth
+            height = width / aspectRatio
+        }
+        
+        return CGSize(width: width, height: height)
+    }
     
     let bgList = ["bg1", "bg2", "bg3", "bg4", "bg5", "bg6", "bg7", "bg8", "bg9"]
     
@@ -58,14 +76,18 @@ struct AddNewBGView: View {
                             if let bgName = selectedBG, let bgImage = UIImage(named: bgName) {
                                 Image(uiImage: bgImage)
                                     .resizable()
-                                    .scaledToFit()
+                                    .scaledToFill()
+                                    .frame(width: previewSize.width, height: previewSize.height)
+                                    .clipped()
                             }
-                            
+
                             Image(uiImage: image)
                                 .resizable()
                                 .scaledToFit()
+                                .frame(width: previewSize.width, height: previewSize.height)
                         }
-                        .frame(height: isIpad ? 450 : 380)
+                        .frame(height: isIpad ? UIScreen.main.bounds.height * 0.65 : 380)
+                        .frame(maxWidth: .infinity)
                         .background(Color.white.opacity(0.08))
                         .cornerRadius(24)
                         .padding(.horizontal, 20)
@@ -165,10 +187,10 @@ struct AddNewBGView: View {
                             saveImage()
                         } label: {
                             HStack(spacing: 12) {
-                                Text("Save")
-                                    .font(.custom("Urbanist-Bold", size: isIpad ? 18 : 16))
                                 Image(systemName: "arrow.down.circle.fill")
                                     .font(.system(size: isIpad ? 22 : 18))
+                                Text("Save")
+                                    .font(.custom("Urbanist-Bold", size: isIpad ? 18 : 16))
                             }
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -227,14 +249,18 @@ struct AddNewBGView: View {
                         if let bgName = selectedBG, let bgImage = UIImage(named: bgName) {
                             Image(uiImage: bgImage)
                                 .resizable()
-                                .scaledToFit()
+                                .scaledToFill()
+                                .frame(width: previewSize.width, height: previewSize.height)
+                                .clipped()
                         }
-                        
+
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFit()
+                            .frame(width: previewSize.width, height: previewSize.height)
                     }
-                    .frame(height: isIpad ? 450 : 380)
+                    .frame(height: isIpad ? 450 : UIScreen.main.bounds.height * 0.58)
+                    .frame(maxWidth: .infinity)
                     .background(Color.white.opacity(0.08))
                     .cornerRadius(24)
                     .padding(.horizontal, 20)
