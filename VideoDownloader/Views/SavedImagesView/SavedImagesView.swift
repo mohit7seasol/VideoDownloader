@@ -13,11 +13,31 @@ struct SavedImagesView: View {
     @State private var imageToDelete: Int?
     @State private var animateGradient = false
     
-    private let columns = [
-        GridItem(.flexible(), spacing: 4),
-        GridItem(.flexible(), spacing: 4),
-        GridItem(.flexible(), spacing: 4)
-    ]
+    // Dynamic columns based on device with equal spacing
+    private var columns: [GridItem] {
+        if Device.isIpad {
+            // iPad: 5 columns with equal spacing
+            return Array(repeating: GridItem(.flexible(), spacing: 12), count: 5)
+        } else {
+            // iPhone: 3 columns with equal spacing
+            return Array(repeating: GridItem(.flexible(), spacing: 8), count: 3)
+        }
+    }
+    
+    // Dynamic spacing based on device
+    private var gridSpacing: CGFloat {
+        Device.isIpad ? 12 : 8
+    }
+    
+    // Dynamic image size based on device with equal distribution
+    private var imageSize: CGFloat {
+        let screenWidth = UIScreen.main.bounds.width
+        let horizontalPadding: CGFloat = Device.isIpad ? 32 : 20 // Total horizontal padding
+        let totalSpacing: CGFloat = Device.isIpad ? 12 * 4 : 8 * 2 // Spacing between columns
+        let numberOfColumns: CGFloat = Device.isIpad ? 5 : 3
+        
+        return (screenWidth - horizontalPadding - totalSpacing) / numberOfColumns
+    }
     
     var body: some View {
         ZStack {
@@ -65,13 +85,13 @@ struct SavedImagesView: View {
                     
                     // Main title with gradient
                     Text("No Saved Images")
-                        .font(.custom("Urbanist-Bold", size: 24))
+                        .font(.custom("Urbanist-Bold", size: Device.isIpad ? 32 : 24))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
                     
                     // Subtitle
                     Text("Your saved images will appear here")
-                        .font(.custom("Urbanist-Medium", size: 16))
+                        .font(.custom("Urbanist-Medium", size: Device.isIpad ? 18 : 16))
                         .foregroundColor(.white.opacity(0.7))
                         .multilineTextAlignment(.center)
                     
@@ -89,29 +109,6 @@ struct SavedImagesView: View {
                         )
                         .frame(width: 200, height: 1)
                         .padding(.vertical, 10)
-                    
-                    // Informational message with icon
-                    HStack(spacing: 12) {
-                        Image(systemName: "info.circle")
-                            .font(.system(size: 14))
-                            .foregroundColor(Color(hex: "#3F5EFB"))
-                        
-                        Text("Images saved from editor will appear in this gallery")
-                            .font(.custom("Urbanist-Regular", size: 13))
-                            .foregroundColor(.white.opacity(0.6))
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.horizontal, 40)
-                    
-                    // Decorative elements
-                    HStack(spacing: 20) {
-                        ForEach(0..<3) { _ in
-                            Circle()
-                                .fill(Color.white.opacity(0.1))
-                                .frame(width: 6, height: 6)
-                        }
-                    }
-                    .padding(.top, 20)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(
@@ -128,40 +125,46 @@ struct SavedImagesView: View {
                 )
             } else {
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 4) {
+                    LazyVGrid(columns: columns, spacing: gridSpacing) {
                         ForEach(Array(savedImages.enumerated()), id: \.offset) { index, image in
                             ZStack(alignment: .topTrailing) {
+                                // Image with corner radius and equal size
                                 Image(uiImage: image)
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(width: (UIScreen.main.bounds.width - 32) / 3, height: (UIScreen.main.bounds.width - 32) / 3)
+                                    .frame(width: imageSize, height: imageSize)
                                     .clipped()
-                                    .aspectRatio(1, contentMode: .fill)
+                                    .cornerRadius(Device.isIpad ? 12 : 8)
                                     .overlay(
-                                        // Subtle overlay on tap
-                                        Rectangle()
-                                            .fill(Color.black.opacity(0.0))
+                                        RoundedRectangle(cornerRadius: Device.isIpad ? 12 : 8)
+                                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
                                     )
+                                    .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
                                 
-                                // Delete button on top right
+                                // Trash button on top right
                                 Button(action: {
                                     imageToDelete = index
                                     showDeleteAlert = true
                                 }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .font(.system(size: 22))
-                                        .foregroundColor(.white)
-                                        .background(Color.black.opacity(0.6))
-                                        .clipShape(Circle())
-                                        .shadow(color: .black.opacity(0.3), radius: 2)
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.black.opacity(0.7))
+                                            .frame(width: Device.isIpad ? 32 : 28, height: Device.isIpad ? 32 : 28)
+                                        
+                                        Image(systemName: "trash.fill")
+                                            .font(.system(size: Device.isIpad ? 16 : 14))
+                                            .foregroundColor(.white)
+                                    }
                                 }
-                                .padding(8)
+                                .padding(Device.isIpad ? 8 : 6)
                             }
                         }
                     }
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, Device.isIpad ? 16 : 10)
+                    .padding(.vertical, gridSpacing)
                 }
                 .padding(.top, UIApplication.shared.safeAreaTop + 10)
+                .padding(.bottom, Device.bottomSafeArea + 70)
             }
         }
         .onAppear {
