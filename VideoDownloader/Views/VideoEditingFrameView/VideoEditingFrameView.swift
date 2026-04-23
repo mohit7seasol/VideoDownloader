@@ -104,6 +104,7 @@ struct VideoEditingFrameView: View {
             VStack(spacing: 0) {
                 // Header
                 headerView
+                    .padding(.top, 0)
                 
                 Spacer()
                 
@@ -156,8 +157,7 @@ struct VideoEditingFrameView: View {
             }
         }
         .padding(.horizontal, 20)
-        .padding(.top, 50)
-        .padding(.bottom, 10)
+        .padding(.vertical, 10)
     }
     
     // MARK: - Video Preview View
