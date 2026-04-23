@@ -250,7 +250,8 @@ struct VideoEditingCardView: View {
         .frame(height: isIpad ? 180 : 140)
         .padding(.horizontal, 20)
         .navigationDestination(isPresented: $navigate) {
-            SoundTrackView()
+//            SoundTrackView()
+            VideoChooseView(selectionType: .AddFramesToVideoView)
         }
     }
 }

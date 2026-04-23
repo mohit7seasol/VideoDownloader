@@ -11,6 +11,11 @@ import AVKit
 import Lottie
 import Combine
 
+enum VideoSelectionTypes {
+    case AddMusicToVideoView
+    case AddFramesToVideoView
+}
+
 // MARK: - VideoChooseView
 struct VideoChooseView: View {
     @Environment(\.dismiss) var dismiss
@@ -25,6 +30,7 @@ struct VideoChooseView: View {
     @State private var selectedItems: [PhotosPickerItem] = []
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     @StateObject private var photoObserver = PhotoLibraryObserver()
+    let selectionType: VideoSelectionTypes
     
 //    let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "App"
     
@@ -179,7 +185,13 @@ struct VideoChooseView: View {
                 }
                 .navigationDestination(isPresented: $navigateToAddMusic) {
                     if let video = selectedVideo {
-                        AddMusicToVideoView(videoAsset: video)
+                        // Navigate based on selectionType
+                        switch selectionType {
+                        case .AddMusicToVideoView:
+                            AddMusicToVideoView(videoAsset: video)
+                        case .AddFramesToVideoView:
+                            VideoEditingFrameView(videoAsset: video)
+                        }
                     }
                 }
             }
@@ -333,7 +345,13 @@ struct VideoChooseView: View {
             }
             .navigationDestination(isPresented: $navigateToAddMusic) {
                 if let video = selectedVideo {
-                    AddMusicToVideoView(videoAsset: video)
+                    // Navigate based on selectionType
+                    switch selectionType {
+                    case .AddMusicToVideoView:
+                        AddMusicToVideoView(videoAsset: video)
+                    case .AddFramesToVideoView:
+                        VideoEditingFrameView(videoAsset: video)
+                    }
                 }
             }
         }

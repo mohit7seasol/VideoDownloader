@@ -127,7 +127,7 @@ struct SoundTrackView: View {
             }
             .navigationBarHidden(true)
             .navigationDestination(isPresented: $navigateToVideoChoose) {
-                VideoChooseView()
+                VideoChooseView(selectionType: .AddMusicToVideoView)
             }
         } else {
             ZStack {
@@ -228,7 +228,7 @@ struct SoundTrackView: View {
             }
             .navigationBarHidden(true)
             .navigationDestination(isPresented: $navigateToVideoChoose) {
-                VideoChooseView()
+                VideoChooseView(selectionType: .AddMusicToVideoView)
             }
         }
     }
