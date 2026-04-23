@@ -83,6 +83,7 @@ struct HomeView: View {
                                     }
                                 }
                                 .padding(.horizontal, 20)
+                                VideoEditingCardView()
                                 
                                 // Bottom Features for iPad
                                 BottomFeaturesView(
@@ -140,7 +141,7 @@ struct HomeView: View {
                                 }
                             }
                             .padding(.horizontal, 20)
-                            
+                            VideoEditingCardView()
                             BottomFeaturesView(
                                 onCollageMakerTap: {
                                     navigateToCollageMaker = true
@@ -169,6 +170,87 @@ struct HomeView: View {
             .navigationDestination(isPresented: $navigateToBackgroundEditor) {
                 PhotoChooseView(selectionType: .photoBGRemover)
             }
+        }
+    }
+}
+
+struct VideoEditingCardView: View {
+    
+    @State private var navigate = false
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
+    
+    private var isIpad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+
+    var body: some View {
+        ZStack {
+            
+            RoundedRectangle(cornerRadius: 26)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(hex: "#D39B4C").opacity(0.10),
+                            Color(hex: "#D39B4C").opacity(0.70)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+            
+            HStack {
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    
+                    Spacer().frame(height: 14)
+                    
+                    Text("Powerful Video Editing".localized(language))
+                        .font(Font.custom("Urbanist-Bold", size: 16))
+                        .foregroundColor(.white)
+                    
+                    Text("Everything you need to edit in one place".localized(language))
+                        .font(Font.custom("Urbanist-Regular", size: 12))
+                        .foregroundColor(.white.opacity(0.9))
+                        .lineLimit(3)
+                    
+                    Button {
+                        navigate = true
+                    } label: {
+                        Text("View More".localized(language))
+                            .font(Font.custom("Urbanist-Bold", size: 12))
+                            .foregroundColor(Color(hex: "#0D1426"))
+                            .frame(
+                                width: isIpad ? 110 : 90,
+                                height: isIpad ? 42 : 30
+                            )
+                            .background(Color.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .shadow(
+                                color: Color(hex: "#0D1426").opacity(0.4),
+                                radius: 6,
+                                x: 0,
+                                y: 4
+                            )
+                    }
+                    
+                    Spacer()
+                }
+                .padding(.leading, 20)
+                .padding(.trailing, 10)
+                
+                Spacer()
+                
+                Image("h6")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: isIpad ? 100 : 86)
+                    .padding(.trailing, 15)
+            }
+        }
+        .frame(height: isIpad ? 180 : 140)
+        .padding(.horizontal, 20)
+        .navigationDestination(isPresented: $navigate) {
+            SoundTrackView()
         }
     }
 }
