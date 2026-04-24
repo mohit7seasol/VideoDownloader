@@ -28,7 +28,9 @@ struct VideoFlipView: View {
     
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Image("app_bg_image")
+                .resizable()
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header (Same as VideoEditingFrameView)
@@ -132,6 +134,7 @@ struct VideoFlipView: View {
             HStack {
                 Image(systemName: "arrow.triangle.2.circlepath")
                     .foregroundColor(.blue)
+                    .padding(.leading,  10)
                 Text("Rotate & Flip")
                     .font(.custom("Urbanist-SemiBold", size: 18))
                     .foregroundColor(.white)
@@ -202,9 +205,14 @@ struct VideoFlipView: View {
             .padding(.vertical, 15)
         }
         .background(
-            Rectangle()
-                .fill(Color.black.opacity(0.7))
-                .ignoresSafeArea()
+            LinearGradient(
+                gradient: Gradient(colors: [Color(hex: "#FFFFFF").opacity(0.05), Color(hex: "#FFFFFF").opacity(0.10)]),
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .ignoresSafeArea()
+            .cornerRadius(16)
+            .padding(.horizontal, 15)
         )
     }
     

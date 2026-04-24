@@ -29,7 +29,9 @@ struct VideoTrimView: View {
     
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Image("app_bg_image")
+                .resizable()
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header (Same as VideoEditingFrameView)
@@ -134,7 +136,6 @@ struct VideoTrimView: View {
                 Text("Trim Range")
                     .font(.custom("Urbanist-SemiBold", size: 18))
                     .foregroundColor(.white)
-                
                 Spacer()
                 
                 if rangeDuration.lowerBound != 0 || rangeDuration.upperBound != originalDuration {
@@ -149,6 +150,7 @@ struct VideoTrimView: View {
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
+            .padding(.leading , 10)
             
             // Duration text
             Text(formatDuration(rangeDuration.upperBound - rangeDuration.lowerBound))
@@ -192,9 +194,14 @@ struct VideoTrimView: View {
             .padding(.bottom, 20)
         }
         .background(
-            Rectangle()
-                .fill(Color.black.opacity(0.7))
-                .ignoresSafeArea()
+            LinearGradient(
+                gradient: Gradient(colors: [Color(hex: "#FFFFFF").opacity(0.05), Color(hex: "#FFFFFF").opacity(0.10)]),
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .ignoresSafeArea()
+            .cornerRadius(16)
+            .padding(.horizontal, 15)
         )
     }
     
@@ -389,6 +396,7 @@ struct RangedSliderView<Overlay: View>: View {
                            height: geometry.size.height)
                     .position(x: rangeCenter(in: geometry),
                               y: geometry.size.height / 2)
+                    .cornerRadius(12)
             }
         }
     }
