@@ -319,37 +319,86 @@ struct VideoFlipView: View {
             return
         }
         
-        exportSession.outputURL = outputURL
-        exportSession.outputFileType = .mp4
+        // Get video track and its natural size
+        guard let videoTrack = asset.tracks(withMediaType: .video).first else {
+            dismiss()
+            return
+        }
         
-        // Apply rotation and flip transformations
+        let naturalSize = videoTrack.naturalSize
+        let transform = videoTrack.preferredTransform
+        
+        // Determine video orientation
+        let isPortrait = naturalSize.width < naturalSize.height
+        
+        // Calculate render size based on rotation
+        var renderSize = naturalSize
+        let finalRotation = Int(rotation)
+        
+        if finalRotation == 90 || finalRotation == 270 {
+            renderSize = CGSize(width: naturalSize.height, height: naturalSize.width)
+        } else {
+            renderSize = naturalSize
+        }
+        
+        // Create video composition with transformation
         let videoComposition = AVMutableVideoComposition(asset: asset) { request in
-            var transform = CGAffineTransform.identity
+            var finalTransform = CGAffineTransform.identity
+            
+            // Start with the video track's preferred transform
+            finalTransform = finalTransform.concatenating(transform)
             
             // Apply rotation
-            transform = transform.rotated(by: CGFloat(rotation * .pi / 180))
-            
-            // Apply flip
-            if isMirror {
-                transform = transform.scaledBy(x: -1, y: 1)
+            switch finalRotation {
+            case 90:
+                finalTransform = finalTransform.concatenating(CGAffineTransform(rotationAngle: .pi / 2))
+                finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: naturalSize.height, y: 0))
+            case 180:
+                finalTransform = finalTransform.concatenating(CGAffineTransform(rotationAngle: .pi))
+                finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: naturalSize.width, y: naturalSize.height))
+            case 270:
+                finalTransform = finalTransform.concatenating(CGAffineTransform(rotationAngle: 3 * .pi / 2))
+                finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: 0, y: naturalSize.width))
+            default:
+                break
             }
             
-            let transformedImage = request.sourceImage.transformed(by: transform)
+            // Apply flip (mirror horizontally)
+            if isMirror {
+                finalTransform = finalTransform.concatenating(CGAffineTransform(scaleX: -1, y: 1))
+                finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: renderSize.width, y: 0))
+            }
+            
+            // Apply the transform to the source image
+            let transformedImage = request.sourceImage.transformed(by: finalTransform)
             request.finish(with: transformedImage, context: nil)
         }
         
+        // Set render size and frame duration
+        videoComposition.renderSize = renderSize
+        videoComposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
+        
         exportSession.videoComposition = videoComposition
+        exportSession.outputURL = outputURL
+        exportSession.outputFileType = .mp4
+        exportSession.shouldOptimizeForNetworkUse = true
         
         exportSession.exportAsynchronously {
             DispatchQueue.main.async {
-                if exportSession.status == .completed {
+                switch exportSession.status {
+                case .completed:
                     ImageSaveManager.shared.saveVideo(from: outputURL) { success in
                         if success {
                             try? FileManager.default.removeItem(at: outputURL)
                         }
                     }
+                    dismiss()
+                case .failed:
+                    print("Export failed: \(exportSession.error?.localizedDescription ?? "unknown error")")
+                    dismiss()
+                default:
+                    dismiss()
                 }
-                dismiss()
             }
         }
     }

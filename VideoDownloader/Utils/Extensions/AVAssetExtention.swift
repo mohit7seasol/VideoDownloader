@@ -17,4 +17,13 @@ extension AVAsset {
         })
         return composition
     }
+    func setVideoComposition(transform: CGAffineTransform, renderSize: CGSize) -> AVVideoComposition {
+        let composition = AVMutableVideoComposition(asset: self) { request in
+            let transformedImage = request.sourceImage.transformed(by: transform)
+            request.finish(with: transformedImage, context: nil)
+        }
+        composition.renderSize = renderSize
+        composition.frameDuration = CMTimeMake(value: 1, timescale: 30)
+        return composition
+    }
 }
