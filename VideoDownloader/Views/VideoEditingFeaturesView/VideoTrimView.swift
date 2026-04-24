@@ -318,8 +318,45 @@ struct VideoTrimView: View {
     }
     
     private func applyTrim() {
-        player?.pause()
-        dismiss()
+        guard let player = player,
+              let currentItem = player.currentItem,
+              let asset = currentItem.asset as? AVURLAsset else {
+            dismiss()
+            return
+        }
+        
+        let timestamp = Date().timeIntervalSince1970
+        let outputURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(Int(timestamp))_trimmed.mp4")
+        
+        if FileManager.default.fileExists(atPath: outputURL.path) {
+            try? FileManager.default.removeItem(at: outputURL)
+        }
+        
+        guard let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetHighestQuality) else {
+            dismiss()
+            return
+        }
+        
+        let startTime = CMTime(seconds: rangeDuration.lowerBound, preferredTimescale: 600)
+        let endTime = CMTime(seconds: rangeDuration.upperBound, preferredTimescale: 600)
+        let duration = CMTime(seconds: rangeDuration.upperBound - rangeDuration.lowerBound, preferredTimescale: 600)
+        
+        exportSession.outputURL = outputURL
+        exportSession.outputFileType = .mp4
+        exportSession.timeRange = CMTimeRange(start: startTime, duration: duration)
+        
+        exportSession.exportAsynchronously {
+            DispatchQueue.main.async {
+                if exportSession.status == .completed {
+                    ImageSaveManager.shared.saveVideo(from: outputURL) { success in
+                        if success {
+                            try? FileManager.default.removeItem(at: outputURL)
+                        }
+                    }
+                }
+                dismiss()
+            }
+        }
     }
     
     private func formatDuration(_ duration: TimeInterval) -> String {

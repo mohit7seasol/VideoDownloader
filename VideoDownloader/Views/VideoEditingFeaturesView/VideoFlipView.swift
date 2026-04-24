@@ -300,7 +300,57 @@ struct VideoFlipView: View {
     }
     
     private func applyTransformations() {
-        player?.pause()
-        dismiss()
+        guard let player = player,
+              let currentItem = player.currentItem,
+              let asset = currentItem.asset as? AVURLAsset else {
+            dismiss()
+            return
+        }
+        
+        let timestamp = Date().timeIntervalSince1970
+        let outputURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(Int(timestamp))_flipped.mp4")
+        
+        if FileManager.default.fileExists(atPath: outputURL.path) {
+            try? FileManager.default.removeItem(at: outputURL)
+        }
+        
+        guard let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetHighestQuality) else {
+            dismiss()
+            return
+        }
+        
+        exportSession.outputURL = outputURL
+        exportSession.outputFileType = .mp4
+        
+        // Apply rotation and flip transformations
+        let videoComposition = AVMutableVideoComposition(asset: asset) { request in
+            var transform = CGAffineTransform.identity
+            
+            // Apply rotation
+            transform = transform.rotated(by: CGFloat(rotation * .pi / 180))
+            
+            // Apply flip
+            if isMirror {
+                transform = transform.scaledBy(x: -1, y: 1)
+            }
+            
+            let transformedImage = request.sourceImage.transformed(by: transform)
+            request.finish(with: transformedImage, context: nil)
+        }
+        
+        exportSession.videoComposition = videoComposition
+        
+        exportSession.exportAsynchronously {
+            DispatchQueue.main.async {
+                if exportSession.status == .completed {
+                    ImageSaveManager.shared.saveVideo(from: outputURL) { success in
+                        if success {
+                            try? FileManager.default.removeItem(at: outputURL)
+                        }
+                    }
+                }
+                dismiss()
+            }
+        }
     }
 }

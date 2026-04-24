@@ -357,8 +357,43 @@ struct VideoEditingFrameView: View {
     }
     
     private func applySettingsAndSave() {
-        // Save the filter settings
-        dismiss()
+        // Save the video with applied filter
+        guard let currentItem = videoPlayerManager.videoPlayer.currentItem,
+              let asset = currentItem.asset as? AVURLAsset else {
+            dismiss()
+            return
+        }
+        
+        let timestamp = Date().timeIntervalSince1970
+        let outputURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(Int(timestamp))_filtered.mp4")
+        
+        // Remove existing file
+        if FileManager.default.fileExists(atPath: outputURL.path) {
+            try? FileManager.default.removeItem(at: outputURL)
+        }
+        
+        guard let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetHighestQuality) else {
+            dismiss()
+            return
+        }
+        
+        exportSession.outputURL = outputURL
+        exportSession.outputFileType = .mp4
+        exportSession.videoComposition = currentItem.videoComposition
+        
+        exportSession.exportAsynchronously {
+            DispatchQueue.main.async {
+                if exportSession.status == .completed {
+                    ImageSaveManager.shared.saveVideo(from: outputURL) { success in
+                        if success {
+                            // Clean up temp file
+                            try? FileManager.default.removeItem(at: outputURL)
+                        }
+                    }
+                }
+                dismiss()
+            }
+        }
     }
 }
 
