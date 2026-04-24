@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SavedImagesView: View {
+struct SavedAssetsView: View {
     @State private var savedImages: [UIImage] = []
     @State private var showDeleteAlert = false
     @State private var imageToDelete: Int?

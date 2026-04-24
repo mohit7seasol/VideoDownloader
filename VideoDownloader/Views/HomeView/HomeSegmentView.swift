@@ -22,7 +22,7 @@ struct HomeSegmentView: View {
                         .navigationBarHidden(true)
                         .navigationBarBackButtonHidden(true)
                 } else {
-                    SavedImagesView()
+                    SavedAssetsView()
                         .navigationBarHidden(true)
                         .navigationBarBackButtonHidden(true)
                 }

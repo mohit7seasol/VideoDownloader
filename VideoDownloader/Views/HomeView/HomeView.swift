@@ -352,6 +352,8 @@ struct HomeViewCard: View {
         }
         .frame(height: isIpad ? 350 : 220)
         .clipped(antialiased: false)
+//        .cornerRadius(22)
+//        .modifier(GlassCardModifier(cornerRadius: 22))
         .background(
             NavigationLink(
                 destination: destinationView,
