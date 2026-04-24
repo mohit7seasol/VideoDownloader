@@ -205,11 +205,11 @@ struct VideoEditingCardView: View {
                     Spacer().frame(height: 14)
                     
                     Text("Powerful Video Editing".localized(language))
-                        .font(Font.custom("Urbanist-Bold", size: 16))
+                        .font(Font.custom("Urbanist-Bold", size: Device.isIpad ? 24 : 16))
                         .foregroundColor(.white)
                     
                     Text("Everything you need to edit in one place".localized(language))
-                        .font(Font.custom("Urbanist-Regular", size: 12))
+                        .font(Font.custom("Urbanist-Regular", size: Device.isIpad ? 20 : 12))
                         .foregroundColor(.white.opacity(0.9))
                         .lineLimit(3)
                     
@@ -217,7 +217,7 @@ struct VideoEditingCardView: View {
                         navigate = true
                     } label: {
                         Text("View More".localized(language))
-                            .font(Font.custom("Urbanist-Bold", size: 12))
+                            .font(Font.custom("Urbanist-Bold", size: Device.isIpad ? 18 : 12))
                             .foregroundColor(Color(hex: "#0D1426"))
                             .frame(
                                 width: isIpad ? 110 : 90,
