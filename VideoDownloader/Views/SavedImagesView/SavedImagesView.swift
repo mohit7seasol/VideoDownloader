@@ -514,8 +514,23 @@ struct SavedAssetsView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(
-                            RoundedRectangle(cornerRadius: 25)
-                                .fill(selectedSegment == type ? Color.blue : Color.clear)
+                            Group {
+                                if selectedSegment == type {
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color(hex: "#1973E8"),
+                                                    Color(hex: "#0E4082")
+                                                ]),
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                        )
+                                } else {
+                                    Color.clear
+                                }
+                            }
                         )
                 }
             }
