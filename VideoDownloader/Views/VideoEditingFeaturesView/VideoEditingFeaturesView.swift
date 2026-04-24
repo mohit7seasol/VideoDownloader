@@ -141,10 +141,10 @@ struct VideoEditingFeaturesView: View {
                 VideoChooseView(selectionType: .AddFramesToVideoView)
             }
             .navigationDestination(isPresented: $navigateToTrimVideo) {
-                VideoChooseView(selectionType: .AddFramesToVideoView)
+                VideoChooseView(selectionType: .AddTrimToVideoView)
             }
             .navigationDestination(isPresented: $navigateToFlipVideo) {
-                VideoChooseView(selectionType: .AddFramesToVideoView)
+                VideoChooseView(selectionType: .AddFlipToVideoView)
             }
         }
     }

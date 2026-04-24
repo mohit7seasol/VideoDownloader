@@ -186,7 +186,18 @@ struct VideoChooseView: View {
                     }
                 }
                 .navigationDestination(isPresented: $navigateToAddMusic) {
-                    destinationView()
+                    if let video = selectedVideo {
+                        switch selectionType {
+                        case .AddMusicToVideoView:
+                            AddMusicToVideoView(videoAsset: video)
+                        case .AddFramesToVideoView:
+                            VideoEditingFrameView(videoAsset: video)
+                        case .AddTrimToVideoView:
+                            VideoTrimView(videoAsset: video)
+                        case .AddFlipToVideoView:
+                            VideoFlipView(videoAsset: video)
+                        }
+                    }
                 }
             }
             .ignoresSafeArea()
@@ -338,28 +349,19 @@ struct VideoChooseView: View {
                 }
             }
             .navigationDestination(isPresented: $navigateToAddMusic) {
-                destinationView()
+                if let video = selectedVideo {
+                    switch selectionType {
+                    case .AddMusicToVideoView:
+                        AddMusicToVideoView(videoAsset: video)
+                    case .AddFramesToVideoView:
+                        VideoEditingFrameView(videoAsset: video)
+                    case .AddTrimToVideoView:
+                        VideoTrimView(videoAsset: video)
+                    case .AddFlipToVideoView:
+                        VideoFlipView(videoAsset: video)
+                    }
+                }
             }
-        }
-    }
-    @ViewBuilder
-    private func destinationView() -> some View {
-        if let video = selectedVideo {
-            switch selectionType {
-            case .AddMusicToVideoView:
-                AddMusicToVideoView(videoAsset: video)
-
-            case .AddFramesToVideoView:
-                VideoEditingFrameView(videoAsset: video)
-
-            case .AddTrimToVideoView:
-                VideoTrimView(videoAsset: video)
-
-            case .AddFlipToVideoView:
-                VideoFlipView(videoAsset: video)
-            }
-        } else {
-            EmptyView()
         }
     }
     private func handleSelectedPhotosPickerItems(_ items: [PhotosPickerItem]) {
