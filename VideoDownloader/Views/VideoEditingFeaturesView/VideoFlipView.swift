@@ -21,6 +21,8 @@ struct VideoFlipView: View {
     @State private var rotation: Double = 0
     @State private var isMirror: Bool = false
     @State private var isPlaying = false
+    @State private var showSuccessAlert = false
+    @State private var navigateToHome = false
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -56,6 +58,19 @@ struct VideoFlipView: View {
         .onDisappear {
             player?.pause()
         }
+        .alert("Success", isPresented: $showSuccessAlert) {
+            Button("OK") {
+                navigateToHome = true
+            }
+        } message: {
+            Text("Video saved successfully!")
+        }
+        .background(
+            NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
+                EmptyView()
+            }
+            .hidden()
+        )
     }
     
     // MARK: - Header View (Same style as VideoEditingFrameView)
@@ -328,9 +343,6 @@ struct VideoFlipView: View {
         let naturalSize = videoTrack.naturalSize
         let transform = videoTrack.preferredTransform
         
-        // Determine video orientation
-        let isPortrait = naturalSize.width < naturalSize.height
-        
         // Calculate render size based on rotation
         var renderSize = naturalSize
         let finalRotation = Int(rotation)
@@ -390,9 +402,9 @@ struct VideoFlipView: View {
                     ImageSaveManager.shared.saveVideo(from: outputURL) { success in
                         if success {
                             try? FileManager.default.removeItem(at: outputURL)
+                            showSuccessAlert = true
                         }
                     }
-                    dismiss()
                 case .failed:
                     print("Export failed: \(exportSession.error?.localizedDescription ?? "unknown error")")
                     dismiss()

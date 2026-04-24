@@ -22,6 +22,8 @@ struct VideoTrimView: View {
     @State private var originalDuration: Double = 0
     @State private var thumbnailsImages: [UIImage] = []
     @State private var isPlaying = false
+    @State private var showSuccessAlert = false
+    @State private var navigateToHome = false
     
     private var isIpad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
@@ -57,6 +59,19 @@ struct VideoTrimView: View {
         .onDisappear {
             player?.pause()
         }
+        .alert("Success", isPresented: $showSuccessAlert) {
+            Button("OK") {
+                navigateToHome = true
+            }
+        } message: {
+            Text("Video saved successfully!")
+        }
+        .background(
+            NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
+                EmptyView()
+            }
+            .hidden()
+        )
     }
     
     // MARK: - Header View (Same style as VideoEditingFrameView)
@@ -338,7 +353,6 @@ struct VideoTrimView: View {
         }
         
         let startTime = CMTime(seconds: rangeDuration.lowerBound, preferredTimescale: 600)
-        let endTime = CMTime(seconds: rangeDuration.upperBound, preferredTimescale: 600)
         let duration = CMTime(seconds: rangeDuration.upperBound - rangeDuration.lowerBound, preferredTimescale: 600)
         
         exportSession.outputURL = outputURL
@@ -351,10 +365,12 @@ struct VideoTrimView: View {
                     ImageSaveManager.shared.saveVideo(from: outputURL) { success in
                         if success {
                             try? FileManager.default.removeItem(at: outputURL)
+                            showSuccessAlert = true
                         }
                     }
+                } else {
+                    dismiss()
                 }
-                dismiss()
             }
         }
     }

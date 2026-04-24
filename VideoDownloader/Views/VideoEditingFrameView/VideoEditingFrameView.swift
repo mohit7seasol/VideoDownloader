@@ -90,6 +90,8 @@ struct VideoEditingFrameView: View {
     @StateObject private var videoPlayerManager = VideoPlayerManager()
     @State private var isLoading = true
     @State private var videoURL: URL?
+    @State private var showSuccessAlert = false
+    @State private var navigateToHome = false
     
     // Filter settings
     @State private var availableFilters: [VideoFilter] = []
@@ -128,6 +130,19 @@ struct VideoEditingFrameView: View {
         .onDisappear {
             videoPlayerManager.pause()
         }
+        .alert("Success", isPresented: $showSuccessAlert) {
+            Button("OK") {
+                navigateToHome = true
+            }
+        } message: {
+            Text("Video saved successfully!")
+        }
+        .background(
+            NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
+                EmptyView()
+            }
+            .hidden()
+        )
     }
     
     // MARK: - Header View
@@ -386,12 +401,13 @@ struct VideoEditingFrameView: View {
                 if exportSession.status == .completed {
                     ImageSaveManager.shared.saveVideo(from: outputURL) { success in
                         if success {
-                            // Clean up temp file
                             try? FileManager.default.removeItem(at: outputURL)
+                            showSuccessAlert = true
                         }
                     }
+                } else {
+                    dismiss()
                 }
-                dismiss()
             }
         }
     }
