@@ -25,6 +25,7 @@ struct SavedAssetsView: View {
     @State private var showSaveToGalleryAlert = false
     @State private var showShareSheet = false
     @State private var shareItems: [Any] = []
+    @State private var refreshID = UUID() // Add this to force refresh
     
     // Dynamic columns based on device with equal spacing
     private var columns: [GridItem] {
@@ -137,6 +138,7 @@ struct SavedAssetsView: View {
                                 }
                                 .padding(.top, 10)
                                 .padding(.bottom, Device.bottomSafeArea + 70)
+                                .id(refreshID) // Add id to force refresh
                             }
                         } else {
                             if savedVideos.isEmpty {
@@ -206,6 +208,7 @@ struct SavedAssetsView: View {
                                 }
                                 .padding(.top, 10)
                                 .padding(.bottom, Device.bottomSafeArea + 70)
+                                .id(refreshID) // Add id to force refresh
                             }
                         }
                     }
@@ -225,6 +228,7 @@ struct SavedAssetsView: View {
                                 deleteVideo(at: index)
                             }
                         }
+                        itemToDelete = nil
                     }
                 } message: {
                     Text(deleteType == .savedPhotos ? "Are you sure you want to delete this image?" : "Are you sure you want to delete this video?")
@@ -324,6 +328,7 @@ struct SavedAssetsView: View {
                             }
                             .padding(.top, 10)
                             .padding(.bottom, Device.bottomSafeArea + 70)
+                            .id(refreshID) // Add id to force refresh
                         }
                     } else {
                         if savedVideos.isEmpty {
@@ -393,6 +398,7 @@ struct SavedAssetsView: View {
                             }
                             .padding(.top, 10)
                             .padding(.bottom, Device.bottomSafeArea + 70)
+                            .id(refreshID) // Add id to force refresh
                         }
                     }
                 }
@@ -412,12 +418,12 @@ struct SavedAssetsView: View {
                             deleteVideo(at: index)
                         }
                     }
+                    itemToDelete = nil
                 }
             } message: {
                 Text(deleteType == .savedPhotos ? "Are you sure you want to delete this image?" : "Are you sure you want to delete this video?")
             }
             .alert("Saved to Gallery", isPresented: $showSaveToGalleryAlert) {
-                Button("OK", role: .cancel) { }
                 Button("OK", role: .cancel) { }
             } message: {
                 Text("Media has been saved to your photo library")
@@ -589,7 +595,7 @@ struct SavedAssetsView: View {
         }
     }
     
-    // MARK: - Load Methods
+    // MARK: - Load Methods (with sorting - newest first)
     private func loadSavedImages() {
         let fileManager = FileManager.default
         let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -598,15 +604,21 @@ struct SavedAssetsView: View {
         guard fileManager.fileExists(atPath: savedImagesPath.path) else { return }
         
         do {
-            let imageFiles = try fileManager.contentsOfDirectory(at: savedImagesPath, includingPropertiesForKeys: nil)
-            var images: [UIImage] = []
+            let imageFiles = try fileManager.contentsOfDirectory(at: savedImagesPath, includingPropertiesForKeys: [.creationDateKey])
+            var imagesWithDate: [(image: UIImage, date: Date, url: URL)] = []
             
             for file in imageFiles {
                 if let image = UIImage(contentsOfFile: file.path) {
-                    images.append(image)
+                    let attributes = try fileManager.attributesOfItem(atPath: file.path)
+                    let creationDate = attributes[.creationDate] as? Date ?? Date.distantPast
+                    imagesWithDate.append((image: image, date: creationDate, url: file))
                 }
             }
-            savedImages = images
+            
+            // Sort by creation date (newest first)
+            imagesWithDate.sort { $0.date > $1.date }
+            
+            savedImages = imagesWithDate.map { $0.image }
         } catch {
             print("Error loading images: \(error)")
         }
@@ -620,31 +632,56 @@ struct SavedAssetsView: View {
         guard fileManager.fileExists(atPath: savedVideosPath.path) else { return }
         
         do {
-            let videoFiles = try fileManager.contentsOfDirectory(at: savedVideosPath, includingPropertiesForKeys: nil)
-            var videos: [URL] = []
+            let videoFiles = try fileManager.contentsOfDirectory(at: savedVideosPath, includingPropertiesForKeys: [.creationDateKey])
+            var videosWithDate: [(url: URL, date: Date)] = []
             
             for file in videoFiles {
                 if file.pathExtension.lowercased() == "mp4" {
-                    videos.append(file)
+                    let attributes = try fileManager.attributesOfItem(atPath: file.path)
+                    let creationDate = attributes[.creationDate] as? Date ?? Date.distantPast
+                    videosWithDate.append((url: file, date: creationDate))
                 }
             }
-            savedVideos = videos
+            
+            // Sort by creation date (newest first)
+            videosWithDate.sort { $0.date > $1.date }
+            
+            savedVideos = videosWithDate.map { $0.url }
         } catch {
             print("Error loading videos: \(error)")
         }
     }
     
-    // MARK: - Delete Methods
+    // MARK: - Delete Methods (Fixed - deletes correct item and reloads)
     private func deleteImage(at index: Int) {
+        guard index < savedImages.count else { return }
+        
         let fileManager = FileManager.default
         let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
         let savedImagesPath = documentsPath.appendingPathComponent("SavedImages")
         
         do {
-            let imageFiles = try fileManager.contentsOfDirectory(at: savedImagesPath, includingPropertiesForKeys: nil)
-            if index < imageFiles.count {
-                try fileManager.removeItem(at: imageFiles[index])
-                savedImages.remove(at: index)
+            // Get sorted files to match the displayed order
+            let imageFiles = try fileManager.contentsOfDirectory(at: savedImagesPath, includingPropertiesForKeys: [.creationDateKey])
+            var filesWithDate: [(url: URL, date: Date)] = []
+            
+            for file in imageFiles {
+                let attributes = try fileManager.attributesOfItem(atPath: file.path)
+                let creationDate = attributes[.creationDate] as? Date ?? Date.distantPast
+                filesWithDate.append((url: file, date: creationDate))
+            }
+            
+            // Sort by creation date (newest first) to match display order
+            filesWithDate.sort { $0.date > $1.date }
+            
+            if index < filesWithDate.count {
+                try fileManager.removeItem(at: filesWithDate[index].url)
+                
+                // Reload the images array
+                loadSavedImages()
+                
+                // Force view refresh
+                refreshID = UUID()
             }
         } catch {
             print("Error deleting image: \(error)")
@@ -652,16 +689,36 @@ struct SavedAssetsView: View {
     }
     
     private func deleteVideo(at index: Int) {
+        guard index < savedVideos.count else { return }
+        
         let fileManager = FileManager.default
         let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
         let savedVideosPath = documentsPath.appendingPathComponent("SavedVideos")
         
         do {
-            let videoFiles = try fileManager.contentsOfDirectory(at: savedVideosPath, includingPropertiesForKeys: nil)
-            let mp4Files = videoFiles.filter { $0.pathExtension.lowercased() == "mp4" }
-            if index < mp4Files.count {
-                try fileManager.removeItem(at: mp4Files[index])
-                savedVideos.remove(at: index)
+            // Get sorted files to match the displayed order
+            let videoFiles = try fileManager.contentsOfDirectory(at: savedVideosPath, includingPropertiesForKeys: [.creationDateKey])
+            var filesWithDate: [(url: URL, date: Date)] = []
+            
+            for file in videoFiles {
+                if file.pathExtension.lowercased() == "mp4" {
+                    let attributes = try fileManager.attributesOfItem(atPath: file.path)
+                    let creationDate = attributes[.creationDate] as? Date ?? Date.distantPast
+                    filesWithDate.append((url: file, date: creationDate))
+                }
+            }
+            
+            // Sort by creation date (newest first) to match display order
+            filesWithDate.sort { $0.date > $1.date }
+            
+            if index < filesWithDate.count {
+                try fileManager.removeItem(at: filesWithDate[index].url)
+                
+                // Reload the videos array
+                loadSavedVideos()
+                
+                // Force view refresh
+                refreshID = UUID()
             }
         } catch {
             print("Error deleting video: \(error)")
