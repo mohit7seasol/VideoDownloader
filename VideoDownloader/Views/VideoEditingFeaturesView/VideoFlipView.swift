@@ -31,20 +31,20 @@ struct VideoFlipView: View {
             Color.black.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Custom Navigation Bar
-                customNavigationBar
+                // Header (Same as VideoEditingFrameView)
+                headerView
+                    .padding(.top, 0)
                 
-                // Video Preview with Transformations
+                Spacer()
+                
+                // Video Preview
                 videoPreviewView
-                    .frame(height: UIScreen.main.bounds.height * 0.5)
                     .padding(.horizontal, 20)
-                    .padding(.top, 20)
                 
                 Spacer()
                 
                 // Rotate Controls Section
                 rotateControlsSection
-                    .padding(.bottom, 50)
             }
         }
         .navigationBarHidden(true)
@@ -56,8 +56,8 @@ struct VideoFlipView: View {
         }
     }
     
-    // MARK: - Custom Navigation Bar
-    private var customNavigationBar: some View {
+    // MARK: - Header View (Same style as VideoEditingFrameView)
+    private var headerView: some View {
         HStack {
             Button(action: {
                 dismiss()
@@ -67,10 +67,11 @@ struct VideoFlipView: View {
                     .foregroundColor(.white)
             }
             
+            Spacer()
+            
             Text("Flip & Rotate Video".localized(self.language))
-                .font(.custom("Poppins-Black", size: isIpad ? 28 : 20))
+                .font(.custom("Poppins-Black", size: isIpad ? 24 : 18))
                 .foregroundColor(.white)
-                .padding(.leading, 10)
             
             Spacer()
             
@@ -83,8 +84,7 @@ struct VideoFlipView: View {
             }
         }
         .padding(.horizontal, 20)
-        .padding(.top, UIApplication.shared.safeAreaTop)
-        .padding(.bottom, 10)
+        .padding(.vertical, 10)
     }
     
     // MARK: - Video Preview View
@@ -92,6 +92,7 @@ struct VideoFlipView: View {
         ZStack {
             if let player = player {
                 VideoPlayer(player: player)
+                    .frame(height: UIScreen.main.bounds.height * 0.5)
                     .cornerRadius(12)
                     .rotationEffect(.degrees(rotation))
                     .scaleEffect(x: isMirror ? -1 : 1, y: 1)
@@ -110,6 +111,7 @@ struct VideoFlipView: View {
             } else if isLoading {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.gray.opacity(0.3))
+                    .frame(height: UIScreen.main.bounds.height * 0.5)
                     .overlay(
                         VStack(spacing: 12) {
                             ProgressView()
@@ -125,25 +127,45 @@ struct VideoFlipView: View {
     
     // MARK: - Rotate Controls Section
     private var rotateControlsSection: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .foregroundColor(.blue)
+                Text("Rotate & Flip")
+                    .font(.custom("Urbanist-SemiBold", size: 18))
+                    .foregroundColor(.white)
+                
+                Spacer()
+                
+                if rotation != 0 || isMirror {
+                    Button(action: {
+                        resetTransformations()
+                    }) {
+                        Text("Reset")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            
             // Rotation Slider
             VStack(spacing: 12) {
                 Text("Rotation: \(Int(rotation))°")
                     .font(.custom("Urbanist-Medium", size: 16))
                     .foregroundColor(.white)
                 
-                // Custom Slider for rotation
                 Slider(value: $rotation, in: 0...360, step: 90)
                     .tint(.blue)
-                    .onChange(of: rotation) { newValue in
-                        // Update rotation in real-time
-                    }
             }
             .padding(.horizontal, 40)
+            .padding(.vertical, 10)
             
             // Rotate and Flip Buttons
-            HStack(spacing: 40) {
-                // Rotate Button (90 degrees)
+            HStack(spacing: 30) {
+                // Rotate Button
                 Button(action: {
                     rotateVideo()
                 }) {
@@ -160,7 +182,7 @@ struct VideoFlipView: View {
                     .cornerRadius(16)
                 }
                 
-                // Flip/Mirror Button
+                // Flip Button
                 Button(action: {
                     toggleMirror()
                 }) {
@@ -168,7 +190,7 @@ struct VideoFlipView: View {
                         Image(systemName: isMirror ? "arrow.left.and.right.circle.fill" : "arrow.left.and.right.circle")
                             .font(.system(size: 28))
                             .foregroundColor(isMirror ? .blue : .white)
-                        Text("Flip Horizontal")
+                        Text("Flip")
                             .font(.custom("Urbanist-Medium", size: 12))
                             .foregroundColor(.white)
                     }
@@ -176,26 +198,14 @@ struct VideoFlipView: View {
                     .background(Color.gray.opacity(0.3))
                     .cornerRadius(16)
                 }
-                
-                // Reset Button
-                Button(action: {
-                    resetTransformations()
-                }) {
-                    VStack(spacing: 8) {
-                        Image(systemName: "arrow.counterclockwise.circle")
-                            .font(.system(size: 28))
-                            .foregroundColor(.red)
-                        Text("Reset")
-                            .font(.custom("Urbanist-Medium", size: 12))
-                            .foregroundColor(.red)
-                    }
-                    .frame(width: 80, height: 80)
-                    .background(Color.gray.opacity(0.3))
-                    .cornerRadius(16)
-                }
             }
+            .padding(.vertical, 15)
         }
-        .padding(.horizontal, 20)
+        .background(
+            Rectangle()
+                .fill(Color.black.opacity(0.7))
+                .ignoresSafeArea()
+        )
     }
     
     // MARK: - Helper Methods
@@ -282,7 +292,6 @@ struct VideoFlipView: View {
     }
     
     private func applyTransformations() {
-        // Apply transformations and save
         player?.pause()
         dismiss()
     }

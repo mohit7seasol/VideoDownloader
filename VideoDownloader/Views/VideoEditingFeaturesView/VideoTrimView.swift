@@ -32,12 +32,12 @@ struct VideoTrimView: View {
             Color.black.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Custom Navigation Bar
-                customNavigationBar
+                // Header (Same as VideoEditingFrameView)
+                headerView
+                    .padding(.top, 0)
                 
                 // Video Preview
                 videoPreviewView
-                    .frame(height: UIScreen.main.bounds.height * 0.45)
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
                 
@@ -45,7 +45,6 @@ struct VideoTrimView: View {
                 
                 // Thumbnails Slider Section
                 thumbnailsSliderSection
-                    .padding(.bottom, 40)
             }
         }
         .navigationBarHidden(true)
@@ -57,8 +56,8 @@ struct VideoTrimView: View {
         }
     }
     
-    // MARK: - Custom Navigation Bar
-    private var customNavigationBar: some View {
+    // MARK: - Header View (Same style as VideoEditingFrameView)
+    private var headerView: some View {
         HStack {
             Button(action: {
                 dismiss()
@@ -68,10 +67,11 @@ struct VideoTrimView: View {
                     .foregroundColor(.white)
             }
             
+            Spacer()
+            
             Text("Trim Video".localized(self.language))
-                .font(.custom("Poppins-Black", size: isIpad ? 28 : 20))
+                .font(.custom("Poppins-Black", size: isIpad ? 24 : 18))
                 .foregroundColor(.white)
-                .padding(.leading, 10)
             
             Spacer()
             
@@ -84,9 +84,7 @@ struct VideoTrimView: View {
             }
         }
         .padding(.horizontal, 20)
-        .padding(.top, UIApplication.shared.safeAreaTop)
-        .padding(.bottom, 10)
-        
+        .padding(.vertical, 10)
     }
     
     // MARK: - Video Preview View
@@ -94,6 +92,7 @@ struct VideoTrimView: View {
         ZStack {
             if let player = player {
                 VideoPlayer(player: player)
+                    .frame(height: UIScreen.main.bounds.height * 0.4)
                     .cornerRadius(12)
                     .onTapGesture {
                         togglePlayPause()
@@ -110,6 +109,7 @@ struct VideoTrimView: View {
             } else if isLoading {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.gray.opacity(0.3))
+                    .frame(height: UIScreen.main.bounds.height * 0.4)
                     .overlay(
                         VStack(spacing: 12) {
                             ProgressView()
@@ -125,11 +125,35 @@ struct VideoTrimView: View {
     
     // MARK: - Thumbnails Slider Section
     private var thumbnailsSliderSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Image(systemName: "scissors")
+                    .foregroundColor(.blue)
+                Text("Trim Range")
+                    .font(.custom("Urbanist-SemiBold", size: 18))
+                    .foregroundColor(.white)
+                
+                Spacer()
+                
+                if rangeDuration.lowerBound != 0 || rangeDuration.upperBound != originalDuration {
+                    Button(action: {
+                        resetTrim()
+                    }) {
+                        Text("Reset")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            
             // Duration text
             Text(formatDuration(rangeDuration.upperBound - rangeDuration.lowerBound))
                 .font(.custom("Urbanist-Bold", size: 18))
                 .foregroundColor(.white)
+                .padding(.bottom, 10)
             
             // Thumbnails Slider
             GeometryReader { proxy in
@@ -141,8 +165,7 @@ struct VideoTrimView: View {
                                 Image(uiImage: thumbnailsImages[index])
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
-                                    .frame(width: proxy.size.width / CGFloat(thumbnailsImages.count),
-                                           height: 70)
+                                    .frame(width: proxy.size.width / CGFloat(thumbnailsImages.count), height: 70)
                                     .clipped()
                             }
                         }
@@ -165,23 +188,12 @@ struct VideoTrimView: View {
             }
             .frame(height: 70)
             .padding(.horizontal, 20)
-            
-            // Trim buttons
-            HStack(spacing: 20) {
-                Button(action: {
-                    resetTrim()
-                }) {
-                    Text("Reset".localized(self.language))
-                        .font(.custom("Urbanist-Medium", size: 14))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 10)
-                        .background(Color.red.opacity(0.3))
-                        .cornerRadius(20)
-                }
-            }
-            .padding(.top, 10)
         }
+        .background(
+            Rectangle()
+                .fill(Color.black.opacity(0.7))
+                .ignoresSafeArea()
+        )
     }
     
     // MARK: - Helper Methods
@@ -276,7 +288,6 @@ struct VideoTrimView: View {
             player.pause()
             isPlaying = false
         } else {
-            // Seek to current range start if needed
             if player.currentTime().seconds < rangeDuration.lowerBound ||
                player.currentTime().seconds > rangeDuration.upperBound {
                 seekToTime(rangeDuration.lowerBound)
@@ -298,7 +309,6 @@ struct VideoTrimView: View {
     }
     
     private func applyTrim() {
-        // Apply trim and save
         player?.pause()
         dismiss()
     }
@@ -316,9 +326,6 @@ struct RangedSliderView<Overlay: View>: View {
     let bounds: ClosedRange<Double>
     let onEndChange: () -> Void
     let overlay: Overlay
-    
-    @State private var startDragging = false
-    @State private var endDragging = false
     
     init(value: Binding<ClosedRange<Double>>,
          bounds: ClosedRange<Double>,
@@ -348,10 +355,8 @@ struct RangedSliderView<Overlay: View>: View {
                                 let newValue = valueFromPosition(gesture.location.x, in: geometry)
                                 let clampedValue = min(max(newValue, bounds.lowerBound), value.upperBound - 0.1)
                                 value = clampedValue...value.upperBound
-                                startDragging = true
                             }
                             .onEnded { _ in
-                                startDragging = false
                                 onEndChange()
                             }
                     )
@@ -369,10 +374,8 @@ struct RangedSliderView<Overlay: View>: View {
                                 let newValue = valueFromPosition(gesture.location.x, in: geometry)
                                 let clampedValue = min(max(newValue, value.lowerBound + 0.1), bounds.upperBound)
                                 value = value.lowerBound...clampedValue
-                                endDragging = true
                             }
                             .onEnded { _ in
-                                endDragging = false
                                 onEndChange()
                             }
                     )
