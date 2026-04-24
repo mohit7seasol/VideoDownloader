@@ -14,6 +14,8 @@ import Combine
 enum VideoSelectionTypes {
     case AddMusicToVideoView
     case AddFramesToVideoView
+    case AddTrimToVideoView
+    case AddFlipToVideoView
 }
 
 // MARK: - VideoChooseView
@@ -184,15 +186,7 @@ struct VideoChooseView: View {
                     }
                 }
                 .navigationDestination(isPresented: $navigateToAddMusic) {
-                    if let video = selectedVideo {
-                        // Navigate based on selectionType
-                        switch selectionType {
-                        case .AddMusicToVideoView:
-                            AddMusicToVideoView(videoAsset: video)
-                        case .AddFramesToVideoView:
-                            VideoEditingFrameView(videoAsset: video)
-                        }
-                    }
+                    destinationView()
                 }
             }
             .ignoresSafeArea()
@@ -344,19 +338,30 @@ struct VideoChooseView: View {
                 }
             }
             .navigationDestination(isPresented: $navigateToAddMusic) {
-                if let video = selectedVideo {
-                    // Navigate based on selectionType
-                    switch selectionType {
-                    case .AddMusicToVideoView:
-                        AddMusicToVideoView(videoAsset: video)
-                    case .AddFramesToVideoView:
-                        VideoEditingFrameView(videoAsset: video)
-                    }
-                }
+                destinationView()
             }
         }
     }
-    
+    @ViewBuilder
+    private func destinationView() -> some View {
+        if let video = selectedVideo {
+            switch selectionType {
+            case .AddMusicToVideoView:
+                AddMusicToVideoView(videoAsset: video)
+
+            case .AddFramesToVideoView:
+                VideoEditingFrameView(videoAsset: video)
+
+            case .AddTrimToVideoView:
+                VideoTrimView(videoAsset: video)
+
+            case .AddFlipToVideoView:
+                VideoFlipView(videoAsset: video)
+            }
+        } else {
+            EmptyView()
+        }
+    }
     private func handleSelectedPhotosPickerItems(_ items: [PhotosPickerItem]) {
         // Process and add new videos from picker
         for item in items {
