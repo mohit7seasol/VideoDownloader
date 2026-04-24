@@ -23,25 +23,22 @@ struct SavedAssetsView: View {
     @State private var animateGradient = false
     @State private var selectedSegment: SavedAssetsType = .savedPhotos
     @State private var showSaveToGalleryAlert = false
-    @State private var videoToSave: URL?
+    @State private var showShareSheet = false
+    @State private var shareItems: [Any] = []
     
     // Dynamic columns based on device with equal spacing
     private var columns: [GridItem] {
         if Device.isIpad {
-            // iPad: 5 columns with equal spacing
             return Array(repeating: GridItem(.flexible(), spacing: 12), count: 5)
         } else {
-            // iPhone: 3 columns with equal spacing
             return Array(repeating: GridItem(.flexible(), spacing: 8), count: 3)
         }
     }
     
-    // Dynamic spacing based on device
     private var gridSpacing: CGFloat {
         Device.isIpad ? 12 : 8
     }
     
-    // Dynamic image size based on device with equal distribution
     private var imageSize: CGFloat {
         let screenWidth = UIScreen.main.bounds.width
         let horizontalPadding: CGFloat = Device.isIpad ? 32 : 20
@@ -50,6 +47,7 @@ struct SavedAssetsView: View {
         
         return (screenWidth - horizontalPadding - totalSpacing) / numberOfColumns
     }
+    
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     var body: some View {
@@ -62,14 +60,12 @@ struct SavedAssetsView: View {
                         .ignoresSafeArea()
                     
                     VStack(spacing: 0) {
-                        // TopHomeView for iPad
                         TopHomeView()
                             .padding(.top, UIApplication.shared.connectedScenes
                                 .compactMap { $0 as? UIWindowScene }
                                 .first?.windows
                                 .first?.safeAreaInsets.top ?? 0)
                         
-                        // Segment Control
                         segmentControlView
                             .padding(.horizontal, 24)
                             .padding(.top, 10)
@@ -77,76 +73,13 @@ struct SavedAssetsView: View {
                         
                         if selectedSegment == .savedPhotos {
                             if savedImages.isEmpty {
-                                // Existing Empty State View for Photos
-                                ScrollView {
-                                    VStack(spacing: 25) {
-                                        Spacer(minLength: 0)
-                                        
-                                        ZStack {
-                                            Circle()
-                                                .fill(
-                                                    LinearGradient(
-                                                        colors: [
-                                                            Color(hex: "#FC466B").opacity(0.3),
-                                                            Color(hex: "#3F5EFB").opacity(0.3)
-                                                        ],
-                                                        startPoint: .topLeading,
-                                                        endPoint: .bottomTrailing
-                                                    )
-                                                )
-                                                .frame(width: 160, height: 160)
-                                                .scaleEffect(animateGradient ? 1.1 : 1.0)
-                                                .animation(
-                                                    Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true),
-                                                    value: animateGradient
-                                                )
-                                            
-                                            Circle()
-                                                .fill(Color.white.opacity(0.1))
-                                                .frame(width: 140, height: 140)
-                                            
-                                            Image(systemName: "photo.stack")
-                                                .font(.system(size: 60))
-                                                .foregroundColor(.white)
-                                                .shadow(color: .white.opacity(0.3), radius: 10)
-                                        }
-                                        
-                                        Text("No Saved Images".localized(self.language))
-                                            .font(.custom("Urbanist-Bold", size: 34))
-                                            .foregroundColor(.white)
-                                            .multilineTextAlignment(.center)
-                                        
-                                        Text("Your saved images will appear here".localized(self.language))
-                                            .font(.custom("Urbanist-Medium", size: 18))
-                                            .foregroundColor(.white.opacity(0.7))
-                                            .multilineTextAlignment(.center)
-                                            .padding(.horizontal, 40)
-                                        
-                                        Rectangle()
-                                            .fill(
-                                                LinearGradient(
-                                                    colors: [
-                                                        Color(hex: "#FC466B").opacity(0.5),
-                                                        Color(hex: "#3F5EFB").opacity(0.5)
-                                                    ],
-                                                    startPoint: .leading,
-                                                    endPoint: .trailing
-                                                )
-                                            )
-                                            .frame(width: 250, height: 1)
-                                            .padding(.vertical, 10)
-                                        
-                                        Text("Start editing photos and save them to see them here".localized(self.language))
-                                            .font(.custom("Urbanist-Regular", size: 16))
-                                            .foregroundColor(.white.opacity(0.5))
-                                            .multilineTextAlignment(.center)
-                                            .padding(.horizontal, 50)
-                                        
-                                        Spacer(minLength: 0)
-                                    }
-                                    .frame(minHeight: geometry.size.height - 200)
-                                    .padding(.horizontal, 20)
-                                }
+                                emptyStateView(
+                                    icon: "photo.stack",
+                                    title: "No Saved Images",
+                                    subtitle: "Your saved images will appear here",
+                                    message: "Start editing photos and save them to see them here",
+                                    size: 60
+                                )
                             } else {
                                 ScrollView {
                                     LazyVGrid(columns: columns, spacing: gridSpacing) {
@@ -164,17 +97,33 @@ struct SavedAssetsView: View {
                                                     )
                                                     .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
                                                 
-                                                Button(action: {
-                                                    itemToDelete = index
-                                                    deleteType = .savedPhotos
-                                                    showDeleteAlert = true
-                                                }) {
+                                                Menu {
+                                                    Button(action: {
+                                                        shareImage(image)
+                                                    }) {
+                                                        Label("Share", systemImage: "square.and.arrow.up")
+                                                    }
+                                                    
+                                                    Button(action: {
+                                                        saveImageToGallery(image)
+                                                    }) {
+                                                        Label("Save to Gallery", systemImage: "square.and.arrow.down")
+                                                    }
+                                                    
+                                                    Button(role: .destructive, action: {
+                                                        itemToDelete = index
+                                                        deleteType = .savedPhotos
+                                                        showDeleteAlert = true
+                                                    }) {
+                                                        Label("Delete", systemImage: "trash")
+                                                    }
+                                                } label: {
                                                     ZStack {
                                                         Circle()
                                                             .fill(Color.black.opacity(0.7))
                                                             .frame(width: 32, height: 32)
                                                         
-                                                        Image(systemName: "trash.fill")
+                                                        Image(systemName: "ellipsis")
                                                             .font(.system(size: 16))
                                                             .foregroundColor(.white)
                                                     }
@@ -190,83 +139,21 @@ struct SavedAssetsView: View {
                                 .padding(.bottom, Device.bottomSafeArea + 70)
                             }
                         } else {
-                            // Videos Section
                             if savedVideos.isEmpty {
-                                // Empty State View for Videos (Same style as Photos)
-                                ScrollView {
-                                    VStack(spacing: 25) {
-                                        Spacer(minLength: 0)
-                                        
-                                        ZStack {
-                                            Circle()
-                                                .fill(
-                                                    LinearGradient(
-                                                        colors: [
-                                                            Color(hex: "#FC466B").opacity(0.3),
-                                                            Color(hex: "#3F5EFB").opacity(0.3)
-                                                        ],
-                                                        startPoint: .topLeading,
-                                                        endPoint: .bottomTrailing
-                                                    )
-                                                )
-                                                .frame(width: 160, height: 160)
-                                                .scaleEffect(animateGradient ? 1.1 : 1.0)
-                                            
-                                            Circle()
-                                                .fill(Color.white.opacity(0.1))
-                                                .frame(width: 140, height: 140)
-                                            
-                                            Image(systemName: "video.fill")
-                                                .font(.system(size: 60))
-                                                .foregroundColor(.white)
-                                                .shadow(color: .white.opacity(0.3), radius: 10)
-                                        }
-                                        
-                                        Text("No Saved Videos".localized(self.language))
-                                            .font(.custom("Urbanist-Bold", size: 34))
-                                            .foregroundColor(.white)
-                                            .multilineTextAlignment(.center)
-                                        
-                                        Text("Your saved videos will appear here".localized(self.language))
-                                            .font(.custom("Urbanist-Medium", size: 18))
-                                            .foregroundColor(.white.opacity(0.7))
-                                            .multilineTextAlignment(.center)
-                                            .padding(.horizontal, 40)
-                                        
-                                        Rectangle()
-                                            .fill(
-                                                LinearGradient(
-                                                    colors: [
-                                                        Color(hex: "#FC466B").opacity(0.5),
-                                                        Color(hex: "#3F5EFB").opacity(0.5)
-                                                    ],
-                                                    startPoint: .leading,
-                                                    endPoint: .trailing
-                                                )
-                                            )
-                                            .frame(width: 250, height: 1)
-                                            .padding(.vertical, 10)
-                                        
-                                        Text("Start editing videos and save them to see them here".localized(self.language))
-                                            .font(.custom("Urbanist-Regular", size: 16))
-                                            .foregroundColor(.white.opacity(0.5))
-                                            .multilineTextAlignment(.center)
-                                            .padding(.horizontal, 50)
-                                        
-                                        Spacer(minLength: 0)
-                                    }
-                                    .frame(minHeight: geometry.size.height - 200)
-                                    .padding(.horizontal, 20)
-                                }
+                                emptyStateView(
+                                    icon: "video.slash",
+                                    title: "No Saved Videos",
+                                    subtitle: "Your saved videos will appear here",
+                                    message: "Start editing videos and save them to see them here",
+                                    size: 60
+                                )
                             } else {
                                 ScrollView {
                                     LazyVGrid(columns: columns, spacing: gridSpacing) {
                                         ForEach(Array(savedVideos.enumerated()), id: \.offset) { index, videoURL in
                                             ZStack(alignment: .topTrailing) {
-                                                // Video Thumbnail
                                                 VideoThumbnailView2(videoURL: videoURL, size: imageSize)
                                                     .onTapGesture {
-                                                        // Play video in device player
                                                         let player = AVPlayer(url: videoURL)
                                                         let playerViewController = AVPlayerViewController()
                                                         playerViewController.player = player
@@ -279,24 +166,13 @@ struct SavedAssetsView: View {
                                                         }
                                                     }
                                                 
-                                                // Menu Button (Save to Gallery + Delete)
-                                                Button(action: {
-                                                    itemToDelete = index
-                                                    deleteType = .savedVideos
-                                                    showDeleteAlert = true
-                                                }) {
-                                                    ZStack {
-                                                        Circle()
-                                                            .fill(Color.black.opacity(0.7))
-                                                            .frame(width: 32, height: 32)
-                                                        
-                                                        Image(systemName: "ellipsis")
-                                                            .font(.system(size: 16))
-                                                            .foregroundColor(.white)
+                                                Menu {
+                                                    Button(action: {
+                                                        shareVideo(videoURL)
+                                                    }) {
+                                                        Label("Share", systemImage: "square.and.arrow.up")
                                                     }
-                                                }
-                                                .padding(8)
-                                                .contextMenu {
+                                                    
                                                     Button(action: {
                                                         saveVideoToGallery(videoURL)
                                                     }) {
@@ -310,7 +186,18 @@ struct SavedAssetsView: View {
                                                     }) {
                                                         Label("Delete", systemImage: "trash")
                                                     }
+                                                } label: {
+                                                    ZStack {
+                                                        Circle()
+                                                            .fill(Color.black.opacity(0.7))
+                                                            .frame(width: 32, height: 32)
+                                                        
+                                                        Image(systemName: "ellipsis")
+                                                            .font(.system(size: 16))
+                                                            .foregroundColor(.white)
+                                                    }
                                                 }
+                                                .padding(8)
                                             }
                                         }
                                     }
@@ -328,9 +215,9 @@ struct SavedAssetsView: View {
                     loadSavedVideos()
                     animateGradient = true
                 }
-                .alert(deleteType == .savedPhotos ? "Delete Image".localized(self.language) : "Delete Video".localized(self.language), isPresented: $showDeleteAlert) {
-                    Button("Cancel".localized(self.language), role: .cancel) { }
-                    Button("Delete".localized(self.language), role: .destructive) {
+                .alert(deleteType == .savedPhotos ? "Delete Image" : "Delete Video", isPresented: $showDeleteAlert) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Delete", role: .destructive) {
                         if let index = itemToDelete {
                             if deleteType == .savedPhotos {
                                 deleteImage(at: index)
@@ -340,12 +227,15 @@ struct SavedAssetsView: View {
                         }
                     }
                 } message: {
-                    Text(deleteType == .savedPhotos ? "Are you sure you want to delete this image?".localized(self.language) : "Are you sure you want to delete this video?".localized(self.language))
+                    Text(deleteType == .savedPhotos ? "Are you sure you want to delete this image?" : "Are you sure you want to delete this video?")
                 }
                 .alert("Saved to Gallery", isPresented: $showSaveToGalleryAlert) {
                     Button("OK", role: .cancel) { }
                 } message: {
-                    Text("Video has been saved to your photo library".localized(self.language))
+                    Text("Media has been saved to your photo library")
+                }
+                .sheet(isPresented: $showShareSheet) {
+                    ShareSheet2(activityItems: shareItems)
                 }
             }
         } else {
@@ -357,14 +247,12 @@ struct SavedAssetsView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // TopHomeView for iPhone
                     TopHomeView()
                         .padding(.top, UIApplication.shared.connectedScenes
                             .compactMap { $0 as? UIWindowScene }
                             .first?.windows
                             .first?.safeAreaInsets.top ?? 0)
                     
-                    // Segment Control
                     segmentControlView
                         .padding(.horizontal, 20)
                         .padding(.top, 10)
@@ -372,66 +260,13 @@ struct SavedAssetsView: View {
                     
                     if selectedSegment == .savedPhotos {
                         if savedImages.isEmpty {
-                            // Existing Empty State View for Photos
-                            ScrollView {
-                                VStack(spacing: 25) {
-                                    Spacer(minLength: 0)
-                                    
-                                    ZStack {
-                                        Circle()
-                                            .fill(
-                                                LinearGradient(
-                                                    colors: [
-                                                        Color(hex: "#FC466B").opacity(0.3),
-                                                        Color(hex: "#3F5EFB").opacity(0.3)
-                                                    ],
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
-                                                )
-                                            )
-                                            .frame(width: 140, height: 140)
-                                            .scaleEffect(animateGradient ? 1.1 : 1.0)
-                                        
-                                        Circle()
-                                            .fill(Color.white.opacity(0.1))
-                                            .frame(width: 120, height: 120)
-                                        
-                                        Image(systemName: "photo.stack")
-                                            .font(.system(size: 50))
-                                            .foregroundColor(.white)
-                                            .shadow(color: .white.opacity(0.3), radius: 10)
-                                    }
-                                    
-                                    Text("No Saved Images".localized(self.language))
-                                        .font(.custom("Urbanist-Bold", size: 24))
-                                        .foregroundColor(.white)
-                                        .multilineTextAlignment(.center)
-                                    
-                                    Text("Your saved images will appear here".localized(self.language))
-                                        .font(.custom("Urbanist-Medium", size: 16))
-                                        .foregroundColor(.white.opacity(0.7))
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal, 20)
-                                    
-                                    Rectangle()
-                                        .fill(
-                                            LinearGradient(
-                                                colors: [
-                                                    Color(hex: "#FC466B").opacity(0.5),
-                                                    Color(hex: "#3F5EFB").opacity(0.5)
-                                                ],
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                        )
-                                        .frame(width: 200, height: 1)
-                                        .padding(.vertical, 10)
-                                    
-                                    Spacer(minLength: 0)
-                                }
-                                .frame(minHeight: UIScreen.main.bounds.height - 200)
-                                .padding(.horizontal, 20)
-                            }
+                            emptyStateView(
+                                icon: "photo.stack",
+                                title: "No Saved Images",
+                                subtitle: "Your saved images will appear here",
+                                message: "",
+                                size: 50
+                            )
                         } else {
                             ScrollView {
                                 LazyVGrid(columns: columns, spacing: gridSpacing) {
@@ -449,17 +284,33 @@ struct SavedAssetsView: View {
                                                 )
                                                 .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
                                             
-                                            Button(action: {
-                                                itemToDelete = index
-                                                deleteType = .savedPhotos
-                                                showDeleteAlert = true
-                                            }) {
+                                            Menu {
+                                                Button(action: {
+                                                    shareImage(image)
+                                                }) {
+                                                    Label("Share", systemImage: "square.and.arrow.up")
+                                                }
+                                                
+                                                Button(action: {
+                                                    saveImageToGallery(image)
+                                                }) {
+                                                    Label("Save to Gallery", systemImage: "square.and.arrow.down")
+                                                }
+                                                
+                                                Button(role: .destructive, action: {
+                                                    itemToDelete = index
+                                                    deleteType = .savedPhotos
+                                                    showDeleteAlert = true
+                                                }) {
+                                                    Label("Delete", systemImage: "trash")
+                                                }
+                                            } label: {
                                                 ZStack {
                                                     Circle()
                                                         .fill(Color.black.opacity(0.7))
                                                         .frame(width: 28, height: 28)
                                                     
-                                                    Image(systemName: "trash.fill")
+                                                    Image(systemName: "ellipsis")
                                                         .font(.system(size: 14))
                                                         .foregroundColor(.white)
                                                 }
@@ -475,67 +326,14 @@ struct SavedAssetsView: View {
                             .padding(.bottom, Device.bottomSafeArea + 70)
                         }
                     } else {
-                        // Videos Section for iPhone
                         if savedVideos.isEmpty {
-                            ScrollView {
-                                VStack(spacing: 25) {
-                                    Spacer(minLength: 0)
-                                    
-                                    ZStack {
-                                        Circle()
-                                            .fill(
-                                                LinearGradient(
-                                                    colors: [
-                                                        Color(hex: "#FC466B").opacity(0.3),
-                                                        Color(hex: "#3F5EFB").opacity(0.3)
-                                                    ],
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
-                                                )
-                                            )
-                                            .frame(width: 140, height: 140)
-                                            .scaleEffect(animateGradient ? 1.1 : 1.0)
-                                        
-                                        Circle()
-                                            .fill(Color.white.opacity(0.1))
-                                            .frame(width: 120, height: 120)
-                                        
-                                        Image(systemName: "video.fill")
-                                            .font(.system(size: 50))
-                                            .foregroundColor(.white)
-                                            .shadow(color: .white.opacity(0.3), radius: 10)
-                                    }
-                                    
-                                    Text("No Saved Videos".localized(self.language))
-                                        .font(.custom("Urbanist-Bold", size: 24))
-                                        .foregroundColor(.white)
-                                        .multilineTextAlignment(.center)
-                                    
-                                    Text("Your saved videos will appear here".localized(self.language))
-                                        .font(.custom("Urbanist-Medium", size: 16))
-                                        .foregroundColor(.white.opacity(0.7))
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal, 20)
-                                    
-                                    Rectangle()
-                                        .fill(
-                                            LinearGradient(
-                                                colors: [
-                                                    Color(hex: "#FC466B").opacity(0.5),
-                                                    Color(hex: "#3F5EFB").opacity(0.5)
-                                                ],
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                        )
-                                        .frame(width: 200, height: 1)
-                                        .padding(.vertical, 10)
-                                    
-                                    Spacer(minLength: 0)
-                                }
-                                .frame(minHeight: UIScreen.main.bounds.height - 200)
-                                .padding(.horizontal, 20)
-                            }
+                            emptyStateView(
+                                icon: "video.slash",
+                                title: "No Saved Videos",
+                                subtitle: "Your saved videos will appear here",
+                                message: "",
+                                size: 50
+                            )
                         } else {
                             ScrollView {
                                 LazyVGrid(columns: columns, spacing: gridSpacing) {
@@ -555,23 +353,13 @@ struct SavedAssetsView: View {
                                                     }
                                                 }
                                             
-                                            Button(action: {
-                                                itemToDelete = index
-                                                deleteType = .savedVideos
-                                                showDeleteAlert = true
-                                            }) {
-                                                ZStack {
-                                                    Circle()
-                                                        .fill(Color.black.opacity(0.7))
-                                                        .frame(width: 28, height: 28)
-                                                    
-                                                    Image(systemName: "ellipsis")
-                                                        .font(.system(size: 14))
-                                                        .foregroundColor(.white)
+                                            Menu {
+                                                Button(action: {
+                                                    shareVideo(videoURL)
+                                                }) {
+                                                    Label("Share", systemImage: "square.and.arrow.up")
                                                 }
-                                            }
-                                            .padding(6)
-                                            .contextMenu {
+                                                
                                                 Button(action: {
                                                     saveVideoToGallery(videoURL)
                                                 }) {
@@ -585,7 +373,18 @@ struct SavedAssetsView: View {
                                                 }) {
                                                     Label("Delete", systemImage: "trash")
                                                 }
+                                            } label: {
+                                                ZStack {
+                                                    Circle()
+                                                        .fill(Color.black.opacity(0.7))
+                                                        .frame(width: 28, height: 28)
+                                                    
+                                                    Image(systemName: "ellipsis")
+                                                        .font(.system(size: 14))
+                                                        .foregroundColor(.white)
+                                                }
                                             }
+                                            .padding(6)
                                         }
                                     }
                                 }
@@ -603,9 +402,9 @@ struct SavedAssetsView: View {
                 loadSavedVideos()
                 animateGradient = true
             }
-            .alert(deleteType == .savedPhotos ? "Delete Image".localized(self.language) : "Delete Video".localized(self.language), isPresented: $showDeleteAlert) {
-                Button("Cancel".localized(self.language), role: .cancel) { }
-                Button("Delete".localized(self.language), role: .destructive) {
+            .alert(deleteType == .savedPhotos ? "Delete Image" : "Delete Video", isPresented: $showDeleteAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Delete", role: .destructive) {
                     if let index = itemToDelete {
                         if deleteType == .savedPhotos {
                             deleteImage(at: index)
@@ -615,13 +414,88 @@ struct SavedAssetsView: View {
                     }
                 }
             } message: {
-                Text(deleteType == .savedPhotos ? "Are you sure you want to delete this image?".localized(self.language) : "Are you sure you want to delete this video?".localized(self.language))
+                Text(deleteType == .savedPhotos ? "Are you sure you want to delete this image?" : "Are you sure you want to delete this video?")
             }
             .alert("Saved to Gallery", isPresented: $showSaveToGalleryAlert) {
                 Button("OK", role: .cancel) { }
+                Button("OK", role: .cancel) { }
             } message: {
-                Text("Video has been saved to your photo library".localized(self.language))
+                Text("Media has been saved to your photo library")
             }
+            .sheet(isPresented: $showShareSheet) {
+                ShareSheet2(activityItems: shareItems)
+            }
+        }
+    }
+    
+    // MARK: - Empty State View
+    private func emptyStateView(icon: String, title: String, subtitle: String, message: String, size: CGFloat) -> some View {
+        ScrollView {
+            VStack(spacing: 25) {
+                Spacer(minLength: 0)
+                
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color(hex: "#FC466B").opacity(0.3),
+                                    Color(hex: "#3F5EFB").opacity(0.3)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: Device.isIpad ? 160 : 140, height: Device.isIpad ? 160 : 140)
+                        .scaleEffect(animateGradient ? 1.1 : 1.0)
+                    
+                    Circle()
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: Device.isIpad ? 140 : 120, height: Device.isIpad ? 140 : 120)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: size))
+                        .foregroundColor(.white)
+                        .shadow(color: .white.opacity(0.3), radius: 10)
+                }
+                
+                Text(title.localized(self.language))
+                    .font(.custom("Urbanist-Bold", size: Device.isIpad ? 34 : 24))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                
+                Text(subtitle.localized(self.language))
+                    .font(.custom("Urbanist-Medium", size: Device.isIpad ? 18 : 16))
+                    .foregroundColor(.white.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Device.isIpad ? 40 : 20)
+                
+                if !message.isEmpty {
+                    Rectangle()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color(hex: "#FC466B").opacity(0.5),
+                                    Color(hex: "#3F5EFB").opacity(0.5)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: Device.isIpad ? 250 : 200, height: 1)
+                        .padding(.vertical, 10)
+                    
+                    Text(message.localized(self.language))
+                        .font(.custom("Urbanist-Regular", size: Device.isIpad ? 16 : 14))
+                        .foregroundColor(.white.opacity(0.5))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Device.isIpad ? 50 : 30)
+                }
+                
+                Spacer(minLength: 0)
+            }
+            .frame(minHeight: Device.isIpad ? UIScreen.main.bounds.height - 200 : UIScreen.main.bounds.height - 200)
+            .padding(.horizontal, 20)
         }
     }
     
@@ -650,6 +524,54 @@ struct SavedAssetsView: View {
             RoundedRectangle(cornerRadius: 25)
                 .fill(Color.white.opacity(0.1))
         )
+    }
+    
+    // MARK: - Share Methods
+    private func shareImage(_ image: UIImage) {
+        shareItems = [image]
+        showShareSheet = true
+    }
+    
+    private func shareVideo(_ videoURL: URL) {
+        shareItems = [videoURL]
+        showShareSheet = true
+    }
+    
+    // MARK: - Save to Gallery Methods
+    private func saveImageToGallery(_ image: UIImage) {
+        PHPhotoLibrary.requestAuthorization { status in
+            if status == .authorized {
+                PHPhotoLibrary.shared().performChanges({
+                    PHAssetChangeRequest.creationRequestForAsset(from: image)
+                }) { success, error in
+                    DispatchQueue.main.async {
+                        if success {
+                            showSaveToGalleryAlert = true
+                        } else {
+                            print("Error saving image: \(error?.localizedDescription ?? "unknown error")")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private func saveVideoToGallery(_ videoURL: URL) {
+        PHPhotoLibrary.requestAuthorization { status in
+            if status == .authorized {
+                PHPhotoLibrary.shared().performChanges({
+                    PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: videoURL)
+                }) { success, error in
+                    DispatchQueue.main.async {
+                        if success {
+                            showSaveToGalleryAlert = true
+                        } else {
+                            print("Error saving video: \(error?.localizedDescription ?? "unknown error")")
+                        }
+                    }
+                }
+            }
+        }
     }
     
     // MARK: - Load Methods
@@ -730,25 +652,19 @@ struct SavedAssetsView: View {
             print("Error deleting video: \(error)")
         }
     }
+}
+
+// MARK: - Share Sheet
+struct ShareSheet2: UIViewControllerRepresentable {
+    var activityItems: [Any]
+    var applicationActivities: [UIActivity]? = nil
     
-    // MARK: - Save Video to Gallery
-    private func saveVideoToGallery(_ videoURL: URL) {
-        PHPhotoLibrary.requestAuthorization { status in
-            if status == .authorized {
-                PHPhotoLibrary.shared().performChanges({
-                    PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: videoURL)
-                }) { success, error in
-                    DispatchQueue.main.async {
-                        if success {
-                            showSaveToGalleryAlert = true
-                        } else {
-                            print("Error saving video: \(error?.localizedDescription ?? "unknown error")")
-                        }
-                    }
-                }
-            }
-        }
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+        return controller
     }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - Video Thumbnail View
@@ -782,7 +698,6 @@ struct VideoThumbnailView2: View {
                     }
             }
             
-            // Duration label
             Text(duration)
                 .font(.custom("Urbanist-Medium", size: Device.isIpad ? 12 : 10))
                 .foregroundColor(.white)
@@ -792,7 +707,6 @@ struct VideoThumbnailView2: View {
                 .cornerRadius(4)
                 .padding(6)
             
-            // Play icon
             Image(systemName: "play.circle.fill")
                 .font(.system(size: Device.isIpad ? 30 : 24))
                 .foregroundColor(.white.opacity(0.9))
