@@ -36,10 +36,11 @@ struct VideoTrimView: View {
                 headerView
                     .padding(.top, 0)
                 
-                // Video Preview
+                Spacer()
+                
+                // Video Preview - Same height as VideoFlipView
                 videoPreviewView
                     .padding(.horizontal, 20)
-                    .padding(.top, 20)
                 
                 Spacer()
                 
@@ -87,12 +88,12 @@ struct VideoTrimView: View {
         .padding(.vertical, 10)
     }
     
-    // MARK: - Video Preview View
+    // MARK: - Video Preview View (Same height as VideoFlipView)
     private var videoPreviewView: some View {
         ZStack {
             if let player = player {
                 VideoPlayer(player: player)
-                    .frame(height: UIScreen.main.bounds.height * 0.4)
+                    .frame(height: UIScreen.main.bounds.height * 0.5)
                     .cornerRadius(12)
                     .onTapGesture {
                         togglePlayPause()
@@ -109,7 +110,7 @@ struct VideoTrimView: View {
             } else if isLoading {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.gray.opacity(0.3))
-                    .frame(height: UIScreen.main.bounds.height * 0.4)
+                    .frame(height: UIScreen.main.bounds.height * 0.5)
                     .overlay(
                         VStack(spacing: 12) {
                             ProgressView()
@@ -188,6 +189,7 @@ struct VideoTrimView: View {
             }
             .frame(height: 70)
             .padding(.horizontal, 20)
+            .padding(.bottom, 20)
         }
         .background(
             Rectangle()
