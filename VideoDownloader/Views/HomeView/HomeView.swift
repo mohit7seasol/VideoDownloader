@@ -251,7 +251,8 @@ struct VideoEditingCardView: View {
         .padding(.horizontal, 20)
         .navigationDestination(isPresented: $navigate) {
 //            SoundTrackView()
-            VideoChooseView(selectionType: .AddFramesToVideoView)
+//            VideoChooseView(selectionType: .AddFramesToVideoView)
+            VideoEditingFeaturesView()
         }
     }
 }
