@@ -12,6 +12,15 @@ import Photos
 enum SavedAssetsType: String, CaseIterable {
     case savedPhotos = "Photos"
     case savedVideos = "Videos"
+    
+    var localizedTitle: String {
+        switch self {
+        case .savedPhotos:
+            return "Photos".localized(LocalizationService.shared.language)
+        case .savedVideos:
+            return "Videos".localized(LocalizationService.shared.language)
+        }
+    }
 }
 
 struct SavedAssetsView: View {
@@ -514,7 +523,7 @@ struct SavedAssetsView: View {
                         selectedSegment = type
                     }
                 }) {
-                    Text(type.rawValue.localized(self.language))
+                    Text(type.localizedTitle)
                         .font(.custom("Urbanist-SemiBold", size: Device.isIpad ? 18 : 16))
                         .foregroundColor(selectedSegment == type ? .white : .gray)
                         .frame(maxWidth: .infinity)

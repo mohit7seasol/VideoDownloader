@@ -224,3 +224,5 @@
 "Your saved videos will appear here" = "保存した動画がここに表示されます";
 "Start editing videos and save them to see them here" = "動画を編集して保存するとここに表示されます";
 "Media has been saved to your photo library" = "メディアがフォトライブラリに保存されました";
+"Photos" = "写真";
+"Videos" = "動画";
