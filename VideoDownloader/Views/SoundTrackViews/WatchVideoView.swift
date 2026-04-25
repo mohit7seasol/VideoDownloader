@@ -7,7 +7,6 @@
 
 import SwiftUI
 import AVKit
-import Photos
 import AVFoundation
 
 struct WatchVideoView: View {
@@ -20,7 +19,6 @@ struct WatchVideoView: View {
     @State private var player: AVPlayer?
     @State private var isPlaying = false
     @State private var showSaveSuccess = false
-    @State private var showPermissionAlert = false
     @State private var isSaving = false
     @State private var timeObserver: Any?
     @State private var thumbnailImage: UIImage?
@@ -30,7 +28,7 @@ struct WatchVideoView: View {
     private var videoHeight: CGFloat {
         let screenHeight = UIScreen.main.bounds.height
         let navigationBarHeight: CGFloat = 100
-        let bottomSectionHeight: CGFloat = 180 // Height for music info + download button + spacing
+        let bottomSectionHeight: CGFloat = 180
         let bottomSpacing: CGFloat = 30
         
         return screenHeight - navigationBarHeight - bottomSectionHeight - bottomSpacing - 100
@@ -154,7 +152,7 @@ struct WatchVideoView: View {
                                     
                                     // Download Button
                                     Button {
-                                        saveVideoToGallery()
+                                        saveVideoToLocalStorage()
                                     } label: {
                                         HStack {
                                             Text("Save".localized(self.language))
@@ -179,7 +177,7 @@ struct WatchVideoView: View {
                                     .padding(.horizontal, Device.isIpad ? 32 : 24)
                                 }
                                 
-                                // ✅ CRITICAL: Bottom padding to ensure last item is scrollable
+                                // Bottom padding
                                 Rectangle()
                                     .fill(Color.clear)
                                     .frame(height: UIApplication.shared.safeAreaBottom + (Device.isIpad ? 60 : 45))
@@ -196,22 +194,22 @@ struct WatchVideoView: View {
             .onDisappear {
                 cleanupPlayer()
             }
-            .alert("Video Saved".localized(self.language), isPresented: $showSaveSuccess) {
-                Button("OK") {
+            .alert("Success".localized(self.language), isPresented: $showSaveSuccess) {
+                Button("OK".localized(self.language)) {
+                    // ✅ Navigate to root view (HomeSegmentView) like VideoTrimView
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let rootVC = windowScene.windows.first?.rootViewController {
+                        rootVC.dismiss(animated: true) {
+                            // Navigate to home or pop to root
+                            if let navController = rootVC as? UINavigationController {
+                                navController.popToRootViewController(animated: true)
+                            }
+                        }
+                    }
                     dismiss()
                 }
             } message: {
-                Text("Your video has been saved to gallery and history".localized(self.language))
-            }
-            .alert("Permission Required".localized(self.language), isPresented: $showPermissionAlert) {
-                Button("Cancel".localized(self.language), role: .cancel) { }
-                Button("Settings".localized(self.language)) {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
-                    }
-                }
-            } message: {
-                Text("Please grant photo library access to save videos".localized(self.language))
+                Text("Video saved successfully!".localized(self.language))
             }
             .overlay {
                 if isSaving {
@@ -233,6 +231,7 @@ struct WatchVideoView: View {
             }
             .ignoresSafeArea()
         } else {
+            // iPhone Layout
             ZStack {
                 // Background Image
                 Image("app_bg_image")
@@ -340,7 +339,7 @@ struct WatchVideoView: View {
                         
                         // Download Button - Positioned at bottom
                         Button {
-                            saveVideoToGallery()
+                            saveVideoToLocalStorage()
                         } label: {
                             HStack {
                                 Text("Save".localized(self.language))
@@ -375,22 +374,22 @@ struct WatchVideoView: View {
             .onDisappear {
                 cleanupPlayer()
             }
-            .alert("Video Saved".localized(self.language), isPresented: $showSaveSuccess) {
-                Button("OK") {
+            .alert("Success".localized(self.language), isPresented: $showSaveSuccess) {
+                Button("OK".localized(self.language)) {
+                    // ✅ Navigate to root view (HomeSegmentView) like VideoTrimView
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let rootVC = windowScene.windows.first?.rootViewController {
+                        rootVC.dismiss(animated: true) {
+                            // Navigate to home or pop to root
+                            if let navController = rootVC as? UINavigationController {
+                                navController.popToRootViewController(animated: true)
+                            }
+                        }
+                    }
                     dismiss()
                 }
             } message: {
-                Text("Your video has been saved to gallery and history".localized(self.language))
-            }
-            .alert("Permission Required".localized(self.language), isPresented: $showPermissionAlert) {
-                Button("Cancel".localized(self.language), role: .cancel) { }
-                Button("Settings".localized(self.language)) {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
-                    }
-                }
-            } message: {
-                Text("Please grant photo library access to save videos".localized(self.language))
+                Text("Video saved successfully!".localized(self.language))
             }
             .overlay {
                 if isSaving {
@@ -456,48 +455,96 @@ struct WatchVideoView: View {
         } else {
             player?.play()
         }
-        // isPlaying will be updated by the time observer
     }
     
-    private func saveVideoToGallery() {
-        let status = PHPhotoLibrary.authorizationStatus(for: .addOnly)
-        
-        switch status {
-        case .authorized, .limited:
-            saveVideo()
-        case .notDetermined:
-            PHPhotoLibrary.requestAuthorization(for: .addOnly) { newStatus in
-                DispatchQueue.main.async {
-                    if newStatus == .authorized || newStatus == .limited {
-                        saveVideo()
-                    } else {
-                        showPermissionAlert = true
-                    }
-                }
-            }
-        default:
-            showPermissionAlert = true
-        }
-    }
-    
-    private func saveVideo() {
+    private func saveVideoToLocalStorage() {
         isSaving = true
         
-        // First save to photo library
-        PHPhotoLibrary.shared().performChanges({
-            PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: videoURL)
-        }) { success, error in
-            DispatchQueue.main.async {
+        // ✅ SAVE ONLY TO LOCAL STORAGE - NOT TO PHOTO GALLERY
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let savedVideosPath = documentsPath.appendingPathComponent("SavedVideos")
+        
+        // Create directory if it doesn't exist
+        if !FileManager.default.fileExists(atPath: savedVideosPath.path) {
+            do {
+                try FileManager.default.createDirectory(at: savedVideosPath, withIntermediateDirectories: true)
+                print("📁 Created SavedVideos directory")
+            } catch {
+                print("❌ Error creating SavedVideos directory: \(error)")
                 isSaving = false
-                if success {
-                    // Save to UserDefaults
-                    saveToHistory()
-                    showSaveSuccess = true
-                } else {
-                    print("Error saving video: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+        }
+        
+        // Create unique filename with timestamp
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
+        let timestamp = dateFormatter.string(from: Date())
+        let filename = "video_\(timestamp).mp4"
+        let destinationURL = savedVideosPath.appendingPathComponent(filename)
+        
+        // Copy video from temporary location to SavedVideos folder
+        do {
+            if FileManager.default.fileExists(atPath: destinationURL.path) {
+                try FileManager.default.removeItem(at: destinationURL)
+            }
+            try FileManager.default.copyItem(at: videoURL, to: destinationURL)
+            
+            print("✅ Video saved to local storage: \(destinationURL.path)")
+            print("📱 This video is NOT in your device's Photos app")
+            
+            // Save to history with new URL
+            saveToHistory(with: destinationURL)
+            
+            isSaving = false
+            
+            // ✅ Show success alert instead of directly navigating
+            showSaveSuccess = true
+            
+        } catch {
+            print("❌ Error saving video: \(error)")
+            isSaving = false
+        }
+    }
+    
+    private func saveToHistory(with savedVideoURL: URL) {
+        // Save thumbnail to Application Support directory
+        var thumbnailURL: URL? = nil
+        if let thumbnail = thumbnailImage {
+            guard let appSupportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+                return
+            }
+            
+            try? FileManager.default.createDirectory(at: appSupportDir, withIntermediateDirectories: true)
+            
+            var thumbnailPath = appSupportDir.appendingPathComponent("thumb_\(UUID().uuidString).jpg")
+            
+            if let data = thumbnail.jpegData(compressionQuality: 0.7) {
+                do {
+                    try data.write(to: thumbnailPath)
+                    var resourceValues = URLResourceValues()
+                    resourceValues.isExcludedFromBackup = true
+                    try thumbnailPath.setResourceValues(resourceValues)
+                    thumbnailURL = thumbnailPath
+                    print("✅ Thumbnail saved at: \(thumbnailPath.path)")
+                } catch {
+                    print("Error saving thumbnail: \(error)")
                 }
             }
         }
+        
+        // Create saved video model with the new local URL
+        let savedVideo = SavedVideo(
+            videoURL: savedVideoURL,
+            thumbnailURL: thumbnailURL,
+            musicTrack: musicTrack,
+            musicStartTime: musicStartTime,
+            musicEndTime: musicEndTime
+        )
+        
+        // Save to UserDefaults
+        SavedVideosManager.shared.saveVideo(savedVideo)
+        print("✅ Video added to history")
     }
     
     private func formatTime(_ time: Double) -> String {
@@ -518,56 +565,5 @@ struct WatchVideoView: View {
         } catch {
             print("Error generating thumbnail: \(error)")
         }
-    }
-    
-    private func saveToHistory() {
-        // Save thumbnail to Application Support directory (permanent storage)
-        var thumbnailURL: URL? = nil
-        if let thumbnail = thumbnailImage {
-            guard let appSupportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-                print("Could not access app support directory")
-                return
-            }
-            
-            // Create directory if needed
-            try? FileManager.default.createDirectory(at: appSupportDir, withIntermediateDirectories: true)
-            
-            var thumbnailPath = appSupportDir.appendingPathComponent("thumb_\(UUID().uuidString).jpg")
-            
-            if let data = thumbnail.jpegData(compressionQuality: 0.7) {
-                do {
-                    try data.write(to: thumbnailPath)
-                    
-                    // Exclude from iCloud backup
-                    var resourceValues = URLResourceValues()
-                    resourceValues.isExcludedFromBackup = true
-                    try thumbnailPath.setResourceValues(resourceValues)
-                    
-                    thumbnailURL = thumbnailPath
-                    print("Thumbnail saved permanently at: \(thumbnailPath.path)")
-                    
-                    // Verify file was written
-                    if FileManager.default.fileExists(atPath: thumbnailPath.path) {
-                        print("✅ Thumbnail file verified at path")
-                    } else {
-                        print("❌ Thumbnail file not found after writing!")
-                    }
-                } catch {
-                    print("Error saving thumbnail: \(error)")
-                }
-            }
-        }
-        
-        // Create saved video model
-        let savedVideo = SavedVideo(
-            videoURL: videoURL,
-            thumbnailURL: thumbnailURL,
-            musicTrack: musicTrack,
-            musicStartTime: musicStartTime,
-            musicEndTime: musicEndTime
-        )
-        
-        // Save to UserDefaults
-        SavedVideosManager.shared.saveVideo(savedVideo)
     }
 }
