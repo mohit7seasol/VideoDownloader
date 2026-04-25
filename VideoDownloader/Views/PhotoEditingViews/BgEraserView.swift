@@ -19,6 +19,26 @@ struct BgEraserView: View {
     @State private var navigateNext = false
     @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
+    // MARK: - Preview Size Calculation (Matching AddNewBGView)
+    private var previewSize: CGSize {
+        let containerHeight: CGFloat = Device.isIpad
+            ? UIScreen.main.bounds.height * 0.65
+            : UIScreen.main.bounds.height * 0.58
+        
+        let maxWidth = UIScreen.main.bounds.width - 40
+        let aspectRatio = image.size.width / image.size.height
+        
+        var width = containerHeight * aspectRatio
+        var height = containerHeight
+        
+        if width > maxWidth {
+            width = maxWidth
+            height = width / aspectRatio
+        }
+        
+        return CGSize(width: width, height: height)
+    }
+    
     var body: some View {
         if Device.isIpad {
             GeometryReader { geometry in
@@ -28,7 +48,7 @@ struct BgEraserView: View {
                         .scaledToFill()
                         .ignoresSafeArea()
                     
-                    VStack(spacing: 20) {
+                    VStack(spacing: 0) {
                         
                         // HEADER
                         HStack {
@@ -37,60 +57,75 @@ struct BgEraserView: View {
                             } label: {
                                 Image(systemName: "chevron.left")
                                     .foregroundColor(.white)
+                                    .font(.system(size: 22, weight: .semibold))
                             }
                             
                             Text("Background Remove".localized(self.language))
                                 .foregroundColor(.white)
-                                .font(.custom("Urbanist-Bold", size: 18))
+                                .font(.custom("Urbanist-Bold", size: 24))
                             
                             Spacer()
                         }
                         .padding(.top, UIApplication.shared.safeAreaTop)
-                        .padding(.bottom, 10)
-                        .padding(.leading, 12)
-                        .background(Color.clear)
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 20)
                         
-                        // IMAGE AREA
+                        // IMAGE PREVIEW (Matching AddNewBGView style)
                         ZStack {
-                            
                             if let outputImage {
                                 Image(uiImage: outputImage)
                                     .resizable()
                                     .scaledToFit()
+                                    .frame(width: previewSize.width, height: previewSize.height)
                             } else {
                                 Image(uiImage: image)
                                     .resizable()
                                     .scaledToFit()
+                                    .frame(width: previewSize.width, height: previewSize.height)
                             }
                             
                             if isProcessing {
                                 ProgressView()
                                     .tint(.white)
+                                    .scaleEffect(1.5)
                             }
                         }
-                        .frame(height: 400)
-                        .background(Color.white.opacity(0.1))
-                        .cornerRadius(12)
+                        .frame(height: Device.isIpad ? UIScreen.main.bounds.height * 0.65 : 380)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white.opacity(0.08))
+                        .cornerRadius(24)
                         .padding(.horizontal, 20)
+                        .padding(.top, 10)
                         
-                        Spacer()
+                        Spacer(minLength: 20)
                         
                         // BUTTON
                         Button {
                             removeBG()
                         } label: {
-                            Text(outputImage == nil ? "Remove Background".localized(self.language) : "Next".localized(self.language))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 55)
-                                .background(
-                                    LinearGradient(
-                                        colors: [Color.blue, Color.blue.opacity(0.7)],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
+                            HStack(spacing: 12) {
+                                if outputImage == nil {
+                                    Image(systemName: "wand.and.stars")
+                                        .font(.system(size: 22))
+                                } else {
+                                    Image(systemName: "arrow.right.circle.fill")
+                                        .font(.system(size: 22))
+                                }
+                                
+                                Text(outputImage == nil ? "Remove Background".localized(self.language) : "Next".localized(self.language))
+                                    .font(.custom("Urbanist-Bold", size: 18))
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 65)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color(hex: "#1973E8"), Color(hex: "#0E4082")],
+                                    startPoint: .top,
+                                    endPoint: .bottom
                                 )
-                                .cornerRadius(30)
+                            )
+                            .cornerRadius(30)
                         }
                         .padding(.horizontal, 40)
                         .padding(.bottom, 660)
@@ -102,15 +137,17 @@ struct BgEraserView: View {
                     }
                 }
                 .navigationBarHidden(true)
+                .navigationBarBackButtonHidden(true)
             }
         } else {
+            // iPhone Layout
             ZStack {
                 Image("app_bg_image")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea()
                 
-                VStack(spacing: 20) {
+                VStack(spacing: 0) {
                     
                     // HEADER
                     HStack {
@@ -119,6 +156,7 @@ struct BgEraserView: View {
                         } label: {
                             Image(systemName: "chevron.left")
                                 .foregroundColor(.white)
+                                .font(.system(size: 18, weight: .semibold))
                         }
                         
                         Text("Background Remove".localized(self.language))
@@ -128,54 +166,68 @@ struct BgEraserView: View {
                         Spacer()
                     }
                     .padding(.top, UIApplication.shared.safeAreaTop)
-                    .padding(.bottom, 10)
-                    .padding(.leading, 12)
-                    .background(Color.clear)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 16)
                     
-                    // IMAGE AREA
+                    // IMAGE PREVIEW (Matching AddNewBGView style)
                     ZStack {
-                        
                         if let outputImage {
                             Image(uiImage: outputImage)
                                 .resizable()
                                 .scaledToFit()
+                                .frame(width: previewSize.width, height: previewSize.height)
                         } else {
                             Image(uiImage: image)
                                 .resizable()
                                 .scaledToFit()
+                                .frame(width: previewSize.width, height: previewSize.height)
                         }
                         
                         if isProcessing {
                             ProgressView()
                                 .tint(.white)
+                                .scaleEffect(1.3)
                         }
                     }
-                    .frame(height: 400)
-                    .background(Color.white.opacity(0.1))
-                    .cornerRadius(12)
+                    .frame(height: UIScreen.main.bounds.height * 0.58)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white.opacity(0.08))
+                    .cornerRadius(24)
                     .padding(.horizontal, 20)
+                    .padding(.top, 10)
                     
-                    Spacer()
+                    Spacer(minLength: 20)
                     
                     // BUTTON
                     Button {
                         removeBG()
                     } label: {
-                        Text(outputImage == nil ? "Remove Background".localized(self.language) : "Next".localized(self.language))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 55)
-                            .background(
-                                LinearGradient(
-                                    colors: [Color.blue, Color.blue.opacity(0.7)],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
+                        HStack(spacing: 12) {
+                            if outputImage == nil {
+                                Image(systemName: "wand.and.stars")
+                                    .font(.system(size: 18))
+                            } else {
+                                Image(systemName: "arrow.right.circle.fill")
+                                    .font(.system(size: 18))
+                            }
+                            
+                            Text(outputImage == nil ? "Remove Background".localized(self.language) : "Next".localized(self.language))
+                                .font(.custom("Urbanist-Bold", size: 16))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 55)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "#1973E8"), Color(hex: "#0E4082")],
+                                startPoint: .top,
+                                endPoint: .bottom
                             )
-                            .cornerRadius(30)
+                        )
+                        .cornerRadius(30)
                     }
                     .padding(.horizontal, 40)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, Device.bottomSafeArea + 20)
                     
                     NavigationLink(
                         destination: AddNewBGView(image: outputImage ?? image),
