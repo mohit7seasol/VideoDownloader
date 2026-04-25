@@ -341,12 +341,12 @@ struct SplashContent: View {
             
             VStack(spacing: 12) {
                 
-                Text("VideoFetch")
+                Text("Create, Edit & Shine")
                     .font(.custom("Unlock-Regular", size: 30))
                     .foregroundColor(.white) // Adjust color as needed
                     .multilineTextAlignment(.center)
                 
-                Text("Save Your Favorite Videos in One Tap".localized(self.language))
+                Text("All your creative tools in one app".localized(self.language))
                     .font(.custom("Urbanist-Regular", size: 18))
                     .foregroundColor(.white.opacity(0.8)) // Adjust color as needed
                     .multilineTextAlignment(.center)

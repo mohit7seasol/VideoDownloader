@@ -66,11 +66,11 @@ struct LanguageView: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 8) {
-                                        Text("Instant Bookmark Video".localized(self.language))
+                                        Text("Choose Your Language".localized(self.language))
                                             .font(Font.custom("Unlock-Regular", size: 22))
                                             .foregroundColor(.white)
                                         
-                                        Text("Paste the link and enjoy fast, hassle-free video BookMark".localized(self.language))
+                                        Text("Use the app in your language".localized(self.language))
                                             .font(Font.custom("Urbanist-Medium", size: 16))
                                             .foregroundColor(.white.opacity(0.8))
                                             .fixedSize(horizontal: false, vertical: true)
@@ -178,11 +178,11 @@ struct LanguageView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text("Instant Bookmark Video".localized(self.language))
+                                    Text("Choose Your Language".localized(self.language))
                                         .font(Font.custom("Unlock-Regular", size: 22))
                                         .foregroundColor(.white)
                                     
-                                    Text("Paste the link and enjoy fast, hassle-free video BookMark".localized(self.language))
+                                    Text("Use the app in your language".localized(self.language))
                                         .font(Font.custom("Urbanist-Medium", size: 16))
                                         .foregroundColor(.white.opacity(0.8))
                                         .fixedSize(horizontal: false, vertical: true)
