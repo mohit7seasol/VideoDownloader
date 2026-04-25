@@ -2,7 +2,7 @@
 //  SavedAssetsView.swift
 //  VideoDownloader
 //
-//  Created by Mohit Kanpara on 17/04/26.
+//  Created by Mohit Kanpara on 25/04/26.
 //
 
 import SwiftUI
@@ -76,9 +76,9 @@ struct SavedAssetsView: View {
                             if savedImages.isEmpty {
                                 emptyStateView(
                                     icon: "photo.stack",
-                                    title: "No Saved Images",
-                                    subtitle: "Your saved images will appear here",
-                                    message: "Start editing photos and save them to see them here",
+                                    title: "No Saved Images".localized(language),
+                                    subtitle: "Your saved images will appear here".localized(language),
+                                    message: "Start editing photos and save them to see them here".localized(language),
                                     size: 60
                                 )
                             } else {
@@ -102,13 +102,13 @@ struct SavedAssetsView: View {
                                                     Button(action: {
                                                         shareImage(image)
                                                     }) {
-                                                        Label("Share", systemImage: "square.and.arrow.up")
+                                                        Label("Share".localized(language), systemImage: "square.and.arrow.up")
                                                     }
                                                     
                                                     Button(action: {
                                                         saveImageToGallery(image)
                                                     }) {
-                                                        Label("Save to Gallery", systemImage: "square.and.arrow.down")
+                                                        Label("Save to Gallery".localized(language), systemImage: "square.and.arrow.down")
                                                     }
                                                     
                                                     Button(role: .destructive, action: {
@@ -116,7 +116,7 @@ struct SavedAssetsView: View {
                                                         deleteType = .savedPhotos
                                                         showDeleteAlert = true
                                                     }) {
-                                                        Label("Delete", systemImage: "trash")
+                                                        Label("Delete".localized(language), systemImage: "trash")
                                                     }
                                                 } label: {
                                                     ZStack {
@@ -144,9 +144,9 @@ struct SavedAssetsView: View {
                             if savedVideos.isEmpty {
                                 emptyStateView(
                                     icon: "video.slash",
-                                    title: "No Saved Videos",
-                                    subtitle: "Your saved videos will appear here",
-                                    message: "Start editing videos and save them to see them here",
+                                    title: "No Saved Videos".localized(language),
+                                    subtitle: "Your saved videos will appear here".localized(language),
+                                    message: "Start editing videos and save them to see them here".localized(language),
                                     size: 60
                                 )
                             } else {
@@ -172,13 +172,13 @@ struct SavedAssetsView: View {
                                                     Button(action: {
                                                         shareVideo(videoURL)
                                                     }) {
-                                                        Label("Share", systemImage: "square.and.arrow.up")
+                                                        Label("Share".localized(language), systemImage: "square.and.arrow.up")
                                                     }
                                                     
                                                     Button(action: {
                                                         saveVideoToGallery(videoURL)
                                                     }) {
-                                                        Label("Save to Gallery", systemImage: "square.and.arrow.down")
+                                                        Label("Save to Gallery".localized(language), systemImage: "square.and.arrow.down")
                                                     }
                                                     
                                                     Button(role: .destructive, action: {
@@ -186,7 +186,7 @@ struct SavedAssetsView: View {
                                                         deleteType = .savedVideos
                                                         showDeleteAlert = true
                                                     }) {
-                                                        Label("Delete", systemImage: "trash")
+                                                        Label("Delete".localized(language), systemImage: "trash")
                                                     }
                                                 } label: {
                                                     ZStack {
@@ -218,9 +218,9 @@ struct SavedAssetsView: View {
                     loadSavedVideos()
                     animateGradient = true
                 }
-                .alert(deleteType == .savedPhotos ? "Delete Image" : "Delete Video", isPresented: $showDeleteAlert) {
-                    Button("Cancel", role: .cancel) { }
-                    Button("Delete", role: .destructive) {
+                .alert(deleteType == .savedPhotos ? "Delete Image".localized(language) : "Delete Video".localized(language), isPresented: $showDeleteAlert) {
+                    Button("Cancel".localized(language), role: .cancel) { }
+                    Button("Delete".localized(language), role: .destructive) {
                         if let index = itemToDelete {
                             if deleteType == .savedPhotos {
                                 deleteImage(at: index)
@@ -231,12 +231,12 @@ struct SavedAssetsView: View {
                         itemToDelete = nil
                     }
                 } message: {
-                    Text(deleteType == .savedPhotos ? "Are you sure you want to delete this image?" : "Are you sure you want to delete this video?")
+                    Text(deleteType == .savedPhotos ? "Are you sure you want to delete this image?".localized(language) : "Are you sure you want to delete this video?".localized(language))
                 }
-                .alert("Saved to Gallery", isPresented: $showSaveToGalleryAlert) {
-                    Button("OK", role: .cancel) { }
+                .alert("Saved to Gallery".localized(language), isPresented: $showSaveToGalleryAlert) {
+                    Button("OK".localized(language), role: .cancel) { }
                 } message: {
-                    Text("Media has been saved to your photo library")
+                    Text("Media has been saved to your photo library".localized(language))
                 }
                 .sheet(isPresented: $showShareSheet) {
                     ShareSheet2(activityItems: shareItems)
@@ -266,8 +266,8 @@ struct SavedAssetsView: View {
                         if savedImages.isEmpty {
                             emptyStateView(
                                 icon: "photo.stack",
-                                title: "No Saved Images",
-                                subtitle: "Your saved images will appear here",
+                                title: "No Saved Images".localized(language),
+                                subtitle: "Your saved images will appear here".localized(language),
                                 message: "",
                                 size: 50
                             )
@@ -292,13 +292,13 @@ struct SavedAssetsView: View {
                                                 Button(action: {
                                                     shareImage(image)
                                                 }) {
-                                                    Label("Share", systemImage: "square.and.arrow.up")
+                                                    Label("Share".localized(language), systemImage: "square.and.arrow.up")
                                                 }
                                                 
                                                 Button(action: {
                                                     saveImageToGallery(image)
                                                 }) {
-                                                    Label("Save to Gallery", systemImage: "square.and.arrow.down")
+                                                    Label("Save to Gallery".localized(language), systemImage: "square.and.arrow.down")
                                                 }
                                                 
                                                 Button(role: .destructive, action: {
@@ -306,7 +306,7 @@ struct SavedAssetsView: View {
                                                     deleteType = .savedPhotos
                                                     showDeleteAlert = true
                                                 }) {
-                                                    Label("Delete", systemImage: "trash")
+                                                    Label("Delete".localized(language), systemImage: "trash")
                                                 }
                                             } label: {
                                                 ZStack {
@@ -334,8 +334,8 @@ struct SavedAssetsView: View {
                         if savedVideos.isEmpty {
                             emptyStateView(
                                 icon: "video.slash",
-                                title: "No Saved Videos",
-                                subtitle: "Your saved videos will appear here",
+                                title: "No Saved Videos".localized(language),
+                                subtitle: "Your saved videos will appear here".localized(language),
                                 message: "",
                                 size: 50
                             )
@@ -362,13 +362,13 @@ struct SavedAssetsView: View {
                                                 Button(action: {
                                                     shareVideo(videoURL)
                                                 }) {
-                                                    Label("Share", systemImage: "square.and.arrow.up")
+                                                    Label("Share".localized(language), systemImage: "square.and.arrow.up")
                                                 }
                                                 
                                                 Button(action: {
                                                     saveVideoToGallery(videoURL)
                                                 }) {
-                                                    Label("Save to Gallery", systemImage: "square.and.arrow.down")
+                                                    Label("Save to Gallery".localized(language), systemImage: "square.and.arrow.down")
                                                 }
                                                 
                                                 Button(role: .destructive, action: {
@@ -376,7 +376,7 @@ struct SavedAssetsView: View {
                                                     deleteType = .savedVideos
                                                     showDeleteAlert = true
                                                 }) {
-                                                    Label("Delete", systemImage: "trash")
+                                                    Label("Delete".localized(language), systemImage: "trash")
                                                 }
                                             } label: {
                                                 ZStack {
@@ -408,9 +408,9 @@ struct SavedAssetsView: View {
                 loadSavedVideos()
                 animateGradient = true
             }
-            .alert(deleteType == .savedPhotos ? "Delete Image" : "Delete Video", isPresented: $showDeleteAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Delete", role: .destructive) {
+            .alert(deleteType == .savedPhotos ? "Delete Image".localized(language) : "Delete Video".localized(language), isPresented: $showDeleteAlert) {
+                Button("Cancel".localized(language), role: .cancel) { }
+                Button("Delete".localized(language), role: .destructive) {
                     if let index = itemToDelete {
                         if deleteType == .savedPhotos {
                             deleteImage(at: index)
@@ -421,12 +421,12 @@ struct SavedAssetsView: View {
                     itemToDelete = nil
                 }
             } message: {
-                Text(deleteType == .savedPhotos ? "Are you sure you want to delete this image?" : "Are you sure you want to delete this video?")
+                Text(deleteType == .savedPhotos ? "Are you sure you want to delete this image?".localized(language) : "Are you sure you want to delete this video?".localized(language))
             }
-            .alert("Saved to Gallery", isPresented: $showSaveToGalleryAlert) {
-                Button("OK", role: .cancel) { }
+            .alert("Saved to Gallery".localized(language), isPresented: $showSaveToGalleryAlert) {
+                Button("OK".localized(language), role: .cancel) { }
             } message: {
-                Text("Media has been saved to your photo library")
+                Text("Media has been saved to your photo library".localized(language))
             }
             .sheet(isPresented: $showShareSheet) {
                 ShareSheet2(activityItems: shareItems)
@@ -770,20 +770,32 @@ struct VideoThumbnailView2: View {
                     }
             }
             
-            Text(duration)
-                .font(.custom("Urbanist-Medium", size: Device.isIpad ? 12 : 10))
-                .foregroundColor(.white)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 3)
-                .background(Color.black.opacity(0.7))
-                .cornerRadius(4)
-                .padding(6)
-            
-            Image(systemName: "play.circle.fill")
-                .font(.system(size: Device.isIpad ? 30 : 24))
-                .foregroundColor(.white.opacity(0.9))
-                .shadow(color: .black, radius: 2)
-                .padding(6)
+            // Play icon on left side
+            HStack {
+                Image(systemName: "play.circle.fill")
+                    .font(.system(size: Device.isIpad ? 30 : 24))
+                    .foregroundColor(.white.opacity(0.9))
+                    .shadow(color: .black, radius: 2)
+
+                Spacer()
+            }
+            .padding(6)
+
+            // Duration bottom right
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Text(duration)
+                        .font(.custom("Urbanist-Medium", size: Device.isIpad ? 12 : 10))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(Color.black.opacity(0.7))
+                        .cornerRadius(4)
+                }
+            }
+            .padding(6)
         }
         .onAppear {
             loadThumbnail()

@@ -205,3 +205,25 @@
 "None" = "None";
 "Are you sure you want to delete this image?" = "Are you sure you want to delete this image?";
 "Delete Image" = "Delete Image";
+
+"Powerful Video Editing" = "Powerful Video Editing";
+"Everything you need to edit in one place" = "Everything you need to edit in one place";
+"Apply Filters Video" = "Apply Filters Video";
+"Trim Video" = "Trim Video";
+"Flip Video" = "Flip Video";
+"Video saved successfully!" = "Video saved successfully!";
+"Edit Video" = "Edit Video";
+"Apply" = "Apply";
+"Loading video..." = "Loading video...";
+"Reset" = "Reset";
+"Trim Range" = "Trim Range";
+"Flip & Rotate Video" = "Flip & Rotate Video";
+"Rotate & Flip" = "Rotate & Flip";
+"Rotation:" = "Rotation:";
+"Rotate 90°" = "Rotate 90°";
+"Flip" = "Flip";
+"Save to Gallery" = "Save to Gallery";
+"No Saved Videos" = "No Saved Videos";
+"Your saved videos will appear here" = "Your saved videos will appear here";
+"Start editing videos and save them to see them here" = "Start editing videos and save them to see them here";
+"Media has been saved to your photo library" = "Media has been saved to your photo library";

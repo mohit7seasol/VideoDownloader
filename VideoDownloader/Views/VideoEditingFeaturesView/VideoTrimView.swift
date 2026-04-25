@@ -59,12 +59,12 @@ struct VideoTrimView: View {
         .onDisappear {
             player?.pause()
         }
-        .alert("Success", isPresented: $showSuccessAlert) {
-            Button("OK") {
+        .alert("Success".localized(language), isPresented: $showSuccessAlert) {
+            Button("OK".localized(language)) {
                 navigateToHome = true
             }
         } message: {
-            Text("Video saved successfully!")
+            Text("Video saved successfully!".localized(language))
         }
         .background(
             NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
@@ -148,7 +148,7 @@ struct VideoTrimView: View {
             HStack {
                 Image(systemName: "scissors")
                     .foregroundColor(.blue)
-                Text("Trim Range")
+                Text("Trim Range".localized(self.language))
                     .font(.custom("Urbanist-SemiBold", size: 18))
                     .foregroundColor(.white)
                 Spacer()
@@ -157,7 +157,7 @@ struct VideoTrimView: View {
                     Button(action: {
                         resetTrim()
                     }) {
-                        Text("Reset")
+                        Text("Reset".localized(self.language))
                             .font(.caption)
                             .foregroundColor(.red)
                     }

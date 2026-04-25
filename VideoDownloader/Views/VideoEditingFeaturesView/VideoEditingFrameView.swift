@@ -96,6 +96,7 @@ struct VideoEditingFrameView: View {
     // Filter settings
     @State private var availableFilters: [VideoFilter] = []
     @State private var selectedFilterName: String?
+    @AppStorage(SessionKeys.language) var language = LocalizationService.shared.language
     
     private let filterThumbnailSize: CGFloat = 70
     
@@ -130,12 +131,12 @@ struct VideoEditingFrameView: View {
         .onDisappear {
             videoPlayerManager.pause()
         }
-        .alert("Success", isPresented: $showSuccessAlert) {
-            Button("OK") {
+        .alert("Success".localized(language), isPresented: $showSuccessAlert) {
+            Button("OK".localized(language)) {
                 navigateToHome = true
             }
         } message: {
-            Text("Video saved successfully!")
+            Text("Video saved successfully!".localized(language))
         }
         .background(
             NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
@@ -158,7 +159,7 @@ struct VideoEditingFrameView: View {
             
             Spacer()
             
-            Text("Edit Video")
+            Text("Edit Video".localized(language))
                 .font(.headline)
                 .fontWeight(.semibold)
                 .foregroundColor(.white)
@@ -168,7 +169,7 @@ struct VideoEditingFrameView: View {
             Button(action: {
                 applySettingsAndSave()
             }) {
-                Text("Apply")
+                Text("Apply".localized(language))
                     .fontWeight(.semibold)
                     .foregroundColor(.blue)
             }
@@ -204,7 +205,7 @@ struct VideoEditingFrameView: View {
                         VStack(spacing: 12) {
                             ProgressView()
                                 .tint(.white)
-                            Text("Loading video...")
+                            Text("Loading video...".localized(language))
                                 .foregroundColor(.white)
                                 .font(.caption)
                         }
@@ -220,7 +221,7 @@ struct VideoEditingFrameView: View {
             HStack {
                 Image(systemName: "camera.filters")
                     .foregroundColor(.blue)
-                Text("Filters")
+                Text("Filters".localized(language))
                     .font(.custom("Urbanist-SemiBold", size: 18))
                     .foregroundColor(.white)
                 
@@ -230,7 +231,7 @@ struct VideoEditingFrameView: View {
                     Button(action: {
                         applyFilter(availableFilters.first(where: { $0.name == "original" })!)
                     }) {
-                        Text("Reset")
+                        Text("Reset".localized(language))
                             .font(.caption)
                             .foregroundColor(.red)
                     }

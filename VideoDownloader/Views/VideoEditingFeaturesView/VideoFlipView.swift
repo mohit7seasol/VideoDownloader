@@ -58,12 +58,12 @@ struct VideoFlipView: View {
         .onDisappear {
             player?.pause()
         }
-        .alert("Success", isPresented: $showSuccessAlert) {
-            Button("OK") {
+        .alert("Success".localized(language), isPresented: $showSuccessAlert) {
+            Button("OK".localized(language)) {
                 navigateToHome = true
             }
         } message: {
-            Text("Video saved successfully!")
+            Text("Video saved successfully!".localized(language))
         }
         .background(
             NavigationLink(destination: HomeSegmentView(), isActive: $navigateToHome) {
@@ -150,7 +150,7 @@ struct VideoFlipView: View {
                 Image(systemName: "arrow.triangle.2.circlepath")
                     .foregroundColor(.blue)
                     .padding(.leading,  10)
-                Text("Rotate & Flip")
+                Text("Rotate & Flip".localized(self.language))
                     .font(.custom("Urbanist-SemiBold", size: 18))
                     .foregroundColor(.white)
                 
@@ -160,7 +160,7 @@ struct VideoFlipView: View {
                     Button(action: {
                         resetTransformations()
                     }) {
-                        Text("Reset")
+                        Text("Reset".localized(self.language))
                             .font(.caption)
                             .foregroundColor(.red)
                     }
@@ -171,7 +171,7 @@ struct VideoFlipView: View {
             
             // Rotation Slider
             VStack(spacing: 12) {
-                Text("Rotation: \(Int(rotation))°")
+                Text("\("Rotation:".localized(self.language)) \(Int(rotation))°")
                     .font(.custom("Urbanist-Medium", size: 16))
                     .foregroundColor(.white)
                 
@@ -191,7 +191,7 @@ struct VideoFlipView: View {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(.system(size: 28))
                             .foregroundColor(.white)
-                        Text("Rotate 90°")
+                        Text("Rotate 90°".localized(self.language))
                             .font(.custom("Urbanist-Medium", size: 12))
                             .foregroundColor(.white)
                     }
@@ -208,7 +208,7 @@ struct VideoFlipView: View {
                         Image(systemName: isMirror ? "arrow.left.and.right.circle.fill" : "arrow.left.and.right.circle")
                             .font(.system(size: 28))
                             .foregroundColor(isMirror ? .blue : .white)
-                        Text("Flip")
+                        Text("Flip".localized(self.language))
                             .font(.custom("Urbanist-Medium", size: 12))
                             .foregroundColor(.white)
                     }
